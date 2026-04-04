@@ -100,12 +100,19 @@ Write-OK "All containers started."
 # -----------------------------------------------------------------------
 Write-Step "4/5" "Waiting for PostgreSQL to be healthy..."
 
+# Docker Compose names containers and networks using the lowercase project
+# folder name as a prefix.  Derive it at runtime so the script works
+# regardless of where the repo is checked out.
+$projectName    = (Split-Path $PSScriptRoot -Leaf).ToLower()
+$pgContainer    = "${projectName}-postgres-1"
+$internalNetwork = "${projectName}_aegis-internal"
+
 $maxWait = 90
 $waited  = 0
 $ready   = $false
 
 while ($waited -lt $maxWait) {
-    $status = docker inspect --format "{{.State.Health.Status}}" aegis-postgres 2>$null
+    $status = docker inspect --format "{{.State.Health.Status}}" $pgContainer 2>$null
     if ($status -eq "healthy") { $ready = $true; break }
     Write-Info "PostgreSQL status: $status - waiting 3s..."
     Start-Sleep -Seconds 3
@@ -114,7 +121,7 @@ while ($waited -lt $maxWait) {
 
 if (-not $ready) {
     Write-Fail "PostgreSQL did not become healthy in ${maxWait}s."
-    Write-Info "Check logs with: docker logs aegis-postgres"
+    Write-Info "Check logs with: docker logs $pgContainer"
     Read-Host "Press Enter to exit"
     exit 1
 }
@@ -128,7 +135,7 @@ Write-Step "5/5" "Applying database migrations V001-V023..."
 $migrationPath = Join-Path $PSScriptRoot "infra\db\migrations"
 
 docker run --rm `
-    --network aegis_aegis-internal `
+    --network $internalNetwork `
     -v "${migrationPath}:/migrations:ro" `
     postgres:16-alpine `
     sh -c 'for f in $(ls /migrations/V*.sql | sort); do
