@@ -60,7 +60,7 @@ if (-not (Test-Path ".env")) {
 Write-Step "3/5" "Starting all containers (first run may take several minutes)..."
 Write-Host ""
 
-# Only start the services we have fully built (Sprints 8-19 + core infra).
+# Only start the services we have fully built (Sprints 8-19 + hub + core infra).
 # Early-sprint services (zk-proof-worker, forensic-ml, etc.) require
 # additional build tooling (Rust/Halo2, CUDA) and are excluded here.
 $SERVICES = @(
@@ -76,7 +76,8 @@ $SERVICES = @(
     "risk-service",         "risk-ui",
     "audit-planning-service","audit-planning-ui",
     "esg-board-service",    "esg-board-ui",
-    "mobile-sync-service",  "mobile-app"
+    "mobile-sync-service",  "mobile-app",
+    "hub-ui"
 )
 
 $svcArgs = $SERVICES -join " "
@@ -130,7 +131,7 @@ Write-OK "PostgreSQL is healthy."
 # -----------------------------------------------------------------------
 # STEP 5 - Run migrations
 # -----------------------------------------------------------------------
-Write-Step "5/5" "Applying database migrations V001-V023..."
+Write-Step "5/5" "Applying database migrations..."
 
 $migrationPath = Join-Path $PSScriptRoot "infra\db\migrations"
 
@@ -156,11 +157,17 @@ Write-Host "  |                  AEGIS 2026 IS RUNNING                        |"
 Write-Host "  +================================================================+" -ForegroundColor Green
 Write-Host ""
 
+Write-Host "  PLATFORM HUB  (start here)" -ForegroundColor Green
+Write-Host "  ----------------------------------------------------------------"
+Write-Host "  Hub & Tutorials         " -NoNewline; Write-Host "http://localhost:5173" -ForegroundColor Green
+Write-Host ""
+
 Write-Host "  INFRASTRUCTURE" -ForegroundColor Cyan
 Write-Host "  ----------------------------------------------------------------"
 Write-Host "  PostgreSQL         localhost:5432"
 Write-Host "  Redis              localhost:6379"
-Write-Host "  MinIO Console      http://localhost:9001   (aegis_minio / aegis_minio_dev_pw)" -ForegroundColor Cyan
+Write-Host "  MinIO Console      " -NoNewline; Write-Host "http://localhost:9001" -ForegroundColor Cyan -NoNewline
+Write-Host "   (aegis_minio / aegis_minio_dev_pw)"
 Write-Host ""
 
 Write-Host "  MODULE DASHBOARDS" -ForegroundColor Cyan
@@ -181,18 +188,22 @@ Write-Host ""
 
 Write-Host "  QUICK START" -ForegroundColor Cyan
 Write-Host "  ----------------------------------------------------------------"
-Write-Host "  Append ?tenantId=YOURUUID to any URL to scope data per tenant."
-Write-Host "  Example demo tenant: ?tenantId=00000000-0000-0000-0000-000000000001"
+Write-Host "  Open the Hub to explore all modules, follow the workflow guide,"
+Write-Host "  and access role-based tutorials (End User / Admin / Super Admin)."
+Write-Host ""
+Write-Host "  Append ?tenantId=UUID to any module URL to scope data per tenant."
+Write-Host "  Demo tenant: ?tenantId=00000000-0000-0000-0000-000000000001"
 Write-Host ""
 Write-Host "  Useful commands:" -ForegroundColor Yellow
-Write-Host "    docker compose logs -f risk-service    (follow a service log)"
-Write-Host "    docker compose ps                      (check container status)"
-Write-Host "    stop.bat                               (shut everything down)"
+Write-Host "    docker compose logs -f hub-ui           (follow hub log)"
+Write-Host "    docker compose logs -f risk-service     (follow a service log)"
+Write-Host "    docker compose ps                       (check container status)"
+Write-Host "    stop.bat                                (shut everything down)"
 Write-Host ""
 
-$open = Read-Host "  Open Risk Management dashboard in browser? [Y/n]"
+$open = Read-Host "  Open Platform Hub in browser? [Y/n]"
 if ($open -ne 'n' -and $open -ne 'N') {
-    Start-Process "http://localhost:5182?tenantId=00000000-0000-0000-0000-000000000001"
+    Start-Process "http://localhost:5173"
 }
 
 Write-Host ""

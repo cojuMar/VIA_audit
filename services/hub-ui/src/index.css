@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-slate-950 text-slate-100 antialiased;
+  }
+}
+
+@layer components {
+  .module-card {
+    @apply relative bg-slate-800 border border-slate-700 rounded-xl p-5
+           hover:border-slate-500 hover:bg-slate-750
+           transition-all duration-200 cursor-pointer group overflow-hidden;
+  }
+  .module-card::before {
+    content: '';
+    @apply absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200
+           rounded-xl;
+    background: radial-gradient(circle at top left, rgba(99,102,241,0.08), transparent 60%);
+  }
+  .pill {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium;
+  }
+  .pill-green  { @apply bg-emerald-900/60 text-emerald-300 ring-1 ring-emerald-500/30; }
+  .pill-blue   { @apply bg-blue-900/60 text-blue-300 ring-1 ring-blue-500/30; }
+  .pill-indigo { @apply bg-indigo-900/60 text-indigo-300 ring-1 ring-indigo-500/30; }
+  .pill-amber  { @apply bg-amber-900/60 text-amber-300 ring-1 ring-amber-500/30; }
+  .pill-rose   { @apply bg-rose-900/60 text-rose-300 ring-1 ring-rose-500/30; }
+  .pill-violet { @apply bg-violet-900/60 text-violet-300 ring-1 ring-violet-500/30; }
+  .pill-cyan   { @apply bg-cyan-900/60 text-cyan-300 ring-1 ring-cyan-500/30; }
+  .pill-teal   { @apply bg-teal-900/60 text-teal-300 ring-1 ring-teal-500/30; }
+
+  .tutorial-card {
+    @apply bg-slate-800 border border-slate-700 rounded-xl p-6 hover:border-slate-500
+           transition-all duration-150 flex flex-col gap-3;
+  }
+
+  .step-connector {
+    @apply flex-1 h-px bg-gradient-to-r from-indigo-500/40 to-indigo-500/10;
+  }
+}

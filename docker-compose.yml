@@ -645,7 +645,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512m
+          memory: 256m
+          cpus: "0.5"
 
   # ---------------------------------------------------------------------------
   # Framework Service – Sprint 8 Compliance Framework Engine
@@ -677,7 +678,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512m
+          memory: 256m
+          cpus: "0.5"
 
   # ---------------------------------------------------------------------------
   # TPRM Service – Sprint 9 Vendor & Third-Party Risk Management
@@ -719,7 +721,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1g
+          memory: 512m
+          cpus: "0.5"
 
   # ---------------------------------------------------------------------------
   # Trust Portal Service – Sprint 10 Client-Facing Trust Portal
@@ -754,7 +757,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
+          memory: 512m
+          cpus: "0.5"
 
   # ---------------------------------------------------------------------------
   # Trust Portal UI – Sprint 10 static frontend for the public Trust Portal
@@ -801,7 +805,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
+          memory: 512m
+          cpus: "0.5"
 
   # ---------------------------------------------------------------------------
   # Monitoring UI – Sprint 11 static frontend for the Continuous Monitoring dashboard
@@ -850,7 +855,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 256m
+          cpus: "0.5"
 
   # ---------------------------------------------------------------------------
   # People UI – Sprint 12 static frontend for the People Compliance dashboard
@@ -897,7 +903,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 256m
+          cpus: "0.5"
 
   # ---------------------------------------------------------------------------
   # PBC UI – Sprint 13 static frontend for the PBC & Workpapers dashboard
@@ -946,7 +953,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
+          memory: 512m
+          cpus: "0.5"
 
   # ---------------------------------------------------------------------------
   # Integration UI – Sprint 14 static frontend for the Integration Hub dashboard
@@ -994,7 +1002,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
+          memory: 512m
+          cpus: "0.5"
 
   # ---------------------------------------------------------------------------
   # AI Agent UI – Sprint 15 static frontend for the Agentic AI chat interface
@@ -1038,7 +1047,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 256m
+          cpus: "0.5"
 
   # ---------------------------------------------------------------------------
   # Risk UI – Sprint 16 static frontend for the Risk Management dashboard
@@ -1087,7 +1097,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512m
+          memory: 256m
+          cpus: "0.5"
 
   # ---------------------------------------------------------------------------
   # Audit Planning UI – Sprint 17 static frontend for the Audit Planning dashboard
@@ -1106,6 +1117,7 @@ services:
       resources:
         limits:
           memory: 128m
+          cpus: "0.5"
 
   # ---------------------------------------------------------------------------
   # ESG Board Service – Sprint 18 ESG Disclosure & Board Governance
@@ -1146,7 +1158,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512m
+          memory: 256m
+          cpus: "0.5"
 
   # ---------------------------------------------------------------------------
   # ESG Board UI – Sprint 18 static frontend for the ESG & Board Governance dashboard
@@ -1165,6 +1178,7 @@ services:
       resources:
         limits:
           memory: 128m
+          cpus: "0.5"
 
   # ---------------------------------------------------------------------------
   # Mobile Sync Service – Sprint 19 Mobile Field Audit & Offline Sync
@@ -1203,7 +1217,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512m
+          memory: 256m
+          cpus: "0.5"
 
   # ---------------------------------------------------------------------------
   # Mobile App – Sprint 19 static frontend for the Mobile Field Audit app
@@ -1223,3 +1238,20 @@ services:
       resources:
         limits:
           memory: 128m
+          cpus: "0.5"
+
+  # ---------------------------------------------------------------------------
+  # Hub UI – Central platform dashboard, module navigator, and tutorial area
+  # Static React/Vite app served via nginx. No backend dependency.
+  # ---------------------------------------------------------------------------
+  hub-ui:
+    build: services/hub-ui
+    ports:
+      - "5173:80"
+    networks:
+      - aegis-external
+    deploy:
+      resources:
+        limits:
+          memory: 64m
+          cpus: "0.25"

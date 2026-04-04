@@ -14,4 +14,4 @@ COPY . .
 ENV PYTHONPATH=/app
 EXPOSE 3008
 
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "3008", "--workers", "2"]
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "3008", "--workers", "1"]

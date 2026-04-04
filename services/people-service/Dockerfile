@@ -9,4 +9,4 @@ COPY src/ ./src/
 
 EXPOSE 3017
 
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "3017", "--workers", "2"]
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "3017", "--workers", "1"]
