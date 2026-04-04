@@ -1,10 +1,11 @@
+import { type ReactNode } from 'react';
 import { ExternalLink, BookOpen, ArrowRight, Shield, Activity, Users, FileText, Plug, Bot, BarChart2, Calendar, Leaf, Smartphone, Building2, Globe } from 'lucide-react';
-import { MODULES, WORKFLOW_STEPS } from '../data/modules';
+import { MODULES, WORKFLOW_STEPS, type Module } from '../data/modules';
 import type { Role } from '../data/tutorials';
 
 const TENANT_ID = '00000000-0000-0000-0000-000000000001';
 
-const MODULE_ICONS: Record<string, React.ReactNode> = {
+const MODULE_ICONS: Record<string, ReactNode> = {
   framework: <Shield className="h-5 w-5" />,
   tprm: <Building2 className="h-5 w-5" />,
   'trust-portal': <Globe className="h-5 w-5" />,
@@ -122,7 +123,7 @@ export default function Dashboard({ onOpenTutorials }: Props) {
       </section>
 
       {/* Module grid — grouped by category */}
-      {(Object.entries(grouped) as [string, typeof MODULES[0][]][]).map(([cat, mods]) => (
+      {(Object.entries(grouped) as [string, Module[]][]).map(([cat, mods]) => (
         mods.length === 0 ? null : (
           <section key={cat} className="mb-8">
             <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-500">
@@ -184,7 +185,7 @@ export default function Dashboard({ onOpenTutorials }: Props) {
   );
 }
 
-function ModuleCard({ mod }: { mod: typeof MODULES[0] }) {
+function ModuleCard({ mod }: { mod: Module }) {
   const url = `http://localhost:${mod.port}?tenantId=${TENANT_ID}`;
   return (
     <a

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import Dashboard from './pages/Dashboard';
 import Tutorials from './pages/Tutorials';
 import type { Role } from './data/tutorials';
@@ -75,7 +75,7 @@ function NavBtn({
 }: {
   active: boolean;
   onClick: () => void;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <button
