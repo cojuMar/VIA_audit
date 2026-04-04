@@ -32,7 +32,7 @@ class AccessLogger:
                     INSERT INTO trust_portal_access_logs (
                         id, tenant_id, event_type, visitor_email,
                         visitor_company, document_id, ip_address,
-                        user_agent, metadata, created_at
+                        user_agent, metadata, occurred_at
                     ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
                     """,
                     str(uuid4()),
@@ -62,10 +62,10 @@ class AccessLogger:
                 rows = await conn.fetch(
                     """
                     SELECT id, event_type, visitor_email, visitor_company,
-                           document_id, ip_address, user_agent, metadata, created_at
+                           document_id, ip_address, user_agent, metadata, occurred_at
                     FROM trust_portal_access_logs
                     WHERE tenant_id = $1 AND event_type = $2
-                    ORDER BY created_at DESC
+                    ORDER BY occurred_at DESC
                     LIMIT $3
                     """,
                     tenant_id,
@@ -76,10 +76,10 @@ class AccessLogger:
                 rows = await conn.fetch(
                     """
                     SELECT id, event_type, visitor_email, visitor_company,
-                           document_id, ip_address, user_agent, metadata, created_at
+                           document_id, ip_address, user_agent, metadata, occurred_at
                     FROM trust_portal_access_logs
                     WHERE tenant_id = $1
-                    ORDER BY created_at DESC
+                    ORDER BY occurred_at DESC
                     LIMIT $2
                     """,
                     tenant_id,
@@ -102,7 +102,7 @@ class AccessLogger:
                     COUNT(*) FILTER (WHERE event_type = 'chatbot_message')        AS chatbot_messages,
                     COUNT(*) FILTER (WHERE event_type = 'nda_signed')             AS ndas_signed,
                     COUNT(*) FILTER (
-                        WHERE created_at >= NOW() - INTERVAL '30 days'
+                        WHERE occurred_at >= NOW() - INTERVAL '30 days'
                     )                                                              AS last_30_days
                 FROM trust_portal_access_logs
                 WHERE tenant_id = $1

@@ -22,8 +22,8 @@ class EngagementManager:
         async with tenant_conn(pool, tenant_id) as conn:
             row = await conn.fetchrow(
                 """
-                INSERT INTO engagements (
-                    engagement_id, tenant_id, engagement_name, engagement_type,
+                INSERT INTO audit_engagements (
+                    id, tenant_id, engagement_name, engagement_type,
                     fiscal_year, period_start, period_end, lead_auditor,
                     description, status, created_at, updated_at
                 )
@@ -57,7 +57,7 @@ class EngagementManager:
             if status:
                 rows = await conn.fetch(
                     """
-                    SELECT * FROM engagements
+                    SELECT * FROM audit_engagements
                     WHERE tenant_id = $1 AND status = $2
                     ORDER BY created_at DESC
                     """,
@@ -67,7 +67,7 @@ class EngagementManager:
             else:
                 rows = await conn.fetch(
                     """
-                    SELECT * FROM engagements
+                    SELECT * FROM audit_engagements
                     WHERE tenant_id = $1
                     ORDER BY created_at DESC
                     """,
@@ -85,8 +85,8 @@ class EngagementManager:
         async with tenant_conn(pool, tenant_id) as conn:
             row = await conn.fetchrow(
                 """
-                SELECT * FROM engagements
-                WHERE engagement_id = $1 AND tenant_id = $2
+                SELECT * FROM audit_engagements
+                WHERE id = $1 AND tenant_id = $2
                 """,
                 engagement_id,
                 tenant_id,
@@ -107,9 +107,9 @@ class EngagementManager:
         async with tenant_conn(pool, tenant_id) as conn:
             row = await conn.fetchrow(
                 """
-                UPDATE engagements
+                UPDATE audit_engagements
                 SET status = $3, updated_at = NOW()
-                WHERE engagement_id = $1 AND tenant_id = $2
+                WHERE id = $1 AND tenant_id = $2
                 RETURNING *
                 """,
                 engagement_id,
@@ -130,7 +130,7 @@ class EngagementManager:
         async with tenant_conn(pool, tenant_id) as conn:
             # Engagement itself
             engagement_row = await conn.fetchrow(
-                "SELECT * FROM engagements WHERE engagement_id = $1 AND tenant_id = $2",
+                "SELECT * FROM audit_engagements WHERE id = $1 AND tenant_id = $2",
                 engagement_id,
                 tenant_id,
             )
@@ -148,7 +148,7 @@ class EngagementManager:
                         WHERE r.status IN ('fulfilled', 'not_applicable')
                     )::int                                                 AS completed
                 FROM pbc_requests r
-                JOIN pbc_lists l ON l.list_id = r.list_id
+                JOIN pbc_request_lists l ON l.id = r.list_id
                 WHERE l.engagement_id = $1 AND l.tenant_id = $2
                 """,
                 engagement_id,

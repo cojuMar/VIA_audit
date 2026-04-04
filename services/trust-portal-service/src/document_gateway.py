@@ -78,7 +78,7 @@ class DocumentGateway:
                 """
                 INSERT INTO trust_portal_access_logs
                     (id, tenant_id, event_type, visitor_email, document_id,
-                     ip_address, user_agent, created_at)
+                     ip_address, user_agent, occurred_at)
                 VALUES ($1, $2, 'document_download', $3, $4, 'system', 'system', NOW())
                 """,
                 str(uuid4()),

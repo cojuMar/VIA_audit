@@ -245,8 +245,7 @@ COMMENT ON COLUMN public.evidence_records.zk_proof_id IS
 -- time, so the planner will use this index when the query predicate is
 -- compatible (collected_at_utc > NOW() - INTERVAL ''90 days'').
 CREATE INDEX IF NOT EXISTS idx_evidence_tenant_recent
-    ON public.evidence_records (tenant_id, collected_at_utc DESC)
-    WHERE collected_at_utc > (NOW() - INTERVAL '90 days');
+    ON public.evidence_records (tenant_id, collected_at_utc DESC);
 
 COMMENT ON INDEX public.idx_evidence_tenant_recent IS
     'Partial index covering only evidence collected in the last 90 days. '
@@ -588,6 +587,7 @@ BEGIN
             NOCREATEROLE
             NOINHERIT
             LOGIN
+            PASSWORD 'aegis_app_dev_pw'
             CONNECTION LIMIT 200;   -- reasonable cap; adjust per deployment
         RAISE NOTICE 'Role aegis_app created.';
     ELSE

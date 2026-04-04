@@ -21,10 +21,10 @@ class ExportEngine:
             list_row = await conn.fetchrow(
                 """
                 SELECT l.*, e.engagement_name
-                FROM pbc_lists l
-                JOIN engagements e
-                    ON e.engagement_id = l.engagement_id
-                WHERE l.list_id = $1 AND l.tenant_id = $2
+                FROM pbc_request_lists l
+                JOIN audit_engagements e
+                    ON e.id = l.engagement_id
+                WHERE l.id = $1 AND l.tenant_id = $2
                 """,
                 list_id,
                 tenant_id,
@@ -46,7 +46,9 @@ class ExportEngine:
                 """
                 SELECT request_id, submitted_by, response_text, file_name, submitted_at
                 FROM pbc_fulfillments
-                WHERE list_id = $1 AND tenant_id = $2
+                WHERE request_id = ANY(
+                    SELECT id FROM pbc_requests WHERE list_id = $1 AND tenant_id = $2
+                ) AND tenant_id = $2
                 ORDER BY submitted_at ASC
                 """,
                 list_id,
@@ -75,7 +77,7 @@ class ExportEngine:
 
         requests = []
         for req in request_rows:
-            rid = str(req["request_id"])
+            rid = str(req["id"])
             requests.append(
                 {
                     "request_number": req["request_number"],
@@ -121,8 +123,8 @@ class ExportEngine:
                 """
                 SELECT engagement_name, engagement_type,
                        period_start, period_end, lead_auditor
-                FROM engagements
-                WHERE engagement_id = $1 AND tenant_id = $2
+                FROM audit_engagements
+                WHERE id = $1 AND tenant_id = $2
                 """,
                 engagement_id,
                 tenant_id,
@@ -238,7 +240,7 @@ class ExportEngine:
     ) -> dict:
         async with tenant_conn(pool, tenant_id) as conn:
             wp_row = await conn.fetchrow(
-                "SELECT * FROM workpapers WHERE workpaper_id = $1 AND tenant_id = $2",
+                "SELECT * FROM workpapers WHERE id = $1 AND tenant_id = $2",
                 workpaper_id,
                 tenant_id,
             )
@@ -247,7 +249,7 @@ class ExportEngine:
             section_rows = await conn.fetch(
                 """
                 SELECT * FROM workpaper_sections
-                WHERE workpaper_id = $1 AND tenant_id = $2
+                WHERE workpaper_id = $1::uuid AND tenant_id = $2
                 ORDER BY sort_order ASC
                 """,
                 workpaper_id,
@@ -268,7 +270,7 @@ class ExportEngine:
 
         return {
             "workpaper": {
-                "workpaper_id": str(wp_row["workpaper_id"]),
+                "workpaper_id": str(wp_row["id"]),
                 "title": wp_row["title"],
                 "wp_reference": wp_row["wp_reference"],
                 "workpaper_type": wp_row["workpaper_type"],

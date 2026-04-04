@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import uuid
 from datetime import date, datetime, timezone
@@ -250,7 +252,7 @@ class RiskManager:
 
             updated = await conn.fetchrow(
                 """
-                SELECT r.*, rc.name AS category_name
+                SELECT r.*, rc.display_name AS category_name
                 FROM risks r
                 LEFT JOIN risk_categories rc ON rc.id = r.category_id
                 WHERE r.id = $1 AND r.tenant_id = $2
@@ -295,7 +297,7 @@ class RiskManager:
         where = " AND ".join(conditions)
 
         query = f"""
-            SELECT r.*, rc.name AS category_name, rc.category_key AS category_key_out
+            SELECT r.*, rc.display_name AS category_name, rc.category_key AS category_key_out
             FROM risks r
             LEFT JOIN risk_categories rc ON rc.id = r.category_id
             WHERE {where}
@@ -303,7 +305,7 @@ class RiskManager:
             LIMIT ${idx}
         """
 
-        async with pool.acquire() as conn:
+        async with tenant_conn(pool, tenant_id) as conn:
             rows = await conn.fetch(query, *params)
 
         return [_row_to_dict(r) for r in rows]
@@ -320,7 +322,7 @@ class RiskManager:
         async with tenant_conn(pool, tenant_id) as conn:
             risk_row = await conn.fetchrow(
                 """
-                SELECT r.*, rc.name AS category_name, rc.category_key AS category_key_out
+                SELECT r.*, rc.display_name AS category_name, rc.category_key AS category_key_out
                 FROM risks r
                 LEFT JOIN risk_categories rc ON rc.id = r.category_id
                 WHERE r.id = $1 AND r.tenant_id = $2
@@ -427,7 +429,7 @@ class RiskManager:
 
             row = await conn.fetchrow(
                 """
-                SELECT r.*, rc.name AS category_name
+                SELECT r.*, rc.display_name AS category_name
                 FROM risks r
                 LEFT JOIN risk_categories rc ON rc.id = r.category_id
                 WHERE r.id = $1 AND r.tenant_id = $2
@@ -548,11 +550,11 @@ class RiskManager:
 
             category_rows = await conn.fetch(
                 """
-                SELECT rc.name AS category, COUNT(*) AS cnt
+                SELECT rc.display_name AS category, COUNT(*) AS cnt
                 FROM risks r
                 LEFT JOIN risk_categories rc ON rc.id = r.category_id
                 WHERE r.tenant_id = $1
-                GROUP BY rc.name
+                GROUP BY rc.display_name
                 """,
                 tenant_id,
             )
@@ -620,7 +622,7 @@ class RiskManager:
                     r.risk_id, r.title,
                     r.inherent_likelihood, r.inherent_impact,
                     r.residual_likelihood, r.residual_impact,
-                    rc.name AS category, r.owner, r.status
+                    rc.display_name AS category, r.owner, r.status
                 FROM risks r
                 LEFT JOIN risk_categories rc ON rc.id = r.category_id
                 WHERE r.tenant_id = $1 AND r.status != 'closed'
@@ -641,7 +643,7 @@ class RiskManager:
         finding_data: dict,
     ) -> dict | None:
         # Check for existing risk with same auto_source_id
-        async with pool.acquire() as conn:
+        async with tenant_conn(pool, tenant_id) as conn:
             existing = await conn.fetchrow(
                 "SELECT id FROM risks WHERE tenant_id = $1 AND auto_source_id = $2",
                 tenant_id,
@@ -673,7 +675,7 @@ class RiskManager:
         description = finding_data.get("description") or f"Automatically created from monitoring finding {finding_id}."
 
         # Verify the category_key exists; fall back gracefully
-        async with pool.acquire() as conn:
+        async with tenant_conn(pool, tenant_id) as conn:
             cat_check = await conn.fetchrow(
                 "SELECT id FROM risk_categories WHERE category_key = $1", category_key
             )

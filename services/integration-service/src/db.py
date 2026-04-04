@@ -28,7 +28,5 @@ async def tenant_conn(pool: asyncpg.Pool, tenant_id: str):
     """Async context manager that sets tenant context before yielding connection."""
     async with pool.acquire() as conn:
         async with conn.transaction():
-            await conn.execute(
-                "SET LOCAL app.tenant_id = $1", tenant_id
-            )
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
             yield conn

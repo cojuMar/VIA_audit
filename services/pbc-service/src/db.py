@@ -29,5 +29,5 @@ async def tenant_conn(
     """Acquire a connection with tenant RLS context set for the duration of the block."""
     async with pool.acquire() as conn:
         async with conn.transaction():
-            await conn.execute("SET LOCAL app.tenant_id = $1", tenant_id)
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
             yield conn

@@ -108,7 +108,7 @@ class UniverseManager:
         sql = f"""
             SELECT ae.*, aet.display_name AS entity_type_name
             FROM audit_entities ae
-            LEFT JOIN audit_entity_types aet ON ae.entity_type_id = aet.id
+            LEFT JOIN risk_categories aet ON ae.entity_type_id = aet.id
             {where}
             ORDER BY ae.risk_score DESC
         """
@@ -120,7 +120,7 @@ class UniverseManager:
         sql = """
             SELECT ae.*, aet.display_name AS entity_type_name
             FROM audit_entities ae
-            LEFT JOIN audit_entity_types aet ON ae.entity_type_id = aet.id
+            LEFT JOIN risk_categories aet ON ae.entity_type_id = aet.id
             WHERE ae.id = $1
         """
         async with tenant_conn(self.pool, tenant_id) as conn:
@@ -129,7 +129,7 @@ class UniverseManager:
 
     async def get_entity_types(self) -> list[dict]:
         # Platform table — no tenant RLS needed
-        sql = "SELECT * FROM audit_entity_types ORDER BY display_name"
+        sql = "SELECT * FROM risk_categories ORDER BY display_name"
         async with self.pool.acquire() as conn:
             rows = await conn.fetch(sql)
         return [dict(r) for r in rows]

@@ -141,7 +141,7 @@ class EscalationEngine:
         for tenant_id in tenants:
             async with pool.acquire() as conn:
                 # Set tenant context for querying (for RLS if enabled)
-                await conn.execute("SET LOCAL app.tenant_id = $1", tenant_id)
+                await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
                 overdue_rows = await conn.fetch(
                     """
                     SELECT ta.id, ta.employee_id, tc.title
@@ -182,7 +182,7 @@ class EscalationEngine:
 
         for tenant_id in tenants:
             async with pool.acquire() as conn:
-                await conn.execute("SET LOCAL app.tenant_id = $1", tenant_id)
+                await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
                 overdue_rows = await conn.fetch(
                     """
                     SELECT
@@ -241,7 +241,7 @@ class EscalationEngine:
 
         for tenant_id in tenants:
             async with pool.acquire() as conn:
-                await conn.execute("SET LOCAL app.tenant_id = $1", tenant_id)
+                await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
                 expiry_rows = await conn.fetch(
                     """
                     SELECT bc.id, bc.employee_id, bc.check_type, bc.expiry_date

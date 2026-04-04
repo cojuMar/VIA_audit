@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 
 import asyncpg
 
+from .db import tenant_conn
 from .models import MonitoringFinding
 
 logger = logging.getLogger(__name__)
@@ -20,7 +21,7 @@ class FindingManager:
         if not findings:
             return 0
         count = 0
-        async with pool.acquire() as conn:
+        async with tenant_conn(pool, tenant_id) as conn:
             for f in findings:
                 try:
                     await conn.execute(
@@ -29,7 +30,7 @@ class FindingManager:
                             (tenant_id, run_id, rule_id,
                              finding_type, severity, title, description,
                              entity_type, entity_id, entity_name,
-                             evidence, risk_score, status, created_at)
+                             evidence, risk_score, status, detected_at)
                         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,'open',NOW())
                         """,
                         tenant_id,
@@ -83,14 +84,14 @@ class FindingManager:
             SELECT id, tenant_id, run_id, rule_id,
                    finding_type, severity, title, description,
                    entity_type, entity_id, entity_name,
-                   evidence, risk_score, status, created_at
+                   evidence, risk_score, status, detected_at
             FROM monitoring_findings
             WHERE {where_clause}
-            ORDER BY created_at DESC
+            ORDER BY detected_at DESC
             LIMIT ${idx}
         """
 
-        async with pool.acquire() as conn:
+        async with tenant_conn(pool, tenant_id) as conn:
             rows = await conn.fetch(query, *params)
 
         return [dict(row) for row in rows]
@@ -101,13 +102,13 @@ class FindingManager:
         tenant_id: str,
         finding_id: str,
     ) -> dict | None:
-        async with pool.acquire() as conn:
+        async with tenant_conn(pool, tenant_id) as conn:
             row = await conn.fetchrow(
                 """
                 SELECT id, tenant_id, run_id, rule_id,
                        finding_type, severity, title, description,
                        entity_type, entity_id, entity_name,
-                       evidence, risk_score, status, created_at
+                       evidence, risk_score, status, detected_at
                 FROM monitoring_findings
                 WHERE tenant_id = $1 AND id = $2
                 """,
@@ -121,7 +122,7 @@ class FindingManager:
         pool: asyncpg.Pool,
         tenant_id: str,
     ) -> dict:
-        async with pool.acquire() as conn:
+        async with tenant_conn(pool, tenant_id) as conn:
             total_row = await conn.fetchrow(
                 "SELECT COUNT(*) AS total FROM monitoring_findings WHERE tenant_id = $1",
                 tenant_id,
@@ -152,7 +153,7 @@ class FindingManager:
             )
             last_run_row = await conn.fetchrow(
                 """
-                SELECT MAX(created_at) AS last_run_at
+                SELECT MAX(detected_at) AS last_run_at
                 FROM monitoring_runs
                 WHERE tenant_id = $1 AND status = 'completed'
                 """,
@@ -181,17 +182,17 @@ class FindingManager:
         tenant_id: str,
         days: int = 30,
     ) -> list[dict]:
-        async with pool.acquire() as conn:
+        async with tenant_conn(pool, tenant_id) as conn:
             rows = await conn.fetch(
                 """
                 SELECT
-                    DATE(created_at) AS date,
+                    DATE(detected_at) AS date,
                     severity,
                     COUNT(*) AS cnt
                 FROM monitoring_findings
                 WHERE tenant_id = $1
-                  AND created_at >= NOW() - ($2 || ' days')::INTERVAL
-                GROUP BY DATE(created_at), severity
+                  AND detected_at >= NOW() - ($2 || ' days')::INTERVAL
+                GROUP BY DATE(detected_at), severity
                 ORDER BY date
                 """,
                 tenant_id,

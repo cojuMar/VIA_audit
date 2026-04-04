@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING
 
 import asyncpg
 
+from .db import tenant_conn
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -166,12 +168,12 @@ class AIRiskAdvisor:
         Fetches top 10 risks first, then generates narrative.
         """
         # Fetch top 10 open risks ordered by score
-        async with pool.acquire() as conn:
+        async with tenant_conn(pool, tenant_id) as conn:
             rows = await conn.fetch(
                 """
                 SELECT r.risk_id, r.title, r.description,
                        COALESCE(r.residual_score, r.inherent_score) AS score,
-                       rc.name AS category
+                       rc.display_name AS category
                 FROM risks r
                 LEFT JOIN risk_categories rc ON rc.id = r.category_id
                 WHERE r.tenant_id = $1 AND r.status != 'closed'

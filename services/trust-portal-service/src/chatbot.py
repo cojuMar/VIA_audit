@@ -127,7 +127,7 @@ class PortalChatbot:
                 """
                 INSERT INTO trust_portal_access_logs (
                     id, tenant_id, event_type, visitor_email,
-                    ip_address, user_agent, metadata, created_at
+                    ip_address, user_agent, metadata, occurred_at
                 ) VALUES ($1, $2, 'chatbot_message', $3, $4, 'chatbot', $5, NOW())
                 """,
                 str(uuid4()),

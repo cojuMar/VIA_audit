@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import uuid
 from datetime import date, datetime
@@ -173,7 +175,7 @@ class TreatmentManager:
             WHERE {where}
             ORDER BY t.created_at DESC
         """
-        async with pool.acquire() as conn:
+        async with tenant_conn(pool, tenant_id) as conn:
             rows = await conn.fetch(query, *params)
         return [_row_to_dict(r) for r in rows]
 

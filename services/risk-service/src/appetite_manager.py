@@ -79,11 +79,11 @@ class AppetiteManager:
         async with tenant_conn(pool, tenant_id) as conn:
             rows = await conn.fetch(
                 """
-                SELECT ra.*, rc.name AS category_name, rc.category_key
+                SELECT ra.*, rc.display_name AS category_name, rc.category_key
                 FROM risk_appetite ra
                 JOIN risk_categories rc ON rc.id = ra.category_id
                 WHERE ra.tenant_id = $1
-                ORDER BY rc.name
+                ORDER BY rc.display_name
                 """,
                 tenant_id,
             )
@@ -155,7 +155,7 @@ class AppetiteManager:
             category_rows = await conn.fetch(
                 """
                 SELECT
-                    rc.name AS category,
+                    rc.display_name AS category,
                     ra.appetite_level,
                     COUNT(r.id) FILTER (
                         WHERE r.status != 'closed'
@@ -166,8 +166,8 @@ class AppetiteManager:
                 LEFT JOIN risks r
                     ON r.category_id = ra.category_id AND r.tenant_id = ra.tenant_id
                 WHERE ra.tenant_id = $1
-                GROUP BY rc.name, ra.appetite_level
-                ORDER BY rc.name
+                GROUP BY rc.display_name, ra.appetite_level
+                ORDER BY rc.display_name
                 """,
                 tenant_id,
             )

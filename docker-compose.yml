@@ -732,16 +732,16 @@ services:
     ports:
       - "3015:3015"
     environment:
-      DATABASE_URL: postgresql://aegis_app:${POSTGRES_APP_PASSWORD}@postgres:5432/aegis
+      DATABASE_URL: postgresql://aegis_app:${POSTGRES_APP_PASSWORD:-aegis_app_dev_pw}@postgres:5432/aegis
       REDIS_URL: redis://redis:6379/6
       MINIO_ENDPOINT: minio:9000
-      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
-      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-aegis_minio}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-aegis_minio_dev_pw}
       MINIO_BUCKET_PORTAL: aegis-portal-docs
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       RAG_PIPELINE_URL: http://rag-pipeline-service:3010
       FRAMEWORK_SERVICE_URL: http://framework-service:3012
-      JWT_SECRET: ${JWT_SECRET}
+      JWT_SECRET: ${JWT_SECRET:-aegis_dev_jwt_secret_change_in_prod}
     depends_on:
       postgres:
         condition: service_healthy
@@ -749,6 +749,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    networks:
+      - aegis-internal
     deploy:
       resources:
         limits:
@@ -764,6 +766,9 @@ services:
       - "5176:80"
     depends_on:
       - trust-portal-service
+    networks:
+      - aegis-internal
+      - aegis-external
 
   # ---------------------------------------------------------------------------
   # Monitoring Service – Sprint 11 Continuous Monitoring Engine
@@ -777,11 +782,11 @@ services:
     ports:
       - "3016:3016"
     environment:
-      DATABASE_URL: postgresql://aegis_app:${POSTGRES_APP_PASSWORD}@postgres:5432/aegis
+      DATABASE_URL: postgresql://aegis_app:${POSTGRES_APP_PASSWORD:-aegis_app_dev_pw}@postgres:5432/aegis
       REDIS_URL: redis://redis:6379/7
       MINIO_ENDPOINT: minio:9000
-      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
-      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-aegis_minio}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-aegis_minio_dev_pw}
       MINIO_BUCKET_MONITORING: aegis-monitoring
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       FRAMEWORK_SERVICE_URL: http://framework-service:3012
@@ -791,6 +796,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    networks:
+      - aegis-internal
     deploy:
       resources:
         limits:
@@ -806,6 +813,9 @@ services:
       - "5177:80"
     depends_on:
       - monitoring-service
+    networks:
+      - aegis-internal
+      - aegis-external
 
   # ---------------------------------------------------------------------------
   # People Service – Sprint 12 People, Policy & Training Compliance
@@ -820,11 +830,11 @@ services:
     ports:
       - "3017:3017"
     environment:
-      DATABASE_URL: postgresql://aegis_app:${POSTGRES_APP_PASSWORD}@postgres:5432/aegis
+      DATABASE_URL: postgresql://aegis_app:${POSTGRES_APP_PASSWORD:-aegis_app_dev_pw}@postgres:5432/aegis
       REDIS_URL: redis://redis:6379/8
       MINIO_ENDPOINT: minio:9000
-      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
-      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-aegis_minio}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-aegis_minio_dev_pw}
       MINIO_BUCKET_PEOPLE: aegis-people-docs
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       ESCALATION_SCHEDULE_ENABLED: "true"
@@ -835,6 +845,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    networks:
+      - aegis-internal
     deploy:
       resources:
         limits:
@@ -850,6 +862,9 @@ services:
       - "5178:80"
     depends_on:
       - people-service
+    networks:
+      - aegis-internal
+      - aegis-external
 
   # ---------------------------------------------------------------------------
   # PBC Service – Sprint 13 PBC Request Management, Issue Lifecycle & Workpapers
@@ -863,11 +878,11 @@ services:
     ports:
       - "3018:3018"
     environment:
-      DATABASE_URL: postgresql://aegis_app:${POSTGRES_APP_PASSWORD}@postgres:5432/aegis
+      DATABASE_URL: postgresql://aegis_app:${POSTGRES_APP_PASSWORD:-aegis_app_dev_pw}@postgres:5432/aegis
       REDIS_URL: redis://redis:6379/9
       MINIO_ENDPOINT: minio:9000
-      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
-      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-aegis_minio}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-aegis_minio_dev_pw}
       MINIO_BUCKET_WORKPAPERS: aegis-workpapers
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
     depends_on:
@@ -877,6 +892,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    networks:
+      - aegis-internal
     deploy:
       resources:
         limits:
@@ -892,6 +909,9 @@ services:
       - "5179:80"
     depends_on:
       - pbc-service
+    networks:
+      - aegis-internal
+      - aegis-external
 
   # ---------------------------------------------------------------------------
   # Integration Service – Sprint 14 Enterprise Integration Hub
@@ -905,11 +925,11 @@ services:
     ports:
       - "3019:3019"
     environment:
-      DATABASE_URL: postgresql://aegis_app:${POSTGRES_APP_PASSWORD}@postgres:5432/aegis
+      DATABASE_URL: postgresql://aegis_app:${POSTGRES_APP_PASSWORD:-aegis_app_dev_pw}@postgres:5432/aegis
       REDIS_URL: redis://redis:6379/10
       MINIO_ENDPOINT: minio:9000
-      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
-      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-aegis_minio}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-aegis_minio_dev_pw}
       MINIO_BUCKET_INTEGRATIONS: aegis-integration-data
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY:-dev-32-byte-key-change-in-prod}
@@ -921,6 +941,8 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
+    networks:
+      - aegis-internal
     deploy:
       resources:
         limits:
@@ -936,6 +958,9 @@ services:
       - "5180:80"
     depends_on:
       - integration-service
+    networks:
+      - aegis-internal
+      - aegis-external
 
   # ---------------------------------------------------------------------------
   # AI Agent Service – Sprint 15 Agentic AI & Natural Language Platform Interface
@@ -948,7 +973,7 @@ services:
     ports:
       - "3020:3020"
     environment:
-      DATABASE_URL: postgresql://aegis_app:${POSTGRES_APP_PASSWORD}@postgres:5432/aegis
+      DATABASE_URL: postgresql://aegis_app:${POSTGRES_APP_PASSWORD:-aegis_app_dev_pw}@postgres:5432/aegis
       REDIS_URL: redis://redis:6379/11
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       FRAMEWORK_SERVICE_URL: http://framework-service:3012
@@ -964,6 +989,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    networks:
+      - aegis-internal
     deploy:
       resources:
         limits:
@@ -979,6 +1006,9 @@ services:
       - "5181:80"
     depends_on:
       - ai-agent-service
+    networks:
+      - aegis-internal
+      - aegis-external
 
   # ---------------------------------------------------------------------------
   # Risk Service – Sprint 16 Risk Management Engine
@@ -992,7 +1022,7 @@ services:
     ports:
       - "3021:3021"
     environment:
-      DATABASE_URL: postgresql://aegis_app:${POSTGRES_APP_PASSWORD}@postgres:5432/aegis
+      DATABASE_URL: postgresql://aegis_app:${POSTGRES_APP_PASSWORD:-aegis_app_dev_pw}@postgres:5432/aegis
       REDIS_URL: redis://redis:6379/12
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       MONITORING_SERVICE_URL: http://monitoring-service:3016
@@ -1003,6 +1033,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    networks:
+      - aegis-internal
     deploy:
       resources:
         limits:
@@ -1018,6 +1050,9 @@ services:
       - "5182:80"
     depends_on:
       - risk-service
+    networks:
+      - aegis-internal
+      - aegis-external
 
   # ---------------------------------------------------------------------------
   # Audit Planning Service – Sprint 17 Audit Planning & Engagement Management

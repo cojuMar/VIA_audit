@@ -25,5 +25,6 @@ async def close_pool() -> None:
 async def tenant_conn(pool: asyncpg.Pool, tenant_id: str):
     """Acquire a connection and set the tenant context for row-level security."""
     async with pool.acquire() as conn:
-        await conn.execute("SET LOCAL app.tenant_id = $1", tenant_id)
-        yield conn
+        async with conn.transaction():
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
+            yield conn

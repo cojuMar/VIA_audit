@@ -34,11 +34,11 @@ class PBCManager:
         async with tenant_conn(pool, tenant_id) as conn:
             row = await conn.fetchrow(
                 """
-                INSERT INTO pbc_lists (
-                    list_id, tenant_id, engagement_id, list_name,
+                INSERT INTO pbc_request_lists (
+                    id, tenant_id, engagement_id, list_name,
                     description, due_date, status, created_at, updated_at
                 )
-                VALUES ($1, $2, $3, $4, $5, $6, 'open', NOW(), NOW())
+                VALUES ($1, $2, $3, $4, $5, $6, 'draft', NOW(), NOW())
                 RETURNING *
                 """,
                 list_id,
@@ -73,8 +73,8 @@ class PBCManager:
         async with tenant_conn(pool, tenant_id) as conn:
             row = await conn.fetchrow(
                 f"""
-                UPDATE pbc_lists SET {set_clause}
-                WHERE list_id = $1 AND tenant_id = $2
+                UPDATE pbc_request_lists SET {set_clause}
+                WHERE id = $1 AND tenant_id = $2
                 RETURNING *
                 """,
                 *params,
@@ -88,7 +88,7 @@ class PBCManager:
     ) -> dict:
         async with tenant_conn(pool, tenant_id) as conn:
             list_row = await conn.fetchrow(
-                "SELECT * FROM pbc_lists WHERE list_id = $1 AND tenant_id = $2",
+                "SELECT * FROM pbc_request_lists WHERE id = $1 AND tenant_id = $2",
                 list_id,
                 tenant_id,
             )
@@ -112,20 +112,22 @@ class PBCManager:
                     request_id, submitted_by, response_text, file_name,
                     submitted_at, submission_notes
                 FROM pbc_fulfillments
-                WHERE list_id = $1 AND tenant_id = $2
+                WHERE request_id = ANY(
+                    SELECT id FROM pbc_requests WHERE list_id = $1 AND tenant_id = $2
+                ) AND tenant_id = $2
                 ORDER BY request_id, submitted_at DESC
                 """,
                 list_id,
                 tenant_id,
             )
 
-        fulfillment_map = {r["request_id"]: dict(r) for r in fulfillment_rows}
+        fulfillment_map = {str(r["request_id"]): dict(r) for r in fulfillment_rows}
 
         requests = []
         for req in request_rows:
             req_dict = dict(req)
             req_dict["latest_fulfillment"] = fulfillment_map.get(
-                str(req["request_id"])
+                str(req["id"])
             )
             requests.append(req_dict)
 
@@ -189,7 +191,7 @@ class PBCManager:
             row = await conn.fetchrow(
                 """
                 INSERT INTO pbc_requests (
-                    request_id, tenant_id, list_id, request_number,
+                    id, tenant_id, list_id, request_number,
                     title, description, category, priority,
                     assigned_to, due_date, framework_control_ref,
                     status, created_at, updated_at
@@ -239,7 +241,7 @@ class PBCManager:
                 await conn.execute(
                     """
                     INSERT INTO pbc_requests (
-                        request_id, tenant_id, list_id, request_number,
+                        id, tenant_id, list_id, request_number,
                         title, description, category, priority,
                         assigned_to, due_date, framework_control_ref,
                         status, created_at, updated_at
@@ -300,7 +302,7 @@ class PBCManager:
         async with tenant_conn(pool, tenant_id) as conn:
             # Fetch list_id for the fulfillment record
             req_row = await conn.fetchrow(
-                "SELECT list_id FROM pbc_requests WHERE request_id = $1 AND tenant_id = $2",
+                "SELECT list_id FROM pbc_requests WHERE id = $1 AND tenant_id = $2",
                 request_id,
                 tenant_id,
             )
@@ -312,17 +314,16 @@ class PBCManager:
             ful_row = await conn.fetchrow(
                 """
                 INSERT INTO pbc_fulfillments (
-                    fulfillment_id, tenant_id, request_id, list_id,
-                    submitted_by, response_text, file_name, file_key,
+                    id, tenant_id, request_id,
+                    submitted_by, response_text, file_name, minio_key,
                     submission_notes, submitted_at
                 )
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
                 RETURNING *
                 """,
                 fulfillment_id,
                 tenant_id,
                 request_id,
-                str(list_id),
                 data.submitted_by,
                 data.response_text,
                 file_name,
@@ -335,7 +336,7 @@ class PBCManager:
                 """
                 UPDATE pbc_requests
                 SET status = 'fulfilled', updated_at = NOW()
-                WHERE request_id = $1 AND tenant_id = $2
+                WHERE id = $1 AND tenant_id = $2
                 RETURNING *
                 """,
                 request_id,
@@ -360,7 +361,7 @@ class PBCManager:
                     """
                     SELECT r.*
                     FROM pbc_requests r
-                    JOIN pbc_lists l ON l.list_id = r.list_id
+                    JOIN pbc_request_lists l ON l.id = r.list_id
                     WHERE r.tenant_id = $1
                       AND r.due_date < CURRENT_DATE
                       AND r.status IN ('open', 'in_progress')
@@ -397,7 +398,7 @@ class PBCManager:
         fulfillment_id = str(uuid.uuid4())
         async with tenant_conn(pool, tenant_id) as conn:
             req_row = await conn.fetchrow(
-                "SELECT list_id FROM pbc_requests WHERE request_id = $1 AND tenant_id = $2",
+                "SELECT list_id FROM pbc_requests WHERE id = $1 AND tenant_id = $2",
                 request_id,
                 tenant_id,
             )
@@ -409,15 +410,14 @@ class PBCManager:
             await conn.execute(
                 """
                 INSERT INTO pbc_fulfillments (
-                    fulfillment_id, tenant_id, request_id, list_id,
+                    id, tenant_id, request_id,
                     submitted_by, response_text, submission_notes, submitted_at
                 )
-                VALUES ($1, $2, $3, $4, 'system', 'N/A', $5, NOW())
+                VALUES ($1, $2, $3, 'system', 'N/A', $4, NOW())
                 """,
                 fulfillment_id,
                 tenant_id,
                 request_id,
-                str(list_id),
                 reason,
             )
 
@@ -425,7 +425,7 @@ class PBCManager:
                 """
                 UPDATE pbc_requests
                 SET status = 'not_applicable', updated_at = NOW()
-                WHERE request_id = $1 AND tenant_id = $2
+                WHERE id = $1 AND tenant_id = $2
                 RETURNING *
                 """,
                 request_id,
@@ -466,7 +466,7 @@ class PBCManager:
             if engagement_id:
                 rows = await conn.fetch(
                     """
-                    SELECT * FROM pbc_lists
+                    SELECT * FROM pbc_request_lists
                     WHERE tenant_id = $1 AND engagement_id = $2
                     ORDER BY created_at DESC
                     """,
@@ -476,7 +476,7 @@ class PBCManager:
             else:
                 rows = await conn.fetch(
                     """
-                    SELECT * FROM pbc_lists
+                    SELECT * FROM pbc_request_lists
                     WHERE tenant_id = $1
                     ORDER BY created_at DESC
                     """,

@@ -21,7 +21,7 @@ class WorkpaperManager:
                 """
                 SELECT * FROM workpaper_templates
                 WHERE is_active = TRUE
-                ORDER BY template_name ASC
+                ORDER BY title ASC
                 """
             )
         return [dict(r) for r in rows]
@@ -39,22 +39,28 @@ class WorkpaperManager:
             # Fetch template sections if template_id provided
             template_sections: list[dict] = []
             if data.template_id:
-                section_rows = await conn.fetch(
-                    """
-                    SELECT section_key, title, sort_order
-                    FROM workpaper_template_sections
-                    WHERE template_id = $1
-                    ORDER BY sort_order ASC
-                    """,
+                tmpl_row = await conn.fetchrow(
+                    "SELECT sections FROM workpaper_templates WHERE id = $1",
                     data.template_id,
                 )
-                template_sections = [dict(r) for r in section_rows]
+                if tmpl_row and tmpl_row["sections"]:
+                    import json
+                    raw = tmpl_row["sections"]
+                    sections_data = raw if isinstance(raw, list) else json.loads(raw)
+                    template_sections = [
+                        {
+                            "section_key": s.get("section_key", s.get("key", "")),
+                            "title": s.get("title", ""),
+                            "sort_order": s.get("sort_order", i),
+                        }
+                        for i, s in enumerate(sections_data)
+                    ]
 
             # INSERT workpaper
             wp_row = await conn.fetchrow(
                 """
                 INSERT INTO workpapers (
-                    workpaper_id, tenant_id, engagement_id, template_id,
+                    id, tenant_id, engagement_id, template_id,
                     title, wp_reference, workpaper_type, preparer,
                     status, created_at, updated_at
                 )
@@ -77,7 +83,7 @@ class WorkpaperManager:
                 await conn.execute(
                     """
                     INSERT INTO workpaper_sections (
-                        section_id, tenant_id, workpaper_id,
+                        id, tenant_id, workpaper_id,
                         section_key, title, content, sort_order,
                         is_complete, created_at, updated_at
                     )
@@ -106,7 +112,7 @@ class WorkpaperManager:
             row = await conn.fetchrow(
                 """
                 INSERT INTO workpapers (
-                    workpaper_id, tenant_id, engagement_id, template_id,
+                    id, tenant_id, engagement_id, template_id,
                     title, wp_reference, workpaper_type, preparer,
                     status, created_at, updated_at
                 )
@@ -133,7 +139,7 @@ class WorkpaperManager:
     ) -> dict | None:
         async with tenant_conn(pool, tenant_id) as conn:
             wp_row = await conn.fetchrow(
-                "SELECT * FROM workpapers WHERE workpaper_id = $1 AND tenant_id = $2",
+                "SELECT * FROM workpapers WHERE id = $1 AND tenant_id = $2",
                 workpaper_id,
                 tenant_id,
             )
@@ -170,7 +176,7 @@ class WorkpaperManager:
                 SET content = $3::jsonb,
                     is_complete = $4,
                     updated_at = NOW()
-                WHERE section_id = $1 AND tenant_id = $2
+                WHERE id = $1 AND tenant_id = $2
                 RETURNING *
                 """,
                 section_id,
@@ -200,7 +206,7 @@ class WorkpaperManager:
             row = await conn.fetchrow(
                 """
                 INSERT INTO workpaper_sections (
-                    section_id, tenant_id, workpaper_id,
+                    id, tenant_id, workpaper_id,
                     section_key, title, content, sort_order,
                     is_complete, created_at, updated_at
                 )
@@ -279,7 +285,7 @@ class WorkpaperManager:
                     review_notes = $4,
                     finalized_at = NOW(),
                     updated_at = NOW()
-                WHERE workpaper_id = $1 AND tenant_id = $2
+                WHERE id = $1 AND tenant_id = $2
                 RETURNING *
                 """,
                 workpaper_id,
@@ -310,7 +316,7 @@ class WorkpaperManager:
             )
             if not wp_rows:
                 return []
-            wp_ids = [str(r["workpaper_id"]) for r in wp_rows]
+            wp_ids = [str(r["id"]) for r in wp_rows]
 
             # Section completion counts per workpaper
             count_rows = await conn.fetch(
@@ -330,7 +336,7 @@ class WorkpaperManager:
         result = []
         for wp in wp_rows:
             d = dict(wp)
-            wp_id_str = str(wp["workpaper_id"])
+            wp_id_str = str(wp["id"])
             counts = count_map.get(wp_id_str, {"total_sections": 0, "complete_sections": 0})
             d["total_sections"] = counts["total_sections"]
             d["complete_sections"] = counts["complete_sections"]
@@ -349,7 +355,7 @@ class WorkpaperManager:
                 """
                 UPDATE workpapers
                 SET status = 'in_review', updated_at = NOW()
-                WHERE workpaper_id = $1 AND tenant_id = $2
+                WHERE id = $1 AND tenant_id = $2
                 RETURNING *
                 """,
                 workpaper_id,

@@ -45,13 +45,13 @@ class IssueTracker:
             row = await conn.fetchrow(
                 """
                 INSERT INTO audit_issues (
-                    issue_id, tenant_id, engagement_id, issue_number,
+                    id, tenant_id, engagement_id, issue_number,
                     title, description, finding_type, severity,
                     control_reference, framework_references, root_cause,
                     management_owner, target_remediation_date,
                     status, created_at, updated_at
                 )
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb,
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::text[],
                         $11, $12, $13, 'open', NOW(), NOW())
                 RETURNING *
                 """,
@@ -107,9 +107,9 @@ class IssueTracker:
             resp_row = await conn.fetchrow(
                 """
                 INSERT INTO issue_responses (
-                    response_id, tenant_id, issue_id, response_type,
+                    id, tenant_id, issue_id, response_type,
                     response_text, submitted_by, new_status,
-                    file_name, file_key, responded_at
+                    file_name, minio_key, responded_at
                 )
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
                 RETURNING *
@@ -134,7 +134,7 @@ class IssueTracker:
                         SET status = $3,
                             actual_remediation_date = CURRENT_DATE,
                             updated_at = NOW()
-                        WHERE issue_id = $1 AND tenant_id = $2
+                        WHERE id = $1 AND tenant_id = $2
                         RETURNING *
                         """,
                         data.issue_id,
@@ -146,7 +146,7 @@ class IssueTracker:
                         """
                         UPDATE audit_issues
                         SET status = $3, updated_at = NOW()
-                        WHERE issue_id = $1 AND tenant_id = $2
+                        WHERE id = $1 AND tenant_id = $2
                         RETURNING *
                         """,
                         data.issue_id,
@@ -155,7 +155,7 @@ class IssueTracker:
                     )
             else:
                 issue_row = await conn.fetchrow(
-                    "SELECT * FROM audit_issues WHERE issue_id = $1 AND tenant_id = $2",
+                    "SELECT * FROM audit_issues WHERE id = $1 AND tenant_id = $2",
                     data.issue_id,
                     tenant_id,
                 )
@@ -192,14 +192,14 @@ class IssueTracker:
                 ORDER BY issue_id, responded_at DESC
                 """,
                 tenant_id,
-                [str(r["issue_id"]) for r in issue_rows],
+                [str(r["id"]) for r in issue_rows],
             )
 
         resp_map = {str(r["issue_id"]): dict(r) for r in resp_rows}
         result = []
         for issue in issue_rows:
             d = dict(issue)
-            d["latest_response"] = resp_map.get(str(issue["issue_id"]))
+            d["latest_response"] = resp_map.get(str(issue["id"]))
             result.append(d)
         return result
 
@@ -212,7 +212,7 @@ class IssueTracker:
     ) -> dict | None:
         async with tenant_conn(pool, tenant_id) as conn:
             issue_row = await conn.fetchrow(
-                "SELECT * FROM audit_issues WHERE issue_id = $1 AND tenant_id = $2",
+                "SELECT * FROM audit_issues WHERE id = $1 AND tenant_id = $2",
                 issue_id,
                 tenant_id,
             )

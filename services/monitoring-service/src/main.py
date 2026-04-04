@@ -45,7 +45,7 @@ from pydantic import BaseModel
 from .card_spend_analyzer import CardSpendAnalyzer
 from .cloud_config_checker import CloudConfigChecker
 from .config import settings
-from .db import close_pool, get_pool
+from .db import close_pool, get_pool, tenant_conn
 from .finding_manager import FindingManager
 from .invoice_analyzer import InvoiceAnalyzer
 from .models import (
@@ -478,7 +478,7 @@ async def get_config(
     pool: asyncpg.Pool = Depends(get_db),
     tenant_id: str = Depends(get_tenant_id),
 ):
-    async with pool.acquire() as conn:
+    async with tenant_conn(pool, tenant_id) as conn:
         rows = await conn.fetch(
             """
             SELECT tmc.rule_key, tmc.is_enabled, tmc.schedule_interval,
@@ -501,7 +501,7 @@ async def update_config(
     pool: asyncpg.Pool = Depends(get_db),
     tenant_id: str = Depends(get_tenant_id),
 ):
-    async with pool.acquire() as conn:
+    async with tenant_conn(pool, tenant_id) as conn:
         existing = await conn.fetchrow(
             "SELECT id FROM tenant_monitoring_configs WHERE tenant_id = $1 AND rule_key = $2",
             tenant_id,
@@ -574,7 +574,7 @@ async def list_sod_violations(
     pool: asyncpg.Pool = Depends(get_db),
     tenant_id: str = Depends(get_tenant_id),
 ):
-    async with pool.acquire() as conn:
+    async with tenant_conn(pool, tenant_id) as conn:
         rows = await conn.fetch(
             """
             SELECT id, user_id, user_name, user_email, department,
@@ -596,7 +596,7 @@ async def sod_violations_summary(
     pool: asyncpg.Pool = Depends(get_db),
     tenant_id: str = Depends(get_tenant_id),
 ):
-    async with pool.acquire() as conn:
+    async with tenant_conn(pool, tenant_id) as conn:
         total_row = await conn.fetchrow(
             "SELECT COUNT(*) AS total FROM sod_violations WHERE tenant_id = $1", tenant_id
         )
@@ -638,7 +638,7 @@ async def list_cloud_snapshots(
     tenant_id: str = Depends(get_tenant_id),
 ):
     try:
-        async with pool.acquire() as conn:
+        async with tenant_conn(pool, tenant_id) as conn:
             rows = await conn.fetch(
                 """
                 SELECT id, run_id, providers, resource_count, findings_count, created_at
@@ -662,7 +662,7 @@ async def cloud_snapshots_summary(
     tenant_id: str = Depends(get_tenant_id),
 ):
     try:
-        async with pool.acquire() as conn:
+        async with tenant_conn(pool, tenant_id) as conn:
             total_row = await conn.fetchrow(
                 "SELECT COUNT(*) AS total, SUM(findings_count) AS total_issues FROM cloud_config_snapshots WHERE tenant_id = $1",
                 tenant_id,
@@ -671,7 +671,7 @@ async def cloud_snapshots_summary(
         total_row = None
 
     # Summarise critical findings for cloud types from monitoring_findings
-    async with pool.acquire() as conn:
+    async with tenant_conn(pool, tenant_id) as conn:
         critical_row = await conn.fetchrow(
             """
             SELECT COUNT(*) AS cnt FROM monitoring_findings
@@ -727,7 +727,7 @@ async def list_runs(
         f"FROM monitoring_runs WHERE {' AND '.join(conditions)} "
         f"ORDER BY created_at DESC LIMIT ${idx}"
     )
-    async with pool.acquire() as conn:
+    async with tenant_conn(pool, tenant_id) as conn:
         rows = await conn.fetch(query, *params)
     return {"runs": [dict(r) for r in rows]}
 
@@ -738,7 +738,7 @@ async def get_run(
     pool: asyncpg.Pool = Depends(get_db),
     tenant_id: str = Depends(get_tenant_id),
 ):
-    async with pool.acquire() as conn:
+    async with tenant_conn(pool, tenant_id) as conn:
         run_row = await conn.fetchrow(
             """
             SELECT id, rule_key, status, triggered_by, findings_count,

@@ -45,12 +45,12 @@ class TemplateManager:
             SELECT
                 t.*,
                 tt.display_name AS template_type_name,
-                tt.category     AS template_type_category
+                tt.type_key     AS template_type_category
             FROM field_audit_templates t
             LEFT JOIN field_audit_template_types tt
                    ON tt.id = t.template_type_id
             {where_clause}
-            ORDER BY t.name
+            ORDER BY t.display_name
         """
         async with self.pool.acquire() as conn:
             rows = await conn.fetch(query, *params)
@@ -129,7 +129,7 @@ class TemplateManager:
         query = f"""
             SELECT
                 a.*,
-                t.name AS template_name
+                t.display_name AS template_name
             FROM field_audit_assignments a
             LEFT JOIN field_audit_templates t ON t.id = a.template_id
             {where_clause}
