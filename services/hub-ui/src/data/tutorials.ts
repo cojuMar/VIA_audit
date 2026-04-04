@@ -26,7 +26,7 @@ export const TUTORIALS: Tutorial[] = [
     id: 'welcome',
     title: 'Welcome to Aegis 2026',
     description:
-      'A quick orientation to the platform — what it does, who it's for, and how to get started.',
+      'A quick orientation to the platform — what it does, who it\'s for, and how to get started.',
     category: 'Getting Started',
     duration: '5 min',
     difficulty: 'Beginner',
@@ -91,7 +91,7 @@ export const TUTORIALS: Tutorial[] = [
   {
     id: 'dashboard-basics',
     title: 'Understanding Your Dashboard',
-    description: 'Interpret the key metrics, charts, and status indicators shown on each module's dashboard.',
+    description: 'Interpret the key metrics, charts, and status indicators shown on each module\'s dashboard.',
     category: 'Getting Started',
     duration: '10 min',
     difficulty: 'Beginner',
@@ -169,7 +169,7 @@ export const TUTORIALS: Tutorial[] = [
       {
         title: 'What Clients See',
         content:
-          'Your clients access a branded portal at port 5176. They can download the documents you've published — security policies, SOC 2 reports, penetration test summaries — and ask compliance questions via the embedded AI chatbot.',
+          'Your clients access a branded portal at port 5176. They can download the documents you\'ve published — security policies, SOC 2 reports, penetration test summaries — and ask compliance questions via the embedded AI chatbot.',
       },
       {
         title: 'Sharing a Document',
@@ -179,7 +179,7 @@ export const TUTORIALS: Tutorial[] = [
       {
         title: 'Chatbot Interactions',
         content:
-          'The portal chatbot is powered by your own RAG pipeline. It answers questions based only on documents you've published — it will never reveal unpublished data. Review chatbot conversations in the "Chat Logs" section.',
+          'The portal chatbot is powered by your own RAG pipeline. It answers questions based only on documents you\'ve published — it will never reveal unpublished data. Review chatbot conversations in the "Chat Logs" section.',
       },
     ],
     tags: ['trust-portal', 'clients', 'sharing'],
@@ -234,7 +234,7 @@ export const TUTORIALS: Tutorial[] = [
       {
         title: 'Setting Risk Appetite',
         content:
-          'Go to Appetite → Configure to define your organization's risk tolerance thresholds per category. Risks exceeding the appetite boundary will automatically surface in the red zone of the heat map and trigger KRI alerts.',
+          'Go to Appetite → Configure to define your organization\'s risk tolerance thresholds per category. Risks exceeding the appetite boundary will automatically surface in the red zone of the heat map and trigger KRI alerts.',
       },
       {
         title: 'Adding Key Risk Indicators',
@@ -450,7 +450,7 @@ export const TUTORIALS: Tutorial[] = [
       {
         title: 'Tracking Capacity',
         content:
-          'The Team Capacity view shows each member's active engagement load as a percentage. Aim to keep individuals below 80% to allow buffer for urgent findings and reviews. The view highlights over-allocated team members in amber.',
+          'The Team Capacity view shows each member\'s active engagement load as a percentage. Aim to keep individuals below 80% to allow buffer for urgent findings and reviews. The view highlights over-allocated team members in amber.',
       },
     ],
     tags: ['team', 'people', 'capacity', 'roles'],
@@ -479,7 +479,7 @@ export const TUTORIALS: Tutorial[] = [
       {
         title: 'Answering Audit Questions',
         content:
-          'Ask control-specific questions like: "What evidence do we have for ISO 27001 control A.9.4.2?" The agent searches your workpaper library and summarises what's available, flagging any gaps.',
+          'Ask control-specific questions like: "What evidence do we have for ISO 27001 control A.9.4.2?" The agent searches your workpaper library and summarises what\'s available, flagging any gaps.',
       },
       {
         title: 'Limitations',
@@ -554,7 +554,7 @@ export const TUTORIALS: Tutorial[] = [
       {
         title: 'Tenant Isolation Testing',
         content:
-          'Always verify tenant isolation after changes. Create two tenants, add data to tenant A, then query with tenant B's ID. The response must be empty. The RLS policy on every table enforces this: WHERE tenant_id = current_setting("app.tenant_id")::uuid.',
+          'Always verify tenant isolation after changes. Create two tenants, add data to tenant A, then query with tenant B\'s ID. The response must be empty. The RLS policy on every table enforces this: WHERE tenant_id = current_setting("app.tenant_id")::uuid.',
       },
       {
         title: 'Demo Tenant',
