@@ -1,0 +1,292 @@
+slug: pci-dss-4
+name: "PCI DSS v4.0"
+version: "4.0"
+category: sector-specific
+issuing_body: PCI SSC
+description: "Payment Card Industry Data Security Standard version 4.0 — requirements for entities that store, process, or transmit cardholder data"
+metadata:
+  renewal_period_days: 365
+  filing_required: true
+  typical_audit_window_days: 60
+  cost_tier: high
+  geographic_scope: global
+  mandatory_for: [merchant, service_provider]
+
+domains:
+  - name: "Build and Maintain a Secure Network (Req 1-2)"
+    prefix: REQ1
+  - name: "Protect Cardholder Data (Req 3-4)"
+    prefix: REQ3
+  - name: "Maintain a Vulnerability Management Program (Req 5-6)"
+    prefix: REQ5
+  - name: "Implement Strong Access Control (Req 7-9)"
+    prefix: REQ7
+  - name: "Monitor and Test Networks (Req 10-11)"
+    prefix: REQ10
+  - name: "Maintain an Information Security Policy (Req 12)"
+    prefix: REQ12
+
+controls:
+  - id: "1.1.1"
+    domain: "Build and Maintain a Secure Network (Req 1-2)"
+    title: "Network security controls — policy and processes defined"
+    description: "All security policies and operational procedures identified in Requirement 1 are documented, kept up to date, in use, and known to all affected parties."
+    evidence_types: [policy, network_security_policy, acknowledgement_log]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "1.2.1"
+    domain: "Build and Maintain a Secure Network (Req 1-2)"
+    title: "Firewall and router configuration standards"
+    description: "Configuration standards are developed, implemented, and maintained for all network security controls."
+    evidence_types: [firewall_standard, configuration_screenshot, change_log]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "1.2.5"
+    domain: "Build and Maintain a Secure Network (Req 1-2)"
+    title: "Allowed services, protocols, and ports justified"
+    description: "All services, protocols, and ports allowed are identified, approved, and have a defined business need."
+    evidence_types: [firewall_rule_review, port_scan_report, justification_doc]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "1.3.1"
+    domain: "Build and Maintain a Secure Network (Req 1-2)"
+    title: "CDE inbound traffic restrictions"
+    description: "Inbound traffic to the cardholder data environment (CDE) is restricted to only that traffic which is necessary."
+    evidence_types: [firewall_rule_review, network_diagram, penetration_test_report]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "1.3.2"
+    domain: "Build and Maintain a Secure Network (Req 1-2)"
+    title: "CDE outbound traffic restrictions"
+    description: "Outbound traffic from the CDE is restricted to only that traffic which is necessary."
+    evidence_types: [firewall_rule_review, egress_filter_screenshot, network_diagram]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "2.2.1"
+    domain: "Build and Maintain a Secure Network (Req 1-2)"
+    title: "System components configuration standards"
+    description: "Configuration standards are developed, implemented, and maintained for all system components."
+    evidence_types: [hardening_standard, configuration_baseline, compliance_scan_report]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "2.2.7"
+    domain: "Build and Maintain a Secure Network (Req 1-2)"
+    title: "Non-console administrative access encrypted"
+    description: "All non-console administrative access is encrypted using strong cryptography."
+    evidence_types: [ssh_configuration_screenshot, tls_configuration_screenshot, policy]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "3.2.1"
+    domain: "Protect Cardholder Data (Req 3-4)"
+    title: "Account data storage minimisation"
+    description: "Account data storage is kept to a minimum through implementation of data retention and disposal policies, procedures, and processes."
+    evidence_types: [data_retention_policy, data_inventory, deletion_log]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "3.4.1"
+    domain: "Protect Cardholder Data (Req 3-4)"
+    title: "PAN rendered unreadable anywhere it is stored"
+    description: "The primary account number (PAN) is rendered unreadable anywhere it is stored using tokenization, strong one-way hash, truncation, or strong encryption."
+    evidence_types: [encryption_evidence, tokenisation_report, database_scan]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "3.5.1"
+    domain: "Protect Cardholder Data (Req 3-4)"
+    title: "Primary account number security"
+    description: "The primary account number is secured with appropriate cryptographic keys and key management procedures."
+    evidence_types: [key_management_policy, key_custodian_record, key_rotation_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "4.2.1"
+    domain: "Protect Cardholder Data (Req 3-4)"
+    title: "Strong cryptography for transmitting PAN"
+    description: "Strong cryptography is used to safeguard PAN during transmission over open, public networks."
+    evidence_types: [tls_configuration_screenshot, certificate_evidence, ssl_scan_report]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "5.2.1"
+    domain: "Maintain a Vulnerability Management Program (Req 5-6)"
+    title: "Anti-malware solution deployment"
+    description: "An anti-malware solution is deployed on all system components except those that periodically evaluate and determine that they are not at risk."
+    evidence_types: [antivirus_report, edr_deployment_screenshot, exception_log]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: "5.3.2"
+    domain: "Maintain a Vulnerability Management Program (Req 5-6)"
+    title: "Anti-malware protection maintained"
+    description: "Anti-malware mechanisms are maintained including signature updates, periodic scans, and active protection."
+    evidence_types: [antivirus_update_log, scan_report, configuration_screenshot]
+    testing_frequency: monthly
+    is_key_control: false
+
+  - id: "6.2.4"
+    domain: "Maintain a Vulnerability Management Program (Req 5-6)"
+    title: "Software development practices prevent vulnerabilities"
+    description: "Software engineering techniques or other methods are defined and in use to prevent or mitigate common software attacks, including injection attacks, broken authentication, XSS, and insecure direct object references."
+    evidence_types: [secure_coding_standard, sast_report, code_review_log]
+    testing_frequency: on_change
+    is_key_control: true
+
+  - id: "6.3.3"
+    domain: "Maintain a Vulnerability Management Program (Req 5-6)"
+    title: "All system components protected from known vulnerabilities"
+    description: "All system components are protected from known vulnerabilities by installing applicable security patches/updates."
+    evidence_types: [patch_report, vulnerability_scan, patch_policy]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: "6.4.1"
+    domain: "Maintain a Vulnerability Management Program (Req 5-6)"
+    title: "Web-facing applications protection"
+    description: "For public-facing web applications, new threats and vulnerabilities are addressed on an ongoing basis, and these applications are protected against known attacks."
+    evidence_types: [waf_configuration, penetration_test_report, dast_report]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "7.2.1"
+    domain: "Implement Strong Access Control (Req 7-9)"
+    title: "Access control model implemented"
+    description: "An access control model is defined and includes granting of access as follows: appropriate access based on business need, access to system components and data resources based on users' job classification and function."
+    evidence_types: [access_control_policy, role_matrix, rbac_screenshot]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "7.2.5"
+    domain: "Implement Strong Access Control (Req 7-9)"
+    title: "All application and system accounts managed"
+    description: "All application and system accounts and related access privileges are assigned and managed following the principle of least privilege."
+    evidence_types: [service_account_review, access_review, privilege_report]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "8.2.1"
+    domain: "Implement Strong Access Control (Req 7-9)"
+    title: "All user IDs and authentication factors managed"
+    description: "All user IDs and associated authentication factors for users and administrators are strictly managed throughout an account's lifecycle."
+    evidence_types: [iam_process_doc, provisioning_log, deprovisioning_ticket]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "8.3.6"
+    domain: "Implement Strong Access Control (Req 7-9)"
+    title: "Passwords/passphrases meet minimum complexity requirements"
+    description: "If passwords/passphrases are used as authentication factors, they meet a minimum length of at least 12 characters and contain both numeric and alphabetic characters."
+    evidence_types: [password_policy, password_configuration_screenshot]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "8.4.2"
+    domain: "Implement Strong Access Control (Req 7-9)"
+    title: "MFA implemented for all access into the CDE"
+    description: "Multi-factor authentication is implemented for all access into the CDE."
+    evidence_types: [mfa_enrollment_screenshot, authentication_policy, mfa_report]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "9.1.1"
+    domain: "Implement Strong Access Control (Req 7-9)"
+    title: "Processes and mechanisms for restricting physical access"
+    description: "All security policies and operational procedures for restricting physical access to cardholder data are documented and followed."
+    evidence_types: [physical_security_policy, badge_log, visitor_log]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "9.4.5"
+    domain: "Implement Strong Access Control (Req 7-9)"
+    title: "Electronic media inventory and controls"
+    description: "Electronic media with cardholder data is protected during storage and is not accessible to anyone without authorisation."
+    evidence_types: [media_inventory, storage_security_evidence, disposal_log]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "10.2.1"
+    domain: "Monitor and Test Networks (Req 10-11)"
+    title: "Audit logs capture required events"
+    description: "Audit logs capture all individual user access to cardholder data, all actions by any individual with root or administrative privileges, access to all audit trails, invalid logical access attempts, use of identification and authentication mechanisms."
+    evidence_types: [audit_logging_policy, log_configuration_screenshot, log_review_report]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "10.4.1"
+    domain: "Monitor and Test Networks (Req 10-11)"
+    title: "Log reviews for security events"
+    description: "The following audit logs are reviewed at least once daily: all security events, logs of all system components that store, process, or transmit CHD and/or SAD."
+    evidence_types: [log_review_report, siem_alert_log, monitoring_dashboard_screenshot]
+    testing_frequency: daily
+    is_key_control: true
+
+  - id: "10.5.1"
+    domain: "Monitor and Test Networks (Req 10-11)"
+    title: "Retain audit logs for at least 12 months"
+    description: "Retain audit log history for at least 12 months, with at least the most recent three months available for immediate analysis."
+    evidence_types: [log_retention_policy, log_storage_screenshot, retention_report]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "11.3.1"
+    domain: "Monitor and Test Networks (Req 10-11)"
+    title: "Internal vulnerability scans performed"
+    description: "Internal vulnerability scans are performed at least once every three months."
+    evidence_types: [vulnerability_scan, scan_schedule, remediation_ticket]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "11.3.2"
+    domain: "Monitor and Test Networks (Req 10-11)"
+    title: "External vulnerability scans by ASV"
+    description: "External vulnerability scans are performed at least once every three months by a PCI SSC Approved Scanning Vendor (ASV)."
+    evidence_types: [asv_scan_report, remediation_evidence]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "11.4.1"
+    domain: "Monitor and Test Networks (Req 10-11)"
+    title: "Penetration testing methodology defined and implemented"
+    description: "A penetration testing methodology is defined, documented, and implemented, including penetration testing of all CDE perimeter and critical systems at least once every 12 months."
+    evidence_types: [penetration_test_report, methodology_document, remediation_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "12.1.1"
+    domain: "Maintain an Information Security Policy (Req 12)"
+    title: "Overall information security policy"
+    description: "An overall information security policy is established, published, maintained, and disseminated to all relevant personnel, as well as relevant vendors and business partners."
+    evidence_types: [security_policy, policy_acknowledgement, distribution_log]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "12.3.1"
+    domain: "Maintain an Information Security Policy (Req 12)"
+    title: "Risk assessment process"
+    description: "Each PCI DSS requirement that provides flexibility for how frequently it is performed is completed based on the entity's targeted risk analysis."
+    evidence_types: [risk_assessment_report, risk_register, methodology_document]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "12.6.1"
+    domain: "Maintain an Information Security Policy (Req 12)"
+    title: "Security awareness program"
+    description: "A formal security awareness program is implemented to make all personnel aware of the entity's information security policy and procedures, and their role in protecting the cardholder data."
+    evidence_types: [training_completion, training_material, training_schedule]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "12.8.1"
+    domain: "Maintain an Information Security Policy (Req 12)"
+    title: "Third-party service provider list maintained"
+    description: "A list of all third-party service providers with which account data is shared or that could affect the security of account data is maintained."
+    evidence_types: [vendor_list, tpsp_register, data_sharing_agreement]
+    testing_frequency: annual
+    is_key_control: true

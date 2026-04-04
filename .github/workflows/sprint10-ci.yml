@@ -1,0 +1,311 @@
+name: Sprint 10 — Client-Facing Trust Portal
+
+on:
+  push:
+    branches: [main, develop, 'sprint-10/**']
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Job 1: DB migrations — V014 Trust Portal Schema
+  # ---------------------------------------------------------------------------
+  db-migrations:
+    name: "Database Migrations (V014 Trust Portal Schema)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: aegis
+          POSTGRES_USER: aegis_admin
+          POSTGRES_PASSWORD: aegis_dev_pw
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://aegis_admin:aegis_dev_pw@localhost:5432/aegis
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install psql client
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client
+
+      - name: Apply all migrations
+        run: bash infra/db/migrate.sh
+
+      - name: Verify V014 tables exist
+        run: |
+          psql "$DATABASE_URL" -c "
+          SELECT table_name FROM information_schema.tables
+          WHERE table_schema = 'public'
+            AND table_name IN (
+              'trust_portal_configs',
+              'trust_portal_documents',
+              'portal_ndas',
+              'trust_portal_access_logs',
+              'portal_questionnaire_deflections',
+              'portal_chatbot_sessions',
+              'portal_chatbot_messages'
+            )
+          ORDER BY table_name;" | tee /tmp/v014_tables.txt
+
+          for table in \
+            trust_portal_configs \
+            trust_portal_documents \
+            portal_ndas \
+            trust_portal_access_logs \
+            portal_questionnaire_deflections \
+            portal_chatbot_sessions \
+            portal_chatbot_messages; do
+            grep -q "$table" /tmp/v014_tables.txt || \
+              (echo "FATAL: V014 table '$table' not found" && exit 1)
+          done
+          echo "All V014 tables verified"
+
+      - name: Assert count = 7 V014 tables
+        run: |
+          COUNT=$(psql "$DATABASE_URL" -t -c "
+          SELECT COUNT(*) FROM information_schema.tables
+          WHERE table_schema='public'
+            AND table_name IN (
+              'trust_portal_configs',
+              'trust_portal_documents',
+              'portal_ndas',
+              'trust_portal_access_logs',
+              'portal_questionnaire_deflections',
+              'portal_chatbot_sessions',
+              'portal_chatbot_messages'
+            );
+          " | tr -d ' ')
+
+          echo "V014 table count: $COUNT"
+          if [ "$COUNT" -ne 7 ]; then
+            echo "FATAL: Expected 7 V014 tables, found $COUNT"
+            exit 1
+          fi
+          echo "V014 table count verified ($COUNT = 7)"
+
+      - name: Verify immutability of append-only tables
+        run: |
+          for table in portal_ndas trust_portal_access_logs portal_chatbot_messages; do
+            GRANTS=$(psql "$DATABASE_URL" -t -c "
+            SELECT privilege_type
+            FROM information_schema.role_table_grants
+            WHERE table_name = '$table'
+              AND grantee = 'aegis_app'
+              AND privilege_type IN ('UPDATE', 'DELETE');
+            " | tr -d ' ' | grep -v '^$' || true)
+
+            if [ -n "$GRANTS" ]; then
+              echo "FATAL: $table must be append-only — aegis_app has: $GRANTS"
+              exit 1
+            fi
+            echo "$table immutability verified (no UPDATE/DELETE for aegis_app)"
+          done
+
+      - name: Verify RLS enabled on trust_portal_configs
+        run: |
+          RLS=$(psql "$DATABASE_URL" -t -c "
+          SELECT relrowsecurity FROM pg_class
+          WHERE relname = 'trust_portal_configs';
+          " | tr -d ' ')
+
+          echo "trust_portal_configs RLS: $RLS"
+          if [ "$RLS" != "t" ]; then
+            echo "FATAL: RLS is not enabled on trust_portal_configs (got '$RLS')"
+            exit 1
+          fi
+          echo "RLS verified on trust_portal_configs"
+
+  # ---------------------------------------------------------------------------
+  # Job 2: Trust portal service unit tests
+  # ---------------------------------------------------------------------------
+  trust-portal-service-tests:
+    name: "Trust Portal Service Tests (Sprint 10)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: services/trust-portal-service/requirements.txt
+
+      - name: Install Python dependencies
+        run: |
+          pip install -r services/trust-portal-service/requirements.txt
+          pip install pytest pytest-asyncio
+
+      - name: Run Sprint 10 tests
+        run: |
+          pytest tests/sprint10/ -v --tb=short
+        env:
+          DATABASE_URL: "postgresql://localhost/dummy"
+          KAFKA_BOOTSTRAP_SERVERS: "localhost:9092"
+          ANTHROPIC_API_KEY: "dummy"
+          VOYAGE_API_KEY: "dummy"
+          REDIS_URL: "redis://localhost:6379/6"
+          VAULT_ADDR: "http://localhost:8200"
+          VAULT_TOKEN: "dev-root-token"
+          MINIO_ENDPOINT: "localhost:9000"
+          MINIO_ACCESS_KEY: "minioadmin"
+          MINIO_SECRET_KEY: "minioadmin"
+          RAG_PIPELINE_URL: "http://localhost:3010"
+          FRAMEWORK_SERVICE_URL: "http://localhost:3012"
+
+  # ---------------------------------------------------------------------------
+  # Job 3: TypeScript type-check for trust-portal-ui
+  # ---------------------------------------------------------------------------
+  typescript-typecheck:
+    name: "TypeScript Type Check (trust-portal-ui)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: services/trust-portal-ui/package-lock.json
+
+      - name: Install Node dependencies
+        working-directory: services/trust-portal-ui
+        run: npm ci
+
+      - name: Run TypeScript type-check
+        working-directory: services/trust-portal-ui
+        run: npm run typecheck
+
+  # ---------------------------------------------------------------------------
+  # Job 4: Docker build + Trivy CRITICAL scan (trust-portal-service)
+  # ---------------------------------------------------------------------------
+  docker-build-portal-service:
+    name: "Docker Build & Trivy Scan (trust-portal-service)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [trust-portal-service-tests]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build trust-portal-service Docker image
+        run: |
+          docker build \
+            -t aegis/trust-portal-service:ci \
+            services/trust-portal-service
+
+      - name: Install Trivy
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y wget apt-transport-https gnupg
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key \
+            | sudo apt-key add -
+          echo "deb https://aquasecurity.github.io/trivy-repo/deb generic main" \
+            | sudo tee /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update -qq
+          sudo apt-get install -y trivy
+
+      - name: Trivy CRITICAL vulnerability scan
+        run: |
+          trivy image \
+            --exit-code 1 \
+            --severity CRITICAL \
+            --no-progress \
+            aegis/trust-portal-service:ci
+
+  # ---------------------------------------------------------------------------
+  # Job 5: Docker build + Trivy CRITICAL scan (trust-portal-ui)
+  # ---------------------------------------------------------------------------
+  docker-build-portal-ui:
+    name: "Docker Build & Trivy Scan (trust-portal-ui)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [typescript-typecheck]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build trust-portal-ui Docker image
+        run: |
+          docker build \
+            -t aegis/trust-portal-ui:ci \
+            services/trust-portal-ui
+
+      - name: Install Trivy
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y wget apt-transport-https gnupg
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key \
+            | sudo apt-key add -
+          echo "deb https://aquasecurity.github.io/trivy-repo/deb generic main" \
+            | sudo tee /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update -qq
+          sudo apt-get install -y trivy
+
+      - name: Trivy CRITICAL vulnerability scan
+        run: |
+          trivy image \
+            --exit-code 1 \
+            --severity CRITICAL \
+            --no-progress \
+            aegis/trust-portal-ui:ci
+
+  # ---------------------------------------------------------------------------
+  # Job 6: Security gate — all 5 jobs must pass
+  # ---------------------------------------------------------------------------
+  security-gate:
+    name: "Security Gate (Sprint 10)"
+    runs-on: ubuntu-latest
+    needs:
+      - db-migrations
+      - trust-portal-service-tests
+      - typescript-typecheck
+      - docker-build-portal-service
+      - docker-build-portal-ui
+    if: always()
+
+    steps:
+      - name: Check all Sprint 10 jobs passed
+        run: |
+          FAILED=0
+
+          for job_and_result in \
+            "db-migrations:${{ needs.db-migrations.result }}" \
+            "trust-portal-service-tests:${{ needs.trust-portal-service-tests.result }}" \
+            "typescript-typecheck:${{ needs.typescript-typecheck.result }}" \
+            "docker-build-portal-service:${{ needs.docker-build-portal-service.result }}" \
+            "docker-build-portal-ui:${{ needs.docker-build-portal-ui.result }}"; do
+            JOB_NAME="${job_and_result%%:*}"
+            JOB_RESULT="${job_and_result##*:}"
+            if [ "$JOB_RESULT" != "success" ]; then
+              echo "FATAL: Sprint 10 job '$JOB_NAME' did not pass (result: $JOB_RESULT)"
+              FAILED=$((FAILED + 1))
+            else
+              echo "OK: $JOB_NAME passed"
+            fi
+          done
+
+          if [ "$FAILED" -gt 0 ]; then
+            echo ""
+            echo "$FAILED job(s) failed. Sprint 10 security gate blocked."
+            exit 1
+          fi
+
+          echo ""
+          echo "All Sprint 10 security gates passed."

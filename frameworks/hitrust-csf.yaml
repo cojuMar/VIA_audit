@@ -1,0 +1,274 @@
+slug: hitrust-csf
+name: "HITRUST CSF v11"
+version: "11.0"
+category: sector-specific
+issuing_body: HITRUST Alliance
+description: "Health Information Trust Alliance Common Security Framework version 11 — prescriptive, scalable, certifiable security and privacy control framework for healthcare and beyond"
+metadata:
+  renewal_period_days: 730
+  filing_required: false
+  typical_audit_window_days: 90
+  cost_tier: high
+  geographic_scope: global
+  mandatory_for: []
+  assessment_types: [e1, i1, r2]
+  note: "e1=Essentials, i1=Implemented, r2=Risk-based (full certification)"
+
+domains:
+  - name: "01 — Information Protection Program"
+    prefix: "01"
+  - name: "02 — Endpoint Protection"
+    prefix: "02"
+  - name: "03 — Portable Media Security"
+    prefix: "03"
+  - name: "05 — Mobile Device Security"
+    prefix: "05"
+  - name: "06 — Configuration Management"
+    prefix: "06"
+  - name: "07 — Vulnerability Management"
+    prefix: "07"
+  - name: "08 — Network Protection"
+    prefix: "08"
+  - name: "09 — Transmission Protection"
+    prefix: "09"
+  - name: "10 — Password Management"
+    prefix: "10"
+  - name: "11 — Access Control"
+    prefix: "11"
+  - name: "12 — Audit Logging and Monitoring"
+    prefix: "12"
+  - name: "13 — Education, Training and Awareness"
+    prefix: "13"
+  - name: "14 — Third Party Assurance"
+    prefix: "14"
+  - name: "15 — Incident Management"
+    prefix: "15"
+  - name: "17 — Business Continuity and Disaster Recovery"
+    prefix: "17"
+  - name: "19 — Risk Management"
+    prefix: "19"
+
+controls:
+  - id: "01.a"
+    domain: "01 — Information Protection Program"
+    title: "Information Security Management Program"
+    description: "An information security management programme shall be established, implemented, maintained, and continually improved."
+    evidence_types: [security_programme_document, management_approval, programme_review_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "01.b"
+    domain: "01 — Information Protection Program"
+    title: "Information Security Roles and Responsibilities"
+    description: "All information security responsibilities shall be clearly defined and allocated."
+    evidence_types: [role_description, org_chart, raci_matrix]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "01.g"
+    domain: "01 — Information Protection Program"
+    title: "Return of Assets"
+    description: "All employees and external party users shall return all of the organisation's assets in their possession upon termination of their employment, contract, or agreement."
+    evidence_types: [termination_checklist, asset_return_record]
+    testing_frequency: on_change
+    is_key_control: false
+
+  - id: "02.a"
+    domain: "02 — Endpoint Protection"
+    title: "Anti-Malware Controls"
+    description: "Controls shall be implemented to protect against and respond to malicious software threats."
+    evidence_types: [antivirus_report, edr_deployment_screenshot, malware_policy]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: "02.c"
+    domain: "02 — Endpoint Protection"
+    title: "Controls Against Mobile Code"
+    description: "Where the use of mobile code is authorised, the configuration shall ensure that the authorised mobile code operates according to a clearly defined security policy, and unauthorised mobile code shall be prevented from executing."
+    evidence_types: [mobile_code_policy, whitelisting_configuration, endpoint_control_screenshot]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "03.a"
+    domain: "03 — Portable Media Security"
+    title: "Management of Removable Media"
+    description: "There shall be procedures in place for the management of removable media."
+    evidence_types: [removable_media_policy, dlp_configuration, device_control_screenshot]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "05.a"
+    domain: "05 — Mobile Device Security"
+    title: "Mobile Device Policy"
+    description: "A policy and supporting security measures shall be adopted to manage the risks introduced by using mobile devices."
+    evidence_types: [mobile_device_policy, mdm_configuration, device_enrollment_report]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "06.a"
+    domain: "06 — Configuration Management"
+    title: "Baseline Configuration"
+    description: "The organisation shall document, implement, and maintain baseline configurations of information systems throughout the development lifecycle."
+    evidence_types: [configuration_baseline, compliance_scan_report, change_log]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "06.d"
+    domain: "06 — Configuration Management"
+    title: "Software Usage Restrictions"
+    description: "The organisation shall establish restrictions and guidance on the use of software programs."
+    evidence_types: [software_policy, approved_software_list, dlp_report]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "07.a"
+    domain: "07 — Vulnerability Management"
+    title: "Vulnerability Scanning"
+    description: "Vulnerability scanning shall be performed on information systems on a regular basis."
+    evidence_types: [vulnerability_scan, scan_schedule, remediation_ticket]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: "07.c"
+    domain: "07 — Vulnerability Management"
+    title: "Patch Management"
+    description: "A patch management programme shall be implemented to manage and apply security patches."
+    evidence_types: [patch_policy, patch_report, remediation_sla_evidence]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: "08.a"
+    domain: "08 — Network Protection"
+    title: "Network Controls"
+    description: "Networks shall be managed and controlled to protect information in systems and applications."
+    evidence_types: [network_security_policy, firewall_rule_review, network_diagram]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "08.b"
+    domain: "08 — Network Protection"
+    title: "Security of Network Services"
+    description: "Security mechanisms, service levels, and management requirements of all network services shall be identified and included in network services agreements."
+    evidence_types: [network_service_agreement, sla_document, security_requirements_doc]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "09.a"
+    domain: "09 — Transmission Protection"
+    title: "Information Exchange Policies and Procedures"
+    description: "Formal information exchange policies, procedures, and controls shall be in place to protect the exchange of information through the use of all types of communication facilities."
+    evidence_types: [transmission_policy, tls_configuration_screenshot, data_transfer_agreement]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "09.aa"
+    domain: "09 — Transmission Protection"
+    title: "Encryption of Data in Transit"
+    description: "Information exchanged through the use of information systems shall be encrypted during transmission over public networks."
+    evidence_types: [tls_configuration_screenshot, ssl_scan_report, vpn_configuration]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "10.a"
+    domain: "10 — Password Management"
+    title: "Password Policy"
+    description: "A password policy shall be established and communicated. Passwords shall meet minimum complexity, length, and history requirements."
+    evidence_types: [password_policy, password_configuration_screenshot]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "10.b"
+    domain: "10 — Password Management"
+    title: "Multi-Factor Authentication"
+    description: "Multi-factor authentication shall be used for remote access and access to sensitive systems."
+    evidence_types: [mfa_enrollment_screenshot, mfa_policy, mfa_report]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "11.a"
+    domain: "11 — Access Control"
+    title: "Access Control Policy"
+    description: "An access control policy shall be established, documented, and reviewed based on business and information security requirements."
+    evidence_types: [access_control_policy, policy_acknowledgement, review_log]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "11.b"
+    domain: "11 — Access Control"
+    title: "User Registration and Deregistration"
+    description: "A formal user registration and deregistration process shall be implemented to enable assignment of access rights."
+    evidence_types: [provisioning_procedure, deprovisioning_procedure, access_review]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "11.c"
+    domain: "11 — Access Control"
+    title: "Privilege Management"
+    description: "The allocation and use of privileged access rights shall be restricted and controlled."
+    evidence_types: [privileged_access_policy, pam_report, privilege_review]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "12.a"
+    domain: "12 — Audit Logging and Monitoring"
+    title: "Audit Logging"
+    description: "Audit logs recording user activities, exceptions, faults, and information security events shall be produced, kept, and regularly reviewed."
+    evidence_types: [audit_logging_policy, log_configuration_screenshot, log_review_report]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "12.b"
+    domain: "12 — Audit Logging and Monitoring"
+    title: "Monitoring System Use"
+    description: "Procedures for monitoring use of information processing facilities shall be established and the results of monitoring activities shall be reviewed regularly."
+    evidence_types: [monitoring_policy, siem_report, anomaly_alert_log]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: "13.a"
+    domain: "13 — Education, Training and Awareness"
+    title: "Information Security Education and Training"
+    description: "All employees of the organisation and, where relevant, contractors shall receive appropriate awareness education and training and regular updates in organisational policies and procedures."
+    evidence_types: [training_completion, training_material, training_schedule]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "14.a"
+    domain: "14 — Third Party Assurance"
+    title: "Identification of Risks Related to External Parties"
+    description: "The risks to the organisation's information and information processing facilities from business processes involving external parties shall be identified and appropriate controls implemented before granting access."
+    evidence_types: [vendor_risk_assessment, vendor_contract, security_questionnaire]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "15.a"
+    domain: "15 — Incident Management"
+    title: "Information Security Incident Management"
+    description: "Management responsibilities and procedures shall be established to ensure a quick, effective, and orderly response to information security incidents."
+    evidence_types: [incident_response_plan, incident_log, post_mortem]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "17.a"
+    domain: "17 — Business Continuity and Disaster Recovery"
+    title: "Business Continuity and Risk Assessment"
+    description: "A managed process shall be developed and maintained for business continuity and disaster recovery throughout the organisation that addresses the information security requirements needed during an adverse situation."
+    evidence_types: [bcp_document, dr_plan, risk_assessment_report]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "17.b"
+    domain: "17 — Business Continuity and Disaster Recovery"
+    title: "Business Continuity Plan Testing and Exercises"
+    description: "Business continuity plans shall be tested and updated regularly to ensure that they are up to date and effective."
+    evidence_types: [dr_test_result, tabletop_exercise_record, test_schedule]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "19.a"
+    domain: "19 — Risk Management"
+    title: "Risk Management Programme"
+    description: "A formal risk management programme shall be established that identifies, assesses, and treats risks to the confidentiality, integrity, and availability of information."
+    evidence_types: [risk_management_programme_document, risk_register, risk_assessment_report]
+    testing_frequency: annual
+    is_key_control: true

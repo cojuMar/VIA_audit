@@ -1,0 +1,162 @@
+slug: ccpa
+name: "CCPA/CPRA"
+version: "2023"
+category: privacy
+issuing_body: State of California
+description: "California Consumer Privacy Act and California Privacy Rights Act — consumer privacy rights for California residents and obligations for qualifying businesses"
+metadata:
+  renewal_period_days: null
+  filing_required: false
+  typical_audit_window_days: 60
+  cost_tier: medium
+  geographic_scope: us_california
+  mandatory_for: [qualifying_business]
+  qualification_thresholds:
+    annual_gross_revenue_usd: 25000000
+    consumer_records_bought_or_sold_annually: 100000
+    revenue_pct_from_selling_personal_information: 50
+
+domains:
+  - name: "Consumer Rights (§1798.100-§1798.125)"
+    prefix: "1798.1"
+  - name: "Business Obligations (§1798.130-§1798.135)"
+    prefix: "1798.13"
+  - name: "CPRA Additional Requirements"
+    prefix: CPRA
+
+controls:
+  - id: "1798.100"
+    domain: "Consumer Rights (§1798.100-§1798.125)"
+    title: "Consumer right to know — categories and specific pieces"
+    description: "A consumer shall have the right to request that a business that collects a consumer's personal information disclose the categories and specific pieces of personal information the business has collected."
+    evidence_types: [dsar_process_doc, data_inventory, response_log]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "1798.105"
+    domain: "Consumer Rights (§1798.100-§1798.125)"
+    title: "Consumer right to delete personal information"
+    description: "A consumer shall have the right to request that a business and a business's service providers delete any personal information about the consumer which the business has collected from the consumer."
+    evidence_types: [deletion_procedure, deletion_log, response_template]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "1798.106"
+    domain: "Consumer Rights (§1798.100-§1798.125)"
+    title: "Consumer right to correct inaccurate personal information"
+    description: "A consumer shall have the right to request that a business that maintains inaccurate personal information about the consumer correct that inaccurate personal information."
+    evidence_types: [correction_procedure, correction_log, response_template]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "1798.110"
+    domain: "Consumer Rights (§1798.100-§1798.125)"
+    title: "Consumer right to know — categories of personal information collected"
+    description: "A consumer shall have the right to request that a business disclose categories of personal information collected, categories of sources, business purpose for collection, categories of third parties shared with."
+    evidence_types: [privacy_policy, data_mapping, disclosure_log]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "1798.115"
+    domain: "Consumer Rights (§1798.100-§1798.125)"
+    title: "Consumer right to know about sale or disclosure"
+    description: "A consumer shall have the right to request that a business disclose whether it sells or discloses personal information to third parties."
+    evidence_types: [privacy_policy, sale_disclosure_record, third_party_list]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "1798.120"
+    domain: "Consumer Rights (§1798.100-§1798.125)"
+    title: "Consumer right to opt-out of sale or sharing"
+    description: "A consumer shall have the right, at any time, to direct a business that sells personal information about the consumer to third parties not to sell the consumer's personal information."
+    evidence_types: [opt_out_mechanism_screenshot, do_not_sell_link_screenshot, opt_out_log]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "1798.121"
+    domain: "Consumer Rights (§1798.100-§1798.125)"
+    title: "Consumer right to limit use of sensitive personal information"
+    description: "A consumer shall have the right, at any time, to direct a business that collects sensitive personal information about the consumer to limit its use and disclosure of the consumer's sensitive personal information."
+    evidence_types: [sensitive_pi_policy, limit_use_mechanism_screenshot, opt_out_log]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "1798.125"
+    domain: "Consumer Rights (§1798.100-§1798.125)"
+    title: "Non-discrimination"
+    description: "A business shall not discriminate against a consumer because the consumer exercised any of the consumer's rights."
+    evidence_types: [non_discrimination_policy, pricing_audit, service_review]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "1798.130(a)"
+    domain: "Business Obligations (§1798.130-§1798.135)"
+    title: "Methods for submitting consumer requests"
+    description: "A business shall provide at least two or more designated methods for submitting requests for information, including, at a minimum, a toll-free telephone number and, if the business has a website, a website address."
+    evidence_types: [intake_channel_screenshot, privacy_policy, toll_free_number_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "1798.130(a)(2)"
+    domain: "Business Obligations (§1798.130-§1798.135)"
+    title: "Response time to consumer requests"
+    description: "A business shall respond to a verifiable consumer request within 45 days. This period may be extended once by an additional 45 days when reasonably necessary."
+    evidence_types: [response_log, sla_evidence, ticketing_system_screenshot]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "1798.130(b)"
+    domain: "Business Obligations (§1798.130-§1798.135)"
+    title: "Privacy policy requirements"
+    description: "A business that operates exclusively online and has a direct relationship with consumers shall provide an email address for submitting requests. All businesses shall include a privacy policy with required disclosures."
+    evidence_types: [privacy_policy, website_screenshot, annual_update_log]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "1798.135"
+    domain: "Business Obligations (§1798.130-§1798.135)"
+    title: "Methods for opt-out of sale"
+    description: "A business that sells consumers' personal information shall provide notice to consumers a clear and conspicuous link on the business's Internet homepage titled Do Not Sell or Share My Personal Information."
+    evidence_types: [dnss_link_screenshot, opt_out_flow_screenshot, privacy_policy]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "CPRA.1"
+    domain: "CPRA Additional Requirements"
+    title: "Sensitive personal information — purpose limitation"
+    description: "A business that collects sensitive personal information shall limit the use of sensitive personal information to purposes necessary to perform the services or provide the goods reasonably expected by an average consumer who requests those goods or services."
+    evidence_types: [sensitive_pi_inventory, purpose_register, policy]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "CPRA.2"
+    domain: "CPRA Additional Requirements"
+    title: "Data retention — deletion of personal information"
+    description: "A business shall not retain a consumer's personal information or sensitive personal information for each disclosed purpose for which the personal information was collected for longer than is reasonably necessary for that disclosed purpose."
+    evidence_types: [retention_policy, deletion_schedule, deletion_log]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "CPRA.3"
+    domain: "CPRA Additional Requirements"
+    title: "Contractor and service provider obligations"
+    description: "A business that discloses personal information to a service provider or contractor shall enter into an agreement that prohibits the service provider or contractor from retaining, using, or disclosing the personal information for any purpose other than for the business purpose specified in the contract."
+    evidence_types: [service_provider_contract, data_processing_agreement, vendor_list]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "CPRA.4"
+    domain: "CPRA Additional Requirements"
+    title: "Security and privacy risk assessments"
+    description: "A business that processes personal information that presents significant risk to consumer's privacy or security shall perform a risk assessment at regular intervals."
+    evidence_types: [privacy_risk_assessment, risk_register, assessment_schedule]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "CPRA.5"
+    domain: "CPRA Additional Requirements"
+    title: "Automated decision-making technology opt-out right"
+    description: "Businesses that use automated decision-making technology including profiling must allow consumers to opt out and access information about the logic involved."
+    evidence_types: [adm_policy, opt_out_mechanism_screenshot, logic_disclosure_doc]
+    testing_frequency: annual
+    is_key_control: false

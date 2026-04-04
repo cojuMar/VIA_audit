@@ -1,0 +1,242 @@
+slug: gdpr
+name: "GDPR"
+version: "2018"
+category: privacy
+issuing_body: European Parliament
+description: "General Data Protection Regulation — EU regulation on data protection and privacy for individuals within the European Union and European Economic Area"
+metadata:
+  renewal_period_days: null
+  filing_required: false
+  typical_audit_window_days: 90
+  cost_tier: high
+  geographic_scope: eu
+  mandatory_for: [eu_data_processor, eu_data_controller]
+
+domains:
+  - name: "Principles (Art. 5-11)"
+    prefix: ART5
+  - name: "Rights of Data Subjects (Art. 12-23)"
+    prefix: ART12
+  - name: "Controller and Processor Obligations (Art. 24-43)"
+    prefix: ART24
+  - name: "Transfers to Third Countries (Art. 44-49)"
+    prefix: ART44
+  - name: "Supervisory Authorities (Art. 51-76)"
+    prefix: ART51
+
+controls:
+  - id: "Art.5(1)(a)"
+    domain: "Principles (Art. 5-11)"
+    title: "Lawfulness, fairness and transparency"
+    description: "Personal data shall be processed lawfully, fairly and in a transparent manner in relation to the data subject."
+    evidence_types: [privacy_notice, legal_basis_register, dpia]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "Art.5(1)(b)"
+    domain: "Principles (Art. 5-11)"
+    title: "Purpose limitation"
+    description: "Personal data shall be collected for specified, explicit and legitimate purposes and not further processed in a manner that is incompatible with those purposes."
+    evidence_types: [purpose_register, data_mapping, policy]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "Art.5(1)(c)"
+    domain: "Principles (Art. 5-11)"
+    title: "Data minimisation"
+    description: "Personal data shall be adequate, relevant and limited to what is necessary in relation to the purposes for which they are processed."
+    evidence_types: [data_mapping, privacy_impact_assessment, data_minimisation_review]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "Art.5(1)(d)"
+    domain: "Principles (Art. 5-11)"
+    title: "Accuracy"
+    description: "Personal data shall be accurate and, where necessary, kept up to date; every reasonable step must be taken to ensure that inaccurate data is erased or rectified."
+    evidence_types: [data_quality_process, correction_procedure, data_review_log]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "Art.5(1)(e)"
+    domain: "Principles (Art. 5-11)"
+    title: "Storage limitation"
+    description: "Personal data shall be kept in a form which permits identification of data subjects for no longer than is necessary for the purposes."
+    evidence_types: [retention_policy, deletion_log, data_lifecycle_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "Art.5(1)(f)"
+    domain: "Principles (Art. 5-11)"
+    title: "Integrity and confidentiality"
+    description: "Personal data shall be processed in a manner that ensures appropriate security, including protection against unauthorised or unlawful processing and against accidental loss, destruction or damage."
+    evidence_types: [security_policy, encryption_evidence, access_control_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "Art.5(2)"
+    domain: "Principles (Art. 5-11)"
+    title: "Accountability"
+    description: "The controller shall be responsible for and be able to demonstrate compliance with the principles relating to processing of personal data."
+    evidence_types: [dpo_report, compliance_programme_doc, audit_trail]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "Art.6"
+    domain: "Principles (Art. 5-11)"
+    title: "Lawfulness of processing"
+    description: "Processing shall be lawful only if and to the extent that at least one of the legal bases applies: consent, contract, legal obligation, vital interests, public task, or legitimate interests."
+    evidence_types: [legal_basis_register, consent_records, contract]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "Art.7"
+    domain: "Principles (Art. 5-11)"
+    title: "Conditions for consent"
+    description: "Where processing is based on consent, the controller shall be able to demonstrate that the data subject has consented to processing. Consent must be freely given, specific, informed, and unambiguous."
+    evidence_types: [consent_mechanism_screenshot, consent_record, withdrawal_process_doc]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "Art.9"
+    domain: "Principles (Art. 5-11)"
+    title: "Processing of special categories of personal data"
+    description: "Processing of personal data revealing racial or ethnic origin, political opinions, religious or philosophical beliefs, trade union membership, genetic data, biometric data, data concerning health or sex life is prohibited unless a specific exemption applies."
+    evidence_types: [special_category_register, explicit_consent_record, legal_basis_document]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "Art.12"
+    domain: "Rights of Data Subjects (Art. 12-23)"
+    title: "Transparent information and communication"
+    description: "The controller shall take appropriate measures to provide any information referred to in Articles 13 and 14 and any communication under Articles 15 to 22 to the data subject in a concise, transparent, intelligible and easily accessible form."
+    evidence_types: [privacy_notice, communication_procedure, plain_language_review]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "Art.13"
+    domain: "Rights of Data Subjects (Art. 12-23)"
+    title: "Information to be provided where personal data are collected from the data subject"
+    description: "Where personal data relating to a data subject are collected from the data subject, the controller shall, at the time when personal data are obtained, provide the data subject with prescribed information."
+    evidence_types: [privacy_notice, collection_point_screenshot, policy]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "Art.15"
+    domain: "Rights of Data Subjects (Art. 12-23)"
+    title: "Right of access by the data subject"
+    description: "The data subject shall have the right to obtain confirmation as to whether or not personal data concerning them is being processed, and access to that data."
+    evidence_types: [dsar_process_doc, access_request_log, response_template]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "Art.16"
+    domain: "Rights of Data Subjects (Art. 12-23)"
+    title: "Right to rectification"
+    description: "The data subject shall have the right to obtain from the controller without undue delay the rectification of inaccurate personal data."
+    evidence_types: [rectification_procedure, correction_log, response_template]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "Art.17"
+    domain: "Rights of Data Subjects (Art. 12-23)"
+    title: "Right to erasure"
+    description: "The data subject shall have the right to obtain from the controller the erasure of personal data concerning them without undue delay under certain grounds."
+    evidence_types: [erasure_procedure, deletion_log, response_template]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "Art.20"
+    domain: "Rights of Data Subjects (Art. 12-23)"
+    title: "Right to data portability"
+    description: "The data subject shall have the right to receive the personal data concerning them in a structured, commonly used and machine-readable format."
+    evidence_types: [portability_procedure, export_capability_screenshot, response_template]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "Art.21"
+    domain: "Rights of Data Subjects (Art. 12-23)"
+    title: "Right to object"
+    description: "The data subject shall have the right to object, on grounds relating to their particular situation, at any time to processing of personal data concerning them."
+    evidence_types: [objection_procedure, opt_out_mechanism_screenshot, response_template]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "Art.22"
+    domain: "Rights of Data Subjects (Art. 12-23)"
+    title: "Automated individual decision-making, including profiling"
+    description: "The data subject shall have the right not to be subject to a decision based solely on automated processing, including profiling, which produces legal effects or similarly significantly affects them."
+    evidence_types: [automated_decision_policy, human_review_process_doc, safeguard_evidence]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "Art.25"
+    domain: "Controller and Processor Obligations (Art. 24-43)"
+    title: "Data protection by design and by default"
+    description: "The controller shall implement appropriate technical and organisational measures designed to implement data-protection principles in an effective manner and to integrate the necessary safeguards into the processing."
+    evidence_types: [privacy_by_design_policy, dpia, architecture_review]
+    testing_frequency: on_change
+    is_key_control: true
+
+  - id: "Art.28"
+    domain: "Controller and Processor Obligations (Art. 24-43)"
+    title: "Processor obligations"
+    description: "Where processing is to be carried out on behalf of a controller, the controller shall only use processors that provide sufficient guarantees to implement appropriate technical and organisational measures."
+    evidence_types: [data_processing_agreement, processor_due_diligence, contract]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "Art.30"
+    domain: "Controller and Processor Obligations (Art. 24-43)"
+    title: "Records of processing activities"
+    description: "Each controller shall maintain a record of processing activities under their responsibility."
+    evidence_types: [ropa_document, data_mapping, processing_inventory]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "Art.32"
+    domain: "Controller and Processor Obligations (Art. 24-43)"
+    title: "Security of processing"
+    description: "The controller and processor shall implement appropriate technical and organisational measures to ensure a level of security appropriate to the risk, including pseudonymisation, encryption, ongoing confidentiality, integrity, availability, and resilience."
+    evidence_types: [security_policy, encryption_evidence, penetration_test_report, dr_test_result]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "Art.33"
+    domain: "Controller and Processor Obligations (Art. 24-43)"
+    title: "Notification of personal data breach to supervisory authority"
+    description: "In the case of a personal data breach, the controller shall notify the competent supervisory authority without undue delay and, where feasible, not later than 72 hours after having become aware of it."
+    evidence_types: [breach_notification_procedure, incident_log, dpa_notification_record]
+    testing_frequency: on_change
+    is_key_control: true
+
+  - id: "Art.34"
+    domain: "Controller and Processor Obligations (Art. 24-43)"
+    title: "Communication of personal data breach to the data subject"
+    description: "When the personal data breach is likely to result in a high risk to the rights and freedoms of natural persons, the controller shall communicate the breach to the data subject without undue delay."
+    evidence_types: [breach_communication_procedure, subject_notification_record, risk_assessment_report]
+    testing_frequency: on_change
+    is_key_control: true
+
+  - id: "Art.35"
+    domain: "Controller and Processor Obligations (Art. 24-43)"
+    title: "Data protection impact assessment"
+    description: "Where a type of processing is likely to result in a high risk to the rights and freedoms of natural persons, the controller shall carry out an assessment of the impact of the envisaged processing operations on the protection of personal data."
+    evidence_types: [dpia, dpia_register, dpo_consultation_record]
+    testing_frequency: on_change
+    is_key_control: true
+
+  - id: "Art.37"
+    domain: "Controller and Processor Obligations (Art. 24-43)"
+    title: "Designation of the data protection officer"
+    description: "The controller and the processor shall designate a data protection officer where required."
+    evidence_types: [dpo_appointment_record, dpo_contact_published, role_description]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "Art.44"
+    domain: "Transfers to Third Countries (Art. 44-49)"
+    title: "General principle for transfers"
+    description: "Any transfer of personal data to a third country or international organisation shall only take place if the conditions laid down in Chapter V are complied with."
+    evidence_types: [transfer_mechanism_register, scc_document, adequacy_decision_reference]
+    testing_frequency: annual
+    is_key_control: true

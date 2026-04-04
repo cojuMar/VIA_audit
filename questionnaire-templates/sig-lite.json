@@ -1,0 +1,650 @@
+{
+  "slug": "sig-lite",
+  "name": "SIG Lite",
+  "version": "2024",
+  "description": "Shared Assessments SIG Lite — standardised third-party security risk questionnaire covering 18 domains",
+  "estimated_completion_minutes": 45,
+  "domains": [
+    {
+      "id": "A",
+      "name": "Enterprise Risk Management",
+      "questions": [
+        {
+          "id": "A.1",
+          "text": "Does your organisation have a formal Enterprise Risk Management (ERM) program?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Please describe the governance structure and frequency of risk review.",
+          "risk_weight": 2
+        },
+        {
+          "id": "A.2",
+          "text": "Is your ERM program reviewed and approved by executive leadership or the board at least annually?",
+          "type": "yes_no_na",
+          "risk_weight": 2
+        },
+        {
+          "id": "A.3",
+          "text": "Do you conduct a formal risk assessment of information security risks at least annually?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "What methodology or framework (e.g. ISO 31000, NIST RMF) is used?",
+          "risk_weight": 3
+        },
+        {
+          "id": "A.4",
+          "text": "Do you maintain a risk register that is reviewed and updated on a defined schedule?",
+          "type": "yes_no_na",
+          "risk_weight": 2
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "name": "Security Policy",
+      "questions": [
+        {
+          "id": "B.1",
+          "text": "Does your organisation have a documented Information Security Policy that has been approved by management?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        },
+        {
+          "id": "B.2",
+          "text": "How frequently is your Information Security Policy reviewed and updated?",
+          "type": "multi_select",
+          "options": ["Annually", "Every 2 years", "Ad hoc / event-driven only", "Never", "Not applicable"],
+          "risk_weight": 2
+        },
+        {
+          "id": "B.3",
+          "text": "Is your security policy communicated to all employees and relevant contractors?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe the communication and acknowledgement mechanism used.",
+          "risk_weight": 2
+        },
+        {
+          "id": "B.4",
+          "text": "Do you have a documented acceptable use policy covering corporate systems, data, and internet access?",
+          "type": "yes_no_na",
+          "risk_weight": 2
+        }
+      ]
+    },
+    {
+      "id": "C",
+      "name": "Organisational Security",
+      "questions": [
+        {
+          "id": "C.1",
+          "text": "Is there a designated individual or team responsible for information security (e.g. CISO, Security Officer)?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Please provide the role title and reporting line.",
+          "risk_weight": 3
+        },
+        {
+          "id": "C.2",
+          "text": "Are information security responsibilities defined and communicated within role descriptions or job profiles?",
+          "type": "yes_no_na",
+          "risk_weight": 2
+        },
+        {
+          "id": "C.3",
+          "text": "Does your organisation have a security awareness training programme for all personnel?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe training frequency, delivery method, and tracking of completion.",
+          "risk_weight": 3
+        },
+        {
+          "id": "C.4",
+          "text": "Do you conduct security assessments or audits of your own organisation at least annually (e.g. internal audit, external pen test)?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        }
+      ]
+    },
+    {
+      "id": "D",
+      "name": "Asset and Information Management",
+      "questions": [
+        {
+          "id": "D.1",
+          "text": "Do you maintain a formal inventory of information assets (hardware, software, and data)?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        },
+        {
+          "id": "D.2",
+          "text": "Are information assets classified according to a defined data classification scheme?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe the classification tiers and how they are enforced.",
+          "risk_weight": 3
+        },
+        {
+          "id": "D.3",
+          "text": "Do you have documented procedures for the secure disposal of physical and electronic media?",
+          "type": "yes_no_na",
+          "risk_weight": 2
+        },
+        {
+          "id": "D.4",
+          "text": "Are data handling and retention policies defined and enforced for each data classification tier?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        }
+      ]
+    },
+    {
+      "id": "E",
+      "name": "Human Resources Security",
+      "questions": [
+        {
+          "id": "E.1",
+          "text": "Do you perform background checks on employees prior to employment (or within a defined onboarding window)?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe the scope of checks performed and any role-based variations.",
+          "risk_weight": 3
+        },
+        {
+          "id": "E.2",
+          "text": "Do employees sign confidentiality or non-disclosure agreements upon hire?",
+          "type": "yes_no_na",
+          "risk_weight": 2
+        },
+        {
+          "id": "E.3",
+          "text": "Is there a documented offboarding process that includes timely revocation of system access?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "What is the target SLA for access revocation after termination?",
+          "risk_weight": 4
+        },
+        {
+          "id": "E.4",
+          "text": "Do you conduct role-specific security training for personnel with elevated access or sensitive responsibilities?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        }
+      ]
+    },
+    {
+      "id": "F",
+      "name": "Physical and Environmental Security",
+      "questions": [
+        {
+          "id": "F.1",
+          "text": "Do you operate physical data centres or server rooms under your direct control?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe physical access controls, surveillance, and environmental monitoring in place.",
+          "risk_weight": 3
+        },
+        {
+          "id": "F.2",
+          "text": "Are physical access rights to secure areas reviewed and updated at defined intervals?",
+          "type": "yes_no_na",
+          "risk_weight": 2
+        },
+        {
+          "id": "F.3",
+          "text": "Are environmental controls (HVAC, fire suppression, flood detection) in place and monitored for your primary processing facilities?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        },
+        {
+          "id": "F.4",
+          "text": "Is physical access to critical areas logged and reviewed?",
+          "type": "yes_no_na",
+          "risk_weight": 2
+        }
+      ]
+    },
+    {
+      "id": "G",
+      "name": "IT Operations Management",
+      "questions": [
+        {
+          "id": "G.1",
+          "text": "Are change management procedures in place and followed for changes to production systems?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe your change advisory board or approval workflow.",
+          "risk_weight": 3
+        },
+        {
+          "id": "G.2",
+          "text": "Do you conduct capacity planning to ensure availability of systems supporting your service?",
+          "type": "yes_no_na",
+          "risk_weight": 2
+        },
+        {
+          "id": "G.3",
+          "text": "Are production and non-production (development/test) environments separated?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        },
+        {
+          "id": "G.4",
+          "text": "Do you have a documented and tested backup and recovery procedure for critical systems and data?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe backup frequency, offsite/cloud replication, and recovery time objective (RTO).",
+          "risk_weight": 4
+        }
+      ]
+    },
+    {
+      "id": "H",
+      "name": "Access Control",
+      "questions": [
+        {
+          "id": "H.1",
+          "text": "Is access to systems and data provisioned using the principle of least privilege?",
+          "type": "yes_no_na",
+          "risk_weight": 4
+        },
+        {
+          "id": "H.2",
+          "text": "Is multi-factor authentication (MFA) enforced for remote access and privileged account access?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Which MFA mechanisms are used (TOTP, hardware key, push notification) and for which access paths?",
+          "risk_weight": 5
+        },
+        {
+          "id": "H.3",
+          "text": "Are user access rights reviewed and recertified at least annually?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe the recertification process and how exceptions are handled.",
+          "risk_weight": 4
+        },
+        {
+          "id": "H.4",
+          "text": "Are privileged accounts (admin, root, service accounts) managed separately with enhanced controls?",
+          "type": "yes_no_na",
+          "risk_weight": 4
+        },
+        {
+          "id": "H.5",
+          "text": "Do you use a Privileged Access Management (PAM) or password vault solution?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Identify the solution and describe how credentials are rotated.",
+          "risk_weight": 4
+        }
+      ]
+    },
+    {
+      "id": "I",
+      "name": "Application Security",
+      "questions": [
+        {
+          "id": "I.1",
+          "text": "Do you follow a secure software development lifecycle (SSDLC) that includes security requirements and code review?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe the key security gates and whether they are automated or manual.",
+          "risk_weight": 4
+        },
+        {
+          "id": "I.2",
+          "text": "Are your applications subject to regular penetration testing by qualified internal or third-party testers?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe frequency, scope, and how findings are tracked to remediation.",
+          "risk_weight": 4
+        },
+        {
+          "id": "I.3",
+          "text": "Do you perform automated static (SAST) or dynamic (DAST) application security testing as part of your CI/CD pipeline?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        },
+        {
+          "id": "I.4",
+          "text": "Do you have a documented vulnerability disclosure or bug bounty programme?",
+          "type": "yes_no_na",
+          "risk_weight": 2
+        }
+      ]
+    },
+    {
+      "id": "J",
+      "name": "Cybersecurity Incident Management",
+      "questions": [
+        {
+          "id": "J.1",
+          "text": "Do you have a documented and tested Incident Response Plan (IRP)?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "When was the IRP last tested (tabletop exercise or live drill)?",
+          "risk_weight": 4
+        },
+        {
+          "id": "J.2",
+          "text": "Do you have a defined process for notifying affected customers of a security breach within a specified timeframe?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "What is your committed notification timeframe and channel?",
+          "risk_weight": 5
+        },
+        {
+          "id": "J.3",
+          "text": "Have you experienced a material security incident in the past 24 months that affected customer data?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe the nature of the incident, impact, and remediation taken.",
+          "risk_weight": 5
+        },
+        {
+          "id": "J.4",
+          "text": "Do you maintain and review security incident logs for at least 12 months?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        }
+      ]
+    },
+    {
+      "id": "K",
+      "name": "Operational Resilience",
+      "questions": [
+        {
+          "id": "K.1",
+          "text": "Do you have a documented Business Continuity Plan (BCP) that covers your core service delivery?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe your recovery time objective (RTO) and recovery point objective (RPO) for critical systems.",
+          "risk_weight": 4
+        },
+        {
+          "id": "K.2",
+          "text": "Is the BCP tested at least annually?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe the test type (tabletop, simulation, full failover) and date of last test.",
+          "risk_weight": 3
+        },
+        {
+          "id": "K.3",
+          "text": "Do you have a Disaster Recovery Plan (DRP) for your critical IT systems with documented RTOs and RPOs?",
+          "type": "yes_no_na",
+          "risk_weight": 4
+        },
+        {
+          "id": "K.4",
+          "text": "Do you have redundant infrastructure or failover capabilities to maintain service availability?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe geographic distribution and failover mechanism.",
+          "risk_weight": 3
+        }
+      ]
+    },
+    {
+      "id": "L",
+      "name": "Compliance",
+      "questions": [
+        {
+          "id": "L.1",
+          "text": "Which of the following certifications or attestations does your organisation currently hold? Select all that apply.",
+          "type": "multi_select",
+          "options": [
+            "SOC 2 Type I",
+            "SOC 2 Type II",
+            "ISO 27001",
+            "ISO 27701",
+            "PCI DSS",
+            "HIPAA",
+            "FedRAMP",
+            "CSA STAR",
+            "HITRUST CSF",
+            "None of the above"
+          ],
+          "risk_weight": 4
+        },
+        {
+          "id": "L.2",
+          "text": "Are you subject to any regulatory data protection obligations (e.g. GDPR, CCPA) relevant to the data you process on our behalf?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "List the applicable regulations and describe your compliance programme.",
+          "risk_weight": 4
+        },
+        {
+          "id": "L.3",
+          "text": "Have you been subject to any regulatory enforcement actions, fines, or material findings in the past 3 years?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe the finding, regulator, and outcome.",
+          "risk_weight": 5
+        },
+        {
+          "id": "L.4",
+          "text": "Do you have a compliance monitoring programme that tracks adherence to applicable laws, regulations, and contractual obligations?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        }
+      ]
+    },
+    {
+      "id": "M",
+      "name": "End User Device and Mobile Security",
+      "questions": [
+        {
+          "id": "M.1",
+          "text": "Is a Mobile Device Management (MDM) or Unified Endpoint Management (UEM) solution used for corporate devices?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Identify the solution and describe key enforced policies (encryption, PIN, remote wipe).",
+          "risk_weight": 3
+        },
+        {
+          "id": "M.2",
+          "text": "Is full-disk encryption enforced on all laptops and mobile devices used to access corporate data?",
+          "type": "yes_no_na",
+          "risk_weight": 4
+        },
+        {
+          "id": "M.3",
+          "text": "Do you have a documented Bring Your Own Device (BYOD) policy that defines security requirements for personal devices accessing corporate systems?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        },
+        {
+          "id": "M.4",
+          "text": "Is endpoint detection and response (EDR) or antivirus software deployed and maintained on all end-user devices?",
+          "type": "yes_no_na",
+          "risk_weight": 4
+        }
+      ]
+    },
+    {
+      "id": "N",
+      "name": "Network Security Management",
+      "questions": [
+        {
+          "id": "N.1",
+          "text": "Is network access segmented using firewalls, VLANs, or micro-segmentation to limit lateral movement?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe the segmentation architecture for production environments.",
+          "risk_weight": 4
+        },
+        {
+          "id": "N.2",
+          "text": "Do you employ intrusion detection or prevention systems (IDS/IPS) on your network perimeter and/or internally?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        },
+        {
+          "id": "N.3",
+          "text": "Is remote access to your network restricted to authorised personnel and secured via VPN or Zero Trust architecture?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe the remote access mechanism and MFA requirements.",
+          "risk_weight": 4
+        },
+        {
+          "id": "N.4",
+          "text": "Are firewall rule sets reviewed at a defined frequency to remove unnecessary rules?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        }
+      ]
+    },
+    {
+      "id": "O",
+      "name": "Privacy",
+      "questions": [
+        {
+          "id": "O.1",
+          "text": "Do you maintain a publicly available privacy notice or policy that describes how personal data is collected, used, and shared?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        },
+        {
+          "id": "O.2",
+          "text": "Do you have documented procedures to handle data subject access, deletion, and correction requests within regulatory timeframes?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "What is your target response time and how are requests tracked?",
+          "risk_weight": 4
+        },
+        {
+          "id": "O.3",
+          "text": "Do you have a Data Protection Officer (DPO) or equivalent privacy role?",
+          "type": "yes_no_na",
+          "risk_weight": 2
+        },
+        {
+          "id": "O.4",
+          "text": "Do you conduct Data Protection Impact Assessments (DPIAs) for high-risk processing activities?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        },
+        {
+          "id": "O.5",
+          "text": "Do you use any sub-processors or third parties to process personal data on your customers' behalf?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Provide a list of sub-processors and describe your sub-processor oversight programme.",
+          "risk_weight": 4
+        }
+      ]
+    },
+    {
+      "id": "P",
+      "name": "Threat Management",
+      "questions": [
+        {
+          "id": "P.1",
+          "text": "Do you have a vulnerability management programme that scans infrastructure and applications on a regular schedule?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe scan frequency and your SLA for remediating critical and high vulnerabilities.",
+          "risk_weight": 4
+        },
+        {
+          "id": "P.2",
+          "text": "Do you subscribe to threat intelligence feeds or information sharing communities (e.g. ISACs) relevant to your industry?",
+          "type": "yes_no_na",
+          "risk_weight": 2
+        },
+        {
+          "id": "P.3",
+          "text": "Do you conduct threat modelling on critical systems or new features prior to deployment?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        },
+        {
+          "id": "P.4",
+          "text": "Have you deployed anti-phishing and email security controls (e.g. SPF, DKIM, DMARC, email gateway filtering)?",
+          "type": "yes_no_na",
+          "risk_weight": 4
+        }
+      ]
+    },
+    {
+      "id": "Q",
+      "name": "Server Security",
+      "questions": [
+        {
+          "id": "Q.1",
+          "text": "Are server hardening standards applied to all production servers (physical and virtual)?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Identify the baseline used (e.g. CIS Benchmarks, DISA STIGs) and how compliance is verified.",
+          "risk_weight": 4
+        },
+        {
+          "id": "Q.2",
+          "text": "Is patch management performed for operating systems and server software within defined SLAs based on criticality?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "What are your patching SLAs for critical, high, and medium severity patches?",
+          "risk_weight": 4
+        },
+        {
+          "id": "Q.3",
+          "text": "Is host-based intrusion detection or file integrity monitoring deployed on production servers?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        },
+        {
+          "id": "Q.4",
+          "text": "Do you use configuration management tooling (e.g. Ansible, Chef, Puppet, Terraform) to enforce server configurations as code?",
+          "type": "yes_no_na",
+          "risk_weight": 2
+        }
+      ]
+    },
+    {
+      "id": "R",
+      "name": "Encryption and Key Management",
+      "questions": [
+        {
+          "id": "R.1",
+          "text": "Is data encrypted in transit using TLS 1.2 or higher for all external-facing services?",
+          "type": "yes_no_na",
+          "risk_weight": 5
+        },
+        {
+          "id": "R.2",
+          "text": "Is sensitive data encrypted at rest using industry-standard algorithms (e.g. AES-256)?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe which data stores are encrypted and the encryption mechanism.",
+          "risk_weight": 5
+        },
+        {
+          "id": "R.3",
+          "text": "Do you have a documented key management policy that covers key generation, rotation, storage, and destruction?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe key rotation frequency and the key management system used.",
+          "risk_weight": 4
+        },
+        {
+          "id": "R.4",
+          "text": "Are cryptographic keys stored separately from the data they protect, using a dedicated key management service or HSM?",
+          "type": "yes_no_na",
+          "risk_weight": 4
+        },
+        {
+          "id": "R.5",
+          "text": "Are deprecated or weak cryptographic algorithms (e.g. MD5, SHA-1, DES, RC4) prohibited in your systems?",
+          "type": "yes_no_na",
+          "follow_up_if": "no",
+          "follow_up": "Please describe which legacy algorithms remain in use and your remediation timeline.",
+          "risk_weight": 4
+        }
+      ]
+    }
+  ]
+}

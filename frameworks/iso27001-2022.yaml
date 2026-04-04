@@ -1,0 +1,704 @@
+slug: iso27001-2022
+name: "ISO/IEC 27001:2022"
+version: "2022"
+category: security
+issuing_body: ISO
+description: "Information security management systems — Requirements (2022 revision with updated Annex A controls)"
+metadata:
+  renewal_period_days: 1095
+  filing_required: false
+  typical_audit_window_days: 30
+  cost_tier: high
+  geographic_scope: global
+  mandatory_for: []
+
+domains:
+  - name: "Organizational Controls (5)"
+    prefix: "5"
+  - name: "People Controls (6)"
+    prefix: "6"
+  - name: "Physical Controls (7)"
+    prefix: "7"
+  - name: "Technological Controls (8)"
+    prefix: "8"
+
+controls:
+  - id: "5.1"
+    domain: "Organizational Controls (5)"
+    title: "Policies for information security"
+    description: "Information security policy and topic-specific policies shall be defined, approved by management, published, communicated to and acknowledged by relevant personnel and relevant interested parties, and reviewed at planned intervals."
+    evidence_types: [policy, management_approval, communication_log]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "5.2"
+    domain: "Organizational Controls (5)"
+    title: "Information security roles and responsibilities"
+    description: "Information security roles and responsibilities shall be defined and allocated according to the organisation's needs."
+    evidence_types: [role_description, org_chart, raci_matrix]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "5.3"
+    domain: "Organizational Controls (5)"
+    title: "Segregation of duties"
+    description: "Conflicting duties and conflicting areas of responsibility shall be segregated."
+    evidence_types: [role_matrix, access_review, sod_conflict_report]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "5.4"
+    domain: "Organizational Controls (5)"
+    title: "Management responsibilities"
+    description: "Management shall require all personnel to apply information security in accordance with the established information security policy, topic-specific policies and procedures."
+    evidence_types: [training_completion, policy_acknowledgement, management_directive]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "5.5"
+    domain: "Organizational Controls (5)"
+    title: "Contact with authorities"
+    description: "The organisation shall establish and maintain contact with relevant authorities."
+    evidence_types: [contact_list, incident_report, regulatory_correspondence]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "5.6"
+    domain: "Organizational Controls (5)"
+    title: "Contact with special interest groups"
+    description: "The organisation shall establish and maintain contact with special interest groups or other specialist security forums and professional associations."
+    evidence_types: [membership_record, threat_intel_subscription]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "5.7"
+    domain: "Organizational Controls (5)"
+    title: "Threat intelligence"
+    description: "Information relating to information security threats shall be collected and analysed to produce threat intelligence."
+    evidence_types: [threat_intel_report, feed_configuration, analysis_log]
+    testing_frequency: monthly
+    is_key_control: false
+
+  - id: "5.8"
+    domain: "Organizational Controls (5)"
+    title: "Information security in project management"
+    description: "Information security shall be integrated into project management."
+    evidence_types: [project_charter, security_gate_evidence, risk_log]
+    testing_frequency: on_change
+    is_key_control: false
+
+  - id: "5.9"
+    domain: "Organizational Controls (5)"
+    title: "Inventory of information and other associated assets"
+    description: "An inventory of information and other associated assets, including owners, shall be developed and maintained."
+    evidence_types: [asset_inventory, data_register, ownership_assignment]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "5.10"
+    domain: "Organizational Controls (5)"
+    title: "Acceptable use of information and other associated assets"
+    description: "Rules for the acceptable use and procedures for handling information and other associated assets shall be identified, documented and implemented."
+    evidence_types: [acceptable_use_policy, training_completion, policy_acknowledgement]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "5.11"
+    domain: "Organizational Controls (5)"
+    title: "Return of assets"
+    description: "Personnel and other interested parties shall return all organisational assets in their possession upon change or termination of their employment, contract or agreement."
+    evidence_types: [termination_checklist, asset_return_record]
+    testing_frequency: on_change
+    is_key_control: false
+
+  - id: "5.12"
+    domain: "Organizational Controls (5)"
+    title: "Classification of information"
+    description: "Information shall be classified according to the information security needs of the organisation based on confidentiality, integrity, availability and relevant interested party requirements."
+    evidence_types: [classification_policy, data_inventory, labeling_screenshot]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "5.13"
+    domain: "Organizational Controls (5)"
+    title: "Labelling of information"
+    description: "An appropriate set of procedures for information labelling shall be developed and implemented in accordance with the information classification scheme."
+    evidence_types: [labeling_procedure, screenshot, sample_document]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "5.14"
+    domain: "Organizational Controls (5)"
+    title: "Information transfer"
+    description: "Information transfer rules, procedures, or agreements shall be in place for all types of transfer facilities within the organisation and between the organisation and other parties."
+    evidence_types: [transfer_policy, nda, data_sharing_agreement, encryption_evidence]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "5.15"
+    domain: "Organizational Controls (5)"
+    title: "Access control"
+    description: "Rules to control physical and logical access to information and other associated assets shall be established and implemented based on business and information security requirements."
+    evidence_types: [access_control_policy, access_review, role_matrix]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "5.16"
+    domain: "Organizational Controls (5)"
+    title: "Identity management"
+    description: "The full lifecycle of identities shall be managed."
+    evidence_types: [iam_process_doc, provisioning_log, access_review]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "5.17"
+    domain: "Organizational Controls (5)"
+    title: "Authentication information"
+    description: "Allocation and management of authentication information shall be controlled by a management process, including advising personnel on appropriate handling of authentication information."
+    evidence_types: [password_policy, mfa_enrollment_screenshot, secret_management_config]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "5.18"
+    domain: "Organizational Controls (5)"
+    title: "Access rights"
+    description: "Access rights to information and other associated assets shall be provisioned, reviewed, modified and removed in accordance with the organisation's topic-specific policy on and rules for access control."
+    evidence_types: [access_provisioning_log, access_review, deprovisioning_ticket]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "5.19"
+    domain: "Organizational Controls (5)"
+    title: "Information security in supplier relationships"
+    description: "Processes and procedures shall be defined and implemented to manage the information security risks associated with the use of supplier's products or services."
+    evidence_types: [supplier_policy, vendor_assessment, contract]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "5.20"
+    domain: "Organizational Controls (5)"
+    title: "Addressing information security within supplier agreements"
+    description: "Relevant information security requirements shall be established and agreed with each supplier based on the type of supplier relationship."
+    evidence_types: [supplier_contract, data_processing_agreement, security_addendum]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "5.21"
+    domain: "Organizational Controls (5)"
+    title: "Managing information security in the ICT supply chain"
+    description: "Processes and procedures shall be defined and implemented to manage the information security risks associated with the ICT products and services supply chain."
+    evidence_types: [supply_chain_policy, sbom, vendor_assessment]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "5.22"
+    domain: "Organizational Controls (5)"
+    title: "Monitoring, review and change management of supplier services"
+    description: "The organisation shall regularly monitor, review, evaluate and manage change in supplier information security practices and service delivery."
+    evidence_types: [supplier_audit_report, service_review_minutes, change_notification]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "5.23"
+    domain: "Organizational Controls (5)"
+    title: "Information security for use of cloud services"
+    description: "Processes for acquisition, use, management and exit from cloud services shall be established in accordance with the organisation's information security requirements."
+    evidence_types: [cloud_policy, cloud_risk_assessment, exit_plan]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "5.24"
+    domain: "Organizational Controls (5)"
+    title: "Information security incident management planning and preparation"
+    description: "The organisation shall plan and prepare for managing information security incidents by defining, establishing and communicating information security incident management processes, roles and responsibilities."
+    evidence_types: [incident_response_plan, role_assignment, communication_plan]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "5.25"
+    domain: "Organizational Controls (5)"
+    title: "Assessment and decision on information security events"
+    description: "The organisation shall assess information security events and decide if they are to be categorised as information security incidents."
+    evidence_types: [incident_report, triage_log, classification_criteria]
+    testing_frequency: on_change
+    is_key_control: false
+
+  - id: "5.26"
+    domain: "Organizational Controls (5)"
+    title: "Response to information security incidents"
+    description: "Information security incidents shall be responded to in accordance with the documented procedures."
+    evidence_types: [incident_report, response_log, post_mortem]
+    testing_frequency: on_change
+    is_key_control: true
+
+  - id: "5.27"
+    domain: "Organizational Controls (5)"
+    title: "Learning from information security incidents"
+    description: "Knowledge gained from information security incidents shall be used to strengthen and improve the information security controls."
+    evidence_types: [post_mortem, lessons_learned_report, control_update_evidence]
+    testing_frequency: on_change
+    is_key_control: false
+
+  - id: "5.28"
+    domain: "Organizational Controls (5)"
+    title: "Collection of evidence"
+    description: "The organisation shall establish and implement procedures for the identification, collection, acquisition and preservation of evidence related to information security events."
+    evidence_types: [evidence_handling_procedure, chain_of_custody_log, forensic_report]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "5.29"
+    domain: "Organizational Controls (5)"
+    title: "Information security during disruption"
+    description: "The organisation shall plan how to maintain information security at an appropriate level during disruption."
+    evidence_types: [bcp_document, continuity_test_result, crisis_communication_plan]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "5.30"
+    domain: "Organizational Controls (5)"
+    title: "ICT readiness for business continuity"
+    description: "ICT readiness shall be planned, implemented, maintained and tested based on business continuity objectives and ICT continuity requirements."
+    evidence_types: [dr_plan, dr_test_result, rto_rpo_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "5.31"
+    domain: "Organizational Controls (5)"
+    title: "Legal, statutory, regulatory and contractual requirements"
+    description: "Legal, statutory, regulatory and contractual requirements relevant to information security and the organisation's approach to meet these requirements shall be identified, documented and kept up to date."
+    evidence_types: [legal_register, compliance_calendar, regulatory_correspondence]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "5.32"
+    domain: "Organizational Controls (5)"
+    title: "Intellectual property rights"
+    description: "The organisation shall implement appropriate procedures to protect intellectual property rights."
+    evidence_types: [ip_policy, software_license_inventory, license_audit_report]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "5.33"
+    domain: "Organizational Controls (5)"
+    title: "Protection of records"
+    description: "Records shall be protected from loss, destruction, falsification, unauthorized access and unauthorized release."
+    evidence_types: [records_retention_policy, backup_report, access_control_evidence]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "5.34"
+    domain: "Organizational Controls (5)"
+    title: "Privacy and protection of personal identifiable information"
+    description: "The organisation shall identify and meet the requirements regarding the preservation of privacy and protection of personal identifiable information."
+    evidence_types: [privacy_policy, dpia, data_mapping]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "5.35"
+    domain: "Organizational Controls (5)"
+    title: "Independent review of information security"
+    description: "The organisation's approach to managing information security and its implementation shall be reviewed independently at planned intervals."
+    evidence_types: [internal_audit_report, external_audit_report, management_review_minutes]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "5.36"
+    domain: "Organizational Controls (5)"
+    title: "Compliance with policies, rules and standards for information security"
+    description: "Compliance with the organisation's information security policy, topic-specific policies, rules and standards shall be regularly reviewed."
+    evidence_types: [compliance_review_report, policy_exception_log, audit_finding]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "5.37"
+    domain: "Organizational Controls (5)"
+    title: "Documented operating procedures"
+    description: "Operating procedures for information processing facilities shall be documented and made available to personnel who need them."
+    evidence_types: [runbook, sop, intranet_screenshot]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "6.1"
+    domain: "People Controls (6)"
+    title: "Screening"
+    description: "Background verification checks on all candidates for employment shall be carried out prior to joining the organisation and on an ongoing basis, taking into consideration applicable laws, regulations and ethics."
+    evidence_types: [background_check_policy, background_check_record]
+    testing_frequency: on_change
+    is_key_control: false
+
+  - id: "6.2"
+    domain: "People Controls (6)"
+    title: "Terms and conditions of employment"
+    description: "Employment contractual agreements shall state the personnel's and the organisation's responsibilities for information security."
+    evidence_types: [employment_contract, nda, confidentiality_agreement]
+    testing_frequency: on_change
+    is_key_control: false
+
+  - id: "6.3"
+    domain: "People Controls (6)"
+    title: "Information security awareness, education and training"
+    description: "Personnel and relevant interested parties shall receive appropriate information security awareness, education and training and regular updates of the organisation's information security policy."
+    evidence_types: [training_completion, training_material, awareness_campaign_record]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "6.4"
+    domain: "People Controls (6)"
+    title: "Disciplinary process"
+    description: "A disciplinary process shall be formalized and communicated to take actions against personnel and other relevant interested parties who have committed an information security policy violation."
+    evidence_types: [disciplinary_policy, hr_procedure]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "6.5"
+    domain: "People Controls (6)"
+    title: "Responsibilities after termination or change of employment"
+    description: "Information security responsibilities and duties that remain valid after termination or change of employment shall be defined, enforced and communicated to relevant personnel."
+    evidence_types: [termination_procedure, exit_interview_record, nda]
+    testing_frequency: on_change
+    is_key_control: false
+
+  - id: "6.6"
+    domain: "People Controls (6)"
+    title: "Confidentiality or non-disclosure agreements"
+    description: "Confidentiality or non-disclosure agreements reflecting the organisation's needs for the protection of information shall be identified, documented, regularly reviewed and signed by personnel."
+    evidence_types: [nda, signed_nda_record, review_log]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "6.7"
+    domain: "People Controls (6)"
+    title: "Remote working"
+    description: "Security measures shall be implemented when personnel are working remotely to protect information accessed, processed or stored outside the organisation's premises."
+    evidence_types: [remote_work_policy, vpn_configuration, endpoint_policy]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "6.8"
+    domain: "People Controls (6)"
+    title: "Information security event reporting"
+    description: "The organisation shall provide a mechanism for personnel to report observed or suspected information security events through appropriate channels in a timely manner."
+    evidence_types: [reporting_procedure, incident_log, awareness_material]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "7.1"
+    domain: "Physical Controls (7)"
+    title: "Physical security perimeters"
+    description: "Security perimeters shall be defined and used to protect areas that contain information and other associated assets."
+    evidence_types: [physical_security_policy, site_photo, perimeter_audit_report]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "7.2"
+    domain: "Physical Controls (7)"
+    title: "Physical entry"
+    description: "Secure areas shall be protected by appropriate entry controls and access points to ensure that only authorized personnel are allowed access."
+    evidence_types: [badge_log, visitor_log, access_control_screenshot]
+    testing_frequency: quarterly
+    is_key_control: false
+
+  - id: "7.3"
+    domain: "Physical Controls (7)"
+    title: "Securing offices, rooms and facilities"
+    description: "Physical security for offices, rooms and facilities shall be designed and implemented."
+    evidence_types: [physical_security_assessment, cctv_evidence, lock_audit]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "7.4"
+    domain: "Physical Controls (7)"
+    title: "Physical security monitoring"
+    description: "Premises shall be continuously monitored for unauthorized physical access."
+    evidence_types: [cctv_configuration, alarm_system_evidence, monitoring_log]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "7.5"
+    domain: "Physical Controls (7)"
+    title: "Protecting against physical and environmental threats"
+    description: "Protection against physical and environmental threats, such as natural disasters and other intentional or unintentional physical threats to infrastructure, shall be designed and implemented."
+    evidence_types: [environmental_controls_audit, ups_test_log, fire_suppression_report]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "7.6"
+    domain: "Physical Controls (7)"
+    title: "Working in secure areas"
+    description: "Security measures for working in secure areas shall be designed and implemented."
+    evidence_types: [secure_area_policy, access_log, visitor_escort_procedure]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "8.1"
+    domain: "Technological Controls (8)"
+    title: "User endpoint devices"
+    description: "Information stored on, processed by or accessible via user endpoint devices shall be protected."
+    evidence_types: [endpoint_policy, mdm_configuration, device_inventory]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "8.2"
+    domain: "Technological Controls (8)"
+    title: "Privileged access rights"
+    description: "The allocation and use of privileged access rights shall be restricted and managed."
+    evidence_types: [privileged_access_policy, pam_report, access_review]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "8.3"
+    domain: "Technological Controls (8)"
+    title: "Information access restriction"
+    description: "Access to information and other associated assets shall be restricted in accordance with the established topic-specific policy on access control."
+    evidence_types: [access_control_list, rbac_screenshot, access_review]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "8.4"
+    domain: "Technological Controls (8)"
+    title: "Access to source code"
+    description: "Read and write access to source code, development tools and software libraries shall be appropriately managed."
+    evidence_types: [source_code_access_policy, repository_permission_screenshot, access_review]
+    testing_frequency: quarterly
+    is_key_control: false
+
+  - id: "8.5"
+    domain: "Technological Controls (8)"
+    title: "Secure authentication"
+    description: "Secure authentication technologies and procedures shall be implemented based on information access restrictions and the topic-specific policy on access control."
+    evidence_types: [mfa_enrollment_screenshot, authentication_policy, sso_configuration]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "8.6"
+    domain: "Technological Controls (8)"
+    title: "Capacity management"
+    description: "The use of resources shall be monitored and adjusted in line with current and expected capacity requirements."
+    evidence_types: [capacity_report, monitoring_dashboard_screenshot, scaling_policy]
+    testing_frequency: monthly
+    is_key_control: false
+
+  - id: "8.7"
+    domain: "Technological Controls (8)"
+    title: "Protection against malware"
+    description: "Protection against malware shall be implemented and supported by appropriate user awareness."
+    evidence_types: [antivirus_report, edr_screenshot, malware_policy]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: "8.8"
+    domain: "Technological Controls (8)"
+    title: "Management of technical vulnerabilities"
+    description: "Information about technical vulnerabilities of information systems in use shall be obtained in a timely fashion, the organisation's exposure to such vulnerabilities evaluated and appropriate measures taken."
+    evidence_types: [vulnerability_scan, patch_report, cve_register]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: "8.9"
+    domain: "Technological Controls (8)"
+    title: "Configuration management"
+    description: "Configurations, including security configurations, of hardware, software, services and networks shall be established, documented, implemented, monitored and reviewed."
+    evidence_types: [configuration_baseline, cspm_report, change_log]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "8.10"
+    domain: "Technological Controls (8)"
+    title: "Information deletion"
+    description: "Information stored in information systems, devices or in any other storage media shall be deleted when no longer required."
+    evidence_types: [data_deletion_policy, deletion_log, data_destruction_certificate]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "8.11"
+    domain: "Technological Controls (8)"
+    title: "Data masking"
+    description: "Data masking shall be used in accordance with the organisation's topic-specific policy on access control and other related topic-specific policies, and business requirements, taking applicable legislation into consideration."
+    evidence_types: [data_masking_policy, masking_configuration_screenshot, test_data_report]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "8.12"
+    domain: "Technological Controls (8)"
+    title: "Data leakage prevention"
+    description: "Data leakage prevention measures shall be applied to systems, networks and any other devices that process, store or transmit sensitive information."
+    evidence_types: [dlp_policy, dlp_configuration_screenshot, dlp_report]
+    testing_frequency: quarterly
+    is_key_control: false
+
+  - id: "8.13"
+    domain: "Technological Controls (8)"
+    title: "Information backup"
+    description: "Backup copies of information, software and systems shall be maintained and regularly tested in accordance with the agreed topic-specific policy on backup."
+    evidence_types: [backup_policy, backup_report, restore_test_result]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: "8.14"
+    domain: "Technological Controls (8)"
+    title: "Redundancy of information processing facilities"
+    description: "Information processing facilities shall be implemented with redundancy sufficient to meet availability requirements."
+    evidence_types: [architecture_diagram, redundancy_test_result, sla_document]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "8.15"
+    domain: "Technological Controls (8)"
+    title: "Logging"
+    description: "Logs that record activities, exceptions, faults and other relevant events shall be produced, stored, protected and analysed."
+    evidence_types: [log_policy, log_configuration_screenshot, log_review_report]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "8.16"
+    domain: "Technological Controls (8)"
+    title: "Monitoring activities"
+    description: "Networks, systems and applications shall be monitored for anomalous behaviour and appropriate actions taken to evaluate potential information security incidents."
+    evidence_types: [siem_report, alert_log, monitoring_dashboard_screenshot]
+    testing_frequency: continuous
+    is_key_control: true
+
+  - id: "8.17"
+    domain: "Technological Controls (8)"
+    title: "Clock synchronisation"
+    description: "The clocks of information processing systems used by the organisation shall be synchronised to approved time sources."
+    evidence_types: [ntp_configuration_screenshot, time_sync_report]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "8.18"
+    domain: "Technological Controls (8)"
+    title: "Use of privileged utility programs"
+    description: "The use of utility programs that might be capable of overriding system and application controls shall be restricted and tightly controlled."
+    evidence_types: [privileged_tools_policy, access_review, audit_log]
+    testing_frequency: quarterly
+    is_key_control: false
+
+  - id: "8.19"
+    domain: "Technological Controls (8)"
+    title: "Installation of software on operational systems"
+    description: "Procedures and measures shall be implemented to securely manage software installation on operational systems."
+    evidence_types: [software_installation_policy, approved_software_list, change_ticket]
+    testing_frequency: quarterly
+    is_key_control: false
+
+  - id: "8.20"
+    domain: "Technological Controls (8)"
+    title: "Networks security"
+    description: "Networks and network devices shall be secured, managed and controlled to protect information in systems and applications."
+    evidence_types: [network_security_policy, firewall_rule_review, network_diagram]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "8.21"
+    domain: "Technological Controls (8)"
+    title: "Security of network services"
+    description: "Security mechanisms, service levels and service requirements of network services shall be identified, implemented and monitored."
+    evidence_types: [network_service_agreement, security_configuration, monitoring_log]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "8.22"
+    domain: "Technological Controls (8)"
+    title: "Segregation of networks"
+    description: "Groups of information services, users and information systems shall be segregated in the organisation's networks."
+    evidence_types: [network_segmentation_diagram, vlan_configuration, firewall_rule]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "8.23"
+    domain: "Technological Controls (8)"
+    title: "Web filtering"
+    description: "Access to external websites shall be managed to reduce exposure to malicious content."
+    evidence_types: [web_filter_policy, web_filter_configuration_screenshot, filtering_report]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "8.24"
+    domain: "Technological Controls (8)"
+    title: "Use of cryptography"
+    description: "Rules for the effective use of cryptography, including cryptographic key management, shall be defined and implemented."
+    evidence_types: [cryptography_policy, tls_configuration_screenshot, key_management_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "8.25"
+    domain: "Technological Controls (8)"
+    title: "Secure development life cycle"
+    description: "Rules for the secure development of software and systems shall be established and applied to developments within the organisation."
+    evidence_types: [sdlc_policy, security_gate_evidence, code_review_log]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "8.26"
+    domain: "Technological Controls (8)"
+    title: "Application security requirements"
+    description: "Information security requirements shall be identified, specified and approved when developing or acquiring applications."
+    evidence_types: [security_requirements_doc, threat_model, acceptance_criteria]
+    testing_frequency: on_change
+    is_key_control: false
+
+  - id: "8.27"
+    domain: "Technological Controls (8)"
+    title: "Secure system architecture and engineering principles"
+    description: "Principles for engineering secure systems shall be established, documented, maintained and applied to any information system development activities."
+    evidence_types: [security_architecture_doc, design_review_record, threat_model]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "8.28"
+    domain: "Technological Controls (8)"
+    title: "Secure coding"
+    description: "Secure coding principles shall be applied to software development."
+    evidence_types: [secure_coding_standard, sast_report, code_review_log]
+    testing_frequency: on_change
+    is_key_control: true
+
+  - id: "8.29"
+    domain: "Technological Controls (8)"
+    title: "Security testing in development and acceptance"
+    description: "Security testing processes shall be defined and implemented in the development life cycle."
+    evidence_types: [security_test_plan, sast_report, dast_report, penetration_test_report]
+    testing_frequency: on_change
+    is_key_control: true
+
+  - id: "8.30"
+    domain: "Technological Controls (8)"
+    title: "Outsourced development"
+    description: "The organisation shall direct, monitor and review the activities related to outsourced system development."
+    evidence_types: [outsourcing_agreement, security_audit_report, code_review_log]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "8.31"
+    domain: "Technological Controls (8)"
+    title: "Separation of development, test and production environments"
+    description: "Development, testing and production environments shall be separated and secured."
+    evidence_types: [environment_policy, access_review, network_diagram]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "8.32"
+    domain: "Technological Controls (8)"
+    title: "Change management"
+    description: "Changes to information processing facilities and information systems shall be subject to change management procedures."
+    evidence_types: [change_management_policy, change_ticket, approval_record]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "8.33"
+    domain: "Technological Controls (8)"
+    title: "Test information"
+    description: "Test information shall be appropriately selected, protected and managed."
+    evidence_types: [test_data_policy, masking_evidence, data_handling_record]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "8.34"
+    domain: "Technological Controls (8)"
+    title: "Protection of information systems during audit testing"
+    description: "Audit tests and other assurance activities involving assessment of operational systems shall be planned and agreed between the tester and appropriate management."
+    evidence_types: [audit_plan, management_approval, test_scope_agreement]
+    testing_frequency: annual
+    is_key_control: false

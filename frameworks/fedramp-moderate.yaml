@@ -1,0 +1,295 @@
+slug: fedramp-moderate
+name: "FedRAMP Moderate"
+version: "2024"
+category: security
+issuing_body: GSA
+description: "Federal Risk and Authorization Management Program at Moderate impact level — standardised security assessment for cloud services used by US federal agencies"
+metadata:
+  renewal_period_days: 365
+  filing_required: true
+  typical_audit_window_days: 180
+  cost_tier: high
+  geographic_scope: us
+  mandatory_for: [federal_cloud_service_provider]
+  note: "FedRAMP Moderate baseline is a tailored subset of NIST SP 800-53 Rev 5 Moderate controls with FedRAMP-specific parameters."
+
+domains:
+  - name: "Access Control (AC)"
+    prefix: AC
+  - name: "Audit and Accountability (AU)"
+    prefix: AU
+  - name: "Configuration Management (CM)"
+    prefix: CM
+  - name: "Contingency Planning (CP)"
+    prefix: CP
+  - name: "Identification and Authentication (IA)"
+    prefix: IA
+  - name: "Incident Response (IR)"
+    prefix: IR
+  - name: "Risk Assessment (RA)"
+    prefix: RA
+  - name: "System and Communications Protection (SC)"
+    prefix: SC
+  - name: "System and Information Integrity (SI)"
+    prefix: SI
+  - name: "Supply Chain Risk Management (SR)"
+    prefix: SR
+  - name: "FedRAMP-Specific Requirements"
+    prefix: FR
+
+controls:
+  - id: AC-2
+    domain: "Access Control (AC)"
+    title: "Account Management"
+    description: "Manage system accounts, group memberships, privileges, workflow, notifications, deactivations, and authorizations. FedRAMP requires automated mechanisms for account management notifications."
+    evidence_types: [account_management_procedure, access_review, provisioning_log, automated_notification_evidence]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: AC-2(1)
+    domain: "Access Control (AC)"
+    title: "Account Management — Automated System Account Management"
+    description: "Employ automated mechanisms to support the management of information system accounts."
+    evidence_types: [iam_automation_screenshot, provisioning_workflow, deprovisioning_automation]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: AC-3
+    domain: "Access Control (AC)"
+    title: "Access Enforcement"
+    description: "Enforce approved authorizations for logical access to the system. FedRAMP requires discretionary and mandatory access controls."
+    evidence_types: [access_control_list, rbac_screenshot, policy_enforcement_evidence]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: AC-6(1)
+    domain: "Access Control (AC)"
+    title: "Least Privilege — Authorize Access to Security Functions"
+    description: "Authorize access for only those individuals who have explicit access authorisations for security functions."
+    evidence_types: [privileged_user_list, access_review, pam_report]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: AC-17
+    domain: "Access Control (AC)"
+    title: "Remote Access"
+    description: "Establish and document usage restrictions, configuration/connection requirements, and implementation guidance for each type of remote access. FedRAMP requires encrypted remote sessions."
+    evidence_types: [remote_access_policy, vpn_configuration, mfa_evidence, tls_screenshot]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: AC-17(1)
+    domain: "Access Control (AC)"
+    title: "Remote Access — Monitoring and Control"
+    description: "Employ automated mechanisms to monitor and control remote access methods."
+    evidence_types: [remote_session_log, monitoring_dashboard_screenshot, alert_configuration]
+    testing_frequency: quarterly
+    is_key_control: false
+
+  - id: AU-2
+    domain: "Audit and Accountability (AU)"
+    title: "Event Logging"
+    description: "Identify and document the types of events that the system is capable of logging. FedRAMP requires logging of account management, privilege use, policy violations, system startup/shutdown."
+    evidence_types: [audit_logging_policy, log_configuration_screenshot, event_type_list]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: AU-6
+    domain: "Audit and Accountability (AU)"
+    title: "Audit Record Review, Analysis, and Reporting"
+    description: "Review and analyze system audit logs at least weekly for indications of inappropriate or unusual activity. FedRAMP requires automated integration with SIEM."
+    evidence_types: [log_review_report, siem_integration_screenshot, weekly_review_log]
+    testing_frequency: weekly
+    is_key_control: true
+
+  - id: AU-9
+    domain: "Audit and Accountability (AU)"
+    title: "Protection of Audit Information"
+    description: "Protect audit information and tools from unauthorized access, modification, and deletion."
+    evidence_types: [log_integrity_evidence, access_control_screenshot, immutable_storage_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: AU-11
+    domain: "Audit and Accountability (AU)"
+    title: "Audit Record Retention"
+    description: "Retain audit records for a period consistent with records retention requirements to provide support for after-the-fact investigations of security incidents. FedRAMP requires 90 days online, 1 year total."
+    evidence_types: [retention_policy, log_storage_screenshot, retention_report]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: CM-2
+    domain: "Configuration Management (CM)"
+    title: "Baseline Configuration"
+    description: "Develop, document, and maintain under configuration control a current baseline configuration of the system. FedRAMP requires US-CERT hardening guides or CIS benchmarks."
+    evidence_types: [configuration_baseline, cis_benchmark_report, change_log]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: CM-3
+    domain: "Configuration Management (CM)"
+    title: "Configuration Change Control"
+    description: "Determine types of changes to the system that are configuration-controlled. Review and approve/disapprove configuration changes and document configuration change decisions."
+    evidence_types: [change_management_policy, change_ticket, approval_record, ccb_minutes]
+    testing_frequency: on_change
+    is_key_control: true
+
+  - id: CM-6
+    domain: "Configuration Management (CM)"
+    title: "Configuration Settings"
+    description: "Establish and document configuration settings for components employed within the system. FedRAMP requires SCAP-validated tools for automated compliance checking."
+    evidence_types: [configuration_standard, scap_scan_report, compliance_dashboard_screenshot]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: CM-8
+    domain: "Configuration Management (CM)"
+    title: "System Component Inventory"
+    description: "Develop and document an inventory of system components. FedRAMP requires automated inventory tools."
+    evidence_types: [asset_inventory, cmdb_screenshot, automated_discovery_report]
+    testing_frequency: quarterly
+    is_key_control: false
+
+  - id: CP-2
+    domain: "Contingency Planning (CP)"
+    title: "Contingency Plan"
+    description: "Develop a contingency plan for the system. FedRAMP requires coordination with Federal agencies that depend on the service."
+    evidence_types: [contingency_plan, federal_agency_coordination_evidence, plan_approval_record]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: CP-4
+    domain: "Contingency Planning (CP)"
+    title: "Contingency Plan Testing"
+    description: "Test the contingency plan for the system at least annually to determine the effectiveness of the plan."
+    evidence_types: [dr_test_result, tabletop_exercise_record, test_report]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: CP-9
+    domain: "Contingency Planning (CP)"
+    title: "System Backup"
+    description: "Conduct backups of user-level information, system-level information, and system documentation. FedRAMP requires geographic separation of backups."
+    evidence_types: [backup_policy, backup_report, offsite_storage_evidence, restore_test_result]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: IA-2
+    domain: "Identification and Authentication (IA)"
+    title: "Identification and Authentication — Organizational Users"
+    description: "Uniquely identify and authenticate organizational users. FedRAMP requires PIV/CAC credentials for privileged accounts."
+    evidence_types: [authentication_policy, mfa_enrollment_screenshot, piv_integration_evidence]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: IA-2(1)
+    domain: "Identification and Authentication (IA)"
+    title: "Identification and Authentication — MFA for Privileged Accounts"
+    description: "Implement MFA for access to privileged accounts."
+    evidence_types: [mfa_enrollment_screenshot, privileged_account_report, mfa_policy]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: IA-2(2)
+    domain: "Identification and Authentication (IA)"
+    title: "Identification and Authentication — MFA for Non-Privileged Accounts"
+    description: "Implement MFA for access to non-privileged accounts."
+    evidence_types: [mfa_enrollment_screenshot, non_privileged_mfa_report, mfa_policy]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: IR-4
+    domain: "Incident Response (IR)"
+    title: "Incident Handling"
+    description: "Implement an incident handling capability. FedRAMP requires reporting to US-CERT within 1 hour for critical/high incidents."
+    evidence_types: [incident_response_plan, incident_report, us_cert_notification_record]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: IR-6
+    domain: "Incident Response (IR)"
+    title: "Incident Reporting"
+    description: "Require personnel to report suspected incidents. FedRAMP specifies reporting timelines to authorizing agencies."
+    evidence_types: [reporting_procedure, incident_log, agency_notification_record]
+    testing_frequency: on_change
+    is_key_control: true
+
+  - id: RA-3
+    domain: "Risk Assessment (RA)"
+    title: "Risk Assessment"
+    description: "Conduct a risk assessment and update the risk assessment when there are significant changes to the system. FedRAMP requires FIPS 199 categorization."
+    evidence_types: [risk_assessment_report, fips199_categorization, risk_register]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: RA-5
+    domain: "Risk Assessment (RA)"
+    title: "Vulnerability Monitoring and Scanning"
+    description: "Monitor and scan for vulnerabilities. FedRAMP requires weekly OS/infrastructure scans, monthly web application scans using SCAP-validated tools."
+    evidence_types: [vulnerability_scan, weekly_scan_evidence, web_app_scan_report]
+    testing_frequency: weekly
+    is_key_control: true
+
+  - id: SC-7
+    domain: "System and Communications Protection (SC)"
+    title: "Boundary Protection"
+    description: "Monitor and control communications at the external boundary of the system and at key internal boundaries. FedRAMP requires government-only IP ranges for federal data."
+    evidence_types: [firewall_rule_review, network_diagram, boundary_protection_evidence]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: SC-8
+    domain: "System and Communications Protection (SC)"
+    title: "Transmission Confidentiality and Integrity"
+    description: "Implement cryptographic mechanisms to prevent unauthorized disclosure and detect changes during transmission. FedRAMP requires FIPS 140-2/3 validated cryptographic modules."
+    evidence_types: [tls_configuration_screenshot, fips_validation_certificate, ssl_scan_report]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: SC-28
+    domain: "System and Communications Protection (SC)"
+    title: "Protection of Information at Rest"
+    description: "Implement cryptographic mechanisms to prevent unauthorized disclosure and modification at rest. FedRAMP requires FIPS 140-2/3 validated encryption."
+    evidence_types: [encryption_policy, fips_validation_certificate, disk_encryption_screenshot]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: SI-2
+    domain: "System and Information Integrity (SI)"
+    title: "Flaw Remediation"
+    description: "Identify, report, and correct information system flaws. FedRAMP requires patches within 30 days for critical, 90 days for high vulnerabilities."
+    evidence_types: [patch_report, vulnerability_scan, remediation_sla_evidence]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: SI-3
+    domain: "System and Information Integrity (SI)"
+    title: "Malicious Code Protection"
+    description: "Implement malicious code protection at system entry/exit points. FedRAMP requires centrally managed, automatically updated anti-malware."
+    evidence_types: [edr_deployment_screenshot, central_management_evidence, signature_update_log]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: SR-3
+    domain: "Supply Chain Risk Management (SR)"
+    title: "Supply Chain Controls and Processes"
+    description: "Establish a process to identify and address supply chain weaknesses. FedRAMP requires supply chain risk management plan."
+    evidence_types: [supply_chain_policy, scrm_plan, vendor_assessment]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: FR.ATO-1
+    domain: "FedRAMP-Specific Requirements"
+    title: "Authority to Operate documentation"
+    description: "Maintain current System Security Plan (SSP), Security Assessment Report (SAR), Plan of Action and Milestones (POA&M), and continuous monitoring deliverables."
+    evidence_types: [ssp_document, sar_report, poam_document, continuous_monitoring_report]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: FR.CONMON-1
+    domain: "FedRAMP-Specific Requirements"
+    title: "Continuous Monitoring deliverables submission"
+    description: "Submit monthly continuous monitoring deliverables to the FedRAMP PMO and authorising agencies including vulnerability scanning results, SIEM reports, and POA&M updates."
+    evidence_types: [monthly_conmon_package, vulnerability_scan, poam_update, siem_report]
+    testing_frequency: monthly
+    is_key_control: true

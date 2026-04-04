@@ -1,0 +1,283 @@
+slug: soc2-type1
+name: "SOC 2 Type I"
+version: "2017"
+category: security
+issuing_body: AICPA
+description: "Service Organization Control 2 Type I — Trust Services Criteria evaluation at a single point in time"
+metadata:
+  renewal_period_days: null
+  filing_required: false
+  typical_audit_window_days: 0
+  cost_tier: medium
+  geographic_scope: global
+  mandatory_for: []
+  note: "Type I evaluates the design of controls at a point in time; does not evaluate operating effectiveness over a period."
+
+domains:
+  - name: "Security (CC)"
+    prefix: CC
+  - name: "Availability (A)"
+    prefix: A
+  - name: "Processing Integrity (PI)"
+    prefix: PI
+  - name: "Confidentiality (C)"
+    prefix: C
+  - name: "Privacy (P)"
+    prefix: P
+
+controls:
+  - id: CC1.1
+    domain: "Security (CC)"
+    title: "COSO Principle 1 — Commitment to integrity and ethical values"
+    description: "The entity demonstrates a commitment to integrity and ethical values."
+    evidence_types: [policy, code_of_conduct, training_completion, board_minutes]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: CC1.2
+    domain: "Security (CC)"
+    title: "COSO Principle 2 — Board independence and oversight"
+    description: "The board of directors demonstrates independence from management and exercises oversight of the development and performance of internal control."
+    evidence_types: [board_minutes, org_chart, committee_charter]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: CC1.3
+    domain: "Security (CC)"
+    title: "COSO Principle 3 — Organisational structure and reporting lines"
+    description: "Management establishes, with board oversight, structures, reporting lines, and appropriate authorities and responsibilities."
+    evidence_types: [org_chart, role_description, policy]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: CC1.4
+    domain: "Security (CC)"
+    title: "COSO Principle 4 — Commitment to competence"
+    description: "The entity demonstrates a commitment to attract, develop, and retain competent individuals in alignment with objectives."
+    evidence_types: [training_completion, job_description, performance_review]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: CC1.5
+    domain: "Security (CC)"
+    title: "COSO Principle 5 — Accountability for internal control"
+    description: "The entity holds individuals accountable for their internal control responsibilities."
+    evidence_types: [policy, disciplinary_record, role_acknowledgement]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: CC2.1
+    domain: "Security (CC)"
+    title: "COSO Principle 13 — Use of relevant quality information"
+    description: "The entity obtains or generates and uses relevant, quality information to support the functioning of internal control."
+    evidence_types: [system_log, monitoring_report]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: CC2.2
+    domain: "Security (CC)"
+    title: "COSO Principle 14 — Internal communication"
+    description: "The entity internally communicates information necessary to support the functioning of internal control."
+    evidence_types: [policy, communication_log, training_material]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: CC2.3
+    domain: "Security (CC)"
+    title: "COSO Principle 15 — External communication"
+    description: "The entity communicates with external parties regarding matters affecting the functioning of internal control."
+    evidence_types: [customer_notice, vendor_agreement, public_policy]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: CC3.2
+    domain: "Security (CC)"
+    title: "COSO Principle 7 — Risk identification and analysis"
+    description: "The entity identifies risks to the achievement of its objectives across the entity and analyzes risks as a basis for determining how the risks should be managed."
+    evidence_types: [risk_register, risk_assessment_report]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: CC5.1
+    domain: "Security (CC)"
+    title: "COSO Principle 10 — Selection and development of control activities"
+    description: "The entity selects and develops control activities that contribute to the mitigation of risks to the achievement of objectives."
+    evidence_types: [control_matrix, policy]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: CC5.2
+    domain: "Security (CC)"
+    title: "COSO Principle 11 — General technology controls"
+    description: "The entity selects and develops general control activities over technology to support the achievement of objectives."
+    evidence_types: [it_policy, system_configuration, access_review]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: CC5.3
+    domain: "Security (CC)"
+    title: "COSO Principle 12 — Deployment through policies and procedures"
+    description: "The entity deploys control activities through policies that establish what is expected and procedures that put policies into action."
+    evidence_types: [policy, procedure, training_completion]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: CC6.1
+    domain: "Security (CC)"
+    title: "Logical and physical access controls — design"
+    description: "The entity has designed logical access security software, infrastructure, and architectures over protected information assets."
+    evidence_types: [access_control_list, firewall_rule, architecture_diagram]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: CC6.2
+    domain: "Security (CC)"
+    title: "Registration and authorisation of new users — design"
+    description: "The entity has designed controls to register and authorise new internal and external users prior to granting system access."
+    evidence_types: [access_request_procedure, approval_workflow_screenshot]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: CC6.3
+    domain: "Security (CC)"
+    title: "Role-based access and least privilege — design"
+    description: "The entity has designed controls to authorise, modify, or remove access based on roles and responsibilities."
+    evidence_types: [role_matrix, access_policy, rbac_screenshot]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: CC6.4
+    domain: "Security (CC)"
+    title: "Physical access restrictions — design"
+    description: "The entity has designed controls to restrict physical access to facilities and protected information assets to authorized personnel."
+    evidence_types: [physical_access_policy, badge_system_screenshot]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: CC6.5
+    domain: "Security (CC)"
+    title: "Access revocation on termination — design"
+    description: "The entity has designed controls to discontinue logical and physical protections upon termination."
+    evidence_types: [termination_procedure, off_boarding_checklist]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: CC6.6
+    domain: "Security (CC)"
+    title: "Protection against external threats — design"
+    description: "The entity has designed logical access security measures to protect against threats from sources outside its system boundaries."
+    evidence_types: [firewall_policy, network_diagram, ids_configuration]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: CC6.7
+    domain: "Security (CC)"
+    title: "Transmission and movement controls — design"
+    description: "The entity has designed controls to restrict and protect information during transmission and movement."
+    evidence_types: [encryption_policy, tls_configuration_screenshot]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: CC6.8
+    domain: "Security (CC)"
+    title: "Prevention of unauthorised software — design"
+    description: "The entity has designed controls to prevent or detect the introduction of unauthorised or malicious software."
+    evidence_types: [antivirus_policy, software_allowlist, edr_configuration]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: CC7.1
+    domain: "Security (CC)"
+    title: "Configuration monitoring — design"
+    description: "The entity has designed detection and monitoring procedures to identify changes to configurations."
+    evidence_types: [monitoring_policy, siem_configuration, change_detection_config]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: CC7.2
+    domain: "Security (CC)"
+    title: "Security event monitoring — design"
+    description: "The entity has designed monitoring procedures for anomalies indicative of malicious acts."
+    evidence_types: [siem_policy, alert_configuration_screenshot]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: CC8.1
+    domain: "Security (CC)"
+    title: "Change management process — design"
+    description: "The entity has designed a change management process covering authorization, design, testing, approval, and implementation of changes."
+    evidence_types: [change_management_policy, sdlc_procedure, change_board_charter]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: CC9.1
+    domain: "Security (CC)"
+    title: "Business continuity and risk mitigation — design"
+    description: "The entity has identified and designed risk mitigation activities for risks arising from potential business disruptions."
+    evidence_types: [bcp_document, risk_register]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: CC9.2
+    domain: "Security (CC)"
+    title: "Vendor and business partner risk — design"
+    description: "The entity has designed controls to assess and manage risks associated with vendors and business partners."
+    evidence_types: [vendor_management_policy, due_diligence_questionnaire]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: A1.1
+    domain: "Availability (A)"
+    title: "Capacity and performance monitoring — design"
+    description: "The entity has designed monitoring controls to manage capacity and performance."
+    evidence_types: [capacity_management_policy, monitoring_configuration]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: A1.2
+    domain: "Availability (A)"
+    title: "Environmental protections and recovery — design"
+    description: "The entity has designed environmental protections, backup processes, and recovery infrastructure."
+    evidence_types: [backup_policy, dr_plan, environmental_controls_doc]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: A1.3
+    domain: "Availability (A)"
+    title: "Recovery plan — designed and documented"
+    description: "The entity has documented recovery plan procedures supporting system availability."
+    evidence_types: [dr_plan, bcp_document, rto_rpo_definition]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: PI1.1
+    domain: "Processing Integrity (PI)"
+    title: "Complete and accurate processing — design"
+    description: "The entity has designed controls to achieve complete and accurate processing."
+    evidence_types: [processing_policy, reconciliation_procedure]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: C1.1
+    domain: "Confidentiality (C)"
+    title: "Identification of confidential information — design"
+    description: "The entity has designed controls to identify and maintain confidential information."
+    evidence_types: [data_classification_policy, data_inventory]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: P1.0
+    domain: "Privacy (P)"
+    title: "Privacy notice — designed and published"
+    description: "The entity has designed and published privacy notices describing its privacy practices."
+    evidence_types: [privacy_notice, website_screenshot]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: P8.1
+    domain: "Privacy (P)"
+    title: "Privacy monitoring and enforcement — design"
+    description: "The entity has designed procedures to monitor compliance with its privacy policies and address privacy-related complaints."
+    evidence_types: [complaint_procedure, privacy_audit_plan]
+    testing_frequency: annual
+    is_key_control: false

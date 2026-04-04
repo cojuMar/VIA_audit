@@ -1,0 +1,501 @@
+{
+  "slug": "caiq-v4",
+  "name": "CAIQ v4",
+  "version": "4.0.10",
+  "description": "Cloud Security Alliance Consensus Assessments Initiative Questionnaire v4 — cloud-specific security controls questionnaire aligned to the CSA Cloud Controls Matrix (CCM) v4",
+  "estimated_completion_minutes": 60,
+  "domains": [
+    {
+      "id": "A&A",
+      "name": "Audit and Assurance",
+      "questions": [
+        {
+          "id": "A&A-01",
+          "text": "Do you have an audit and assurance program that aligns with applicable legal, statutory, and regulatory requirements?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe the scope, frequency, and governance of your audit programme.",
+          "risk_weight": 3
+        },
+        {
+          "id": "A&A-02",
+          "text": "Do you make audit reports and certifications (e.g. SOC 2, ISO 27001) available to customers under NDA?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        },
+        {
+          "id": "A&A-03",
+          "text": "Are audit findings tracked to remediation with assigned owners and target dates?",
+          "type": "yes_no_na",
+          "risk_weight": 2
+        }
+      ]
+    },
+    {
+      "id": "BCR",
+      "name": "Business Continuity Management",
+      "questions": [
+        {
+          "id": "BCR-01",
+          "text": "Do you have a Business Continuity Management (BCM) programme that addresses cloud service continuity?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Provide your documented RTO and RPO for the service you provide to us.",
+          "risk_weight": 4
+        },
+        {
+          "id": "BCR-02",
+          "text": "Is your BCM programme tested at least annually to validate effectiveness?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe the test type performed and the date of the most recent test.",
+          "risk_weight": 3
+        },
+        {
+          "id": "BCR-03",
+          "text": "Do you maintain geographically redundant infrastructure to support failover in the event of a regional disruption?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe the geographic distribution of your primary and secondary regions.",
+          "risk_weight": 4
+        }
+      ]
+    },
+    {
+      "id": "CCC",
+      "name": "Change Control and Configuration Management",
+      "questions": [
+        {
+          "id": "CCC-01",
+          "text": "Do you have a formal change management process that requires approval before deploying changes to production cloud environments?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe your change advisory board or approval workflow and emergency change procedure.",
+          "risk_weight": 3
+        },
+        {
+          "id": "CCC-02",
+          "text": "Are cloud infrastructure configurations managed as code and stored in version-controlled repositories?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        },
+        {
+          "id": "CCC-03",
+          "text": "Is automated drift detection or configuration compliance scanning used to identify unauthorised changes to cloud resources?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        }
+      ]
+    },
+    {
+      "id": "CEK",
+      "name": "Cryptography, Encryption and Key Management",
+      "questions": [
+        {
+          "id": "CEK-01",
+          "text": "Do you have a cryptographic key management policy covering key lifecycle (generation, distribution, storage, rotation, and destruction)?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Identify the key management system or HSM used and describe key rotation intervals.",
+          "risk_weight": 4
+        },
+        {
+          "id": "CEK-02",
+          "text": "Is customer data encrypted at rest using AES-256 or equivalent?",
+          "type": "yes_no_na",
+          "risk_weight": 5
+        },
+        {
+          "id": "CEK-03",
+          "text": "Is all data in transit encrypted using TLS 1.2 or higher, with weak cipher suites disabled?",
+          "type": "yes_no_na",
+          "risk_weight": 5
+        },
+        {
+          "id": "CEK-04",
+          "text": "Do you offer customer-managed encryption keys (CMEK) or bring-your-own-key (BYOK) capabilities?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        }
+      ]
+    },
+    {
+      "id": "DCS",
+      "name": "Datacenter Security",
+      "questions": [
+        {
+          "id": "DCS-01",
+          "text": "Are the physical data centres hosting your cloud service certified to an industry standard (e.g. ISO 27001, SOC 2, PCI DSS)?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "List the certifications and confirm whether customer data is processed exclusively in certified facilities.",
+          "risk_weight": 3
+        },
+        {
+          "id": "DCS-02",
+          "text": "Do you restrict and log physical access to data centres hosting customer data?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        },
+        {
+          "id": "DCS-03",
+          "text": "Is equipment decommissioning performed in a manner that ensures secure data destruction (e.g. NIST 800-88 or DoD 5220.22-M)?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        }
+      ]
+    },
+    {
+      "id": "DSP",
+      "name": "Data Security and Privacy Lifecycle Management",
+      "questions": [
+        {
+          "id": "DSP-01",
+          "text": "Do you classify data processed in your cloud environment according to a documented data classification policy?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        },
+        {
+          "id": "DSP-02",
+          "text": "Do you implement data loss prevention (DLP) controls to detect and prevent unauthorised exfiltration of sensitive data?",
+          "type": "yes_no_na",
+          "risk_weight": 4
+        },
+        {
+          "id": "DSP-03",
+          "text": "Can you confirm that customer data is logically or physically isolated from data belonging to other tenants?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe the isolation mechanism (e.g. separate database schemas, separate storage buckets, separate accounts).",
+          "risk_weight": 5
+        },
+        {
+          "id": "DSP-04",
+          "text": "Do you have documented data retention and deletion procedures, and can you securely delete customer data upon contract termination within a defined timeframe?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "What is your committed deletion timeframe and do you provide a certificate of deletion?",
+          "risk_weight": 4
+        }
+      ]
+    },
+    {
+      "id": "GRC",
+      "name": "Governance, Risk and Compliance",
+      "questions": [
+        {
+          "id": "GRC-01",
+          "text": "Do you have a formally documented information security governance framework that defines roles, responsibilities, and accountability?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        },
+        {
+          "id": "GRC-02",
+          "text": "Is there executive or board-level oversight of information security and cloud risk?",
+          "type": "yes_no_na",
+          "risk_weight": 2
+        },
+        {
+          "id": "GRC-03",
+          "text": "Do you map your security controls to applicable regulatory requirements and industry frameworks (e.g. GDPR, HIPAA, ISO 27001)?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        }
+      ]
+    },
+    {
+      "id": "HRS",
+      "name": "Human Resources",
+      "questions": [
+        {
+          "id": "HRS-01",
+          "text": "Are background checks conducted on all employees and contractors who have access to customer data or production systems?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe the scope of checks and any role-based variations (e.g. more extensive checks for privileged roles).",
+          "risk_weight": 3
+        },
+        {
+          "id": "HRS-02",
+          "text": "Do employees with access to customer data receive security awareness training at least annually?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        },
+        {
+          "id": "HRS-03",
+          "text": "Is access revoked immediately (or within a defined SLA) upon employee or contractor termination?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "What is the target SLA for access revocation and how is compliance monitored?",
+          "risk_weight": 4
+        }
+      ]
+    },
+    {
+      "id": "IAM",
+      "name": "Identity and Access Management",
+      "questions": [
+        {
+          "id": "IAM-01",
+          "text": "Do you enforce multi-factor authentication (MFA) for all user and administrator access to cloud management consoles and production systems?",
+          "type": "yes_no_na",
+          "risk_weight": 5
+        },
+        {
+          "id": "IAM-02",
+          "text": "Is user access provisioned based on the principle of least privilege and role-based access control (RBAC)?",
+          "type": "yes_no_na",
+          "risk_weight": 4
+        },
+        {
+          "id": "IAM-03",
+          "text": "Are user access rights reviewed and recertified on at least an annual basis?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe the recertification process and how exceptions or over-privileged accounts are remediated.",
+          "risk_weight": 4
+        },
+        {
+          "id": "IAM-04",
+          "text": "Do you support federated identity (e.g. SAML 2.0, OIDC) and SCIM-based provisioning for enterprise customers?",
+          "type": "yes_no_na",
+          "risk_weight": 2
+        },
+        {
+          "id": "IAM-05",
+          "text": "Are shared or generic accounts prohibited in production environments?",
+          "type": "yes_no_na",
+          "risk_weight": 4
+        }
+      ]
+    },
+    {
+      "id": "IPY",
+      "name": "Interoperability and Portability",
+      "questions": [
+        {
+          "id": "IPY-01",
+          "text": "Do you provide documented APIs and data export mechanisms that allow customers to retrieve their data in an open, portable format?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Identify the export formats supported and any limitations on data volume or frequency.",
+          "risk_weight": 2
+        },
+        {
+          "id": "IPY-02",
+          "text": "Do you have a documented data portability and exit assistance process that customers can invoke at contract termination?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe the exit assistance timeline and whether it is included in the standard contract.",
+          "risk_weight": 3
+        },
+        {
+          "id": "IPY-03",
+          "text": "Are proprietary data formats avoided where open standards exist, to minimise customer lock-in?",
+          "type": "yes_no_na",
+          "risk_weight": 2
+        }
+      ]
+    },
+    {
+      "id": "IVS",
+      "name": "Infrastructure and Virtualisation Security",
+      "questions": [
+        {
+          "id": "IVS-01",
+          "text": "Is your virtualisation or container infrastructure (e.g. hypervisors, Kubernetes) hardened according to published benchmarks (e.g. CIS Benchmarks)?",
+          "type": "yes_no_na",
+          "risk_weight": 4
+        },
+        {
+          "id": "IVS-02",
+          "text": "Are workloads isolated at the network and compute level to prevent cross-tenant data leakage?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe the isolation technology used (e.g. separate VPCs, namespaces, hypervisor isolation).",
+          "risk_weight": 5
+        },
+        {
+          "id": "IVS-03",
+          "text": "Do you perform vulnerability scanning of your cloud infrastructure and container images as part of your CI/CD pipeline?",
+          "type": "yes_no_na",
+          "risk_weight": 4
+        }
+      ]
+    },
+    {
+      "id": "LOG",
+      "name": "Logging and Monitoring",
+      "questions": [
+        {
+          "id": "LOG-01",
+          "text": "Do you centrally aggregate security logs from cloud infrastructure, applications, and identity systems into a SIEM or equivalent platform?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Identify the SIEM or log management platform and describe log retention period.",
+          "risk_weight": 4
+        },
+        {
+          "id": "LOG-02",
+          "text": "Are security logs retained for a minimum of 12 months (or longer if required by regulation)?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        },
+        {
+          "id": "LOG-03",
+          "text": "Do you monitor for and alert on anomalous user behaviour, privilege escalation, and suspicious API activity in real time?",
+          "type": "yes_no_na",
+          "risk_weight": 4
+        },
+        {
+          "id": "LOG-04",
+          "text": "Are audit logs protected from tampering and accessible for forensic investigation?",
+          "type": "yes_no_na",
+          "risk_weight": 4
+        }
+      ]
+    },
+    {
+      "id": "SEF",
+      "name": "Security Incident Management, E-Discovery and Cloud Forensics",
+      "questions": [
+        {
+          "id": "SEF-01",
+          "text": "Do you have a documented Incident Response Plan that covers cloud-specific incidents (e.g. account compromise, data exposure, API abuse)?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "When was the plan last tested and what type of test was performed?",
+          "risk_weight": 4
+        },
+        {
+          "id": "SEF-02",
+          "text": "Will you notify customers of a security incident affecting their data within 72 hours (or as required by applicable law)?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe your notification process and the designated notification contact.",
+          "risk_weight": 5
+        },
+        {
+          "id": "SEF-03",
+          "text": "Do you preserve forensic evidence and maintain chain-of-custody documentation in the event of an incident requiring investigation?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        }
+      ]
+    },
+    {
+      "id": "STA",
+      "name": "Supply Chain Management, Transparency and Accountability",
+      "questions": [
+        {
+          "id": "STA-01",
+          "text": "Do you maintain an inventory of all sub-processors and third-party providers that have access to or process customer data?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Is this list publicly available or provided to customers on request?",
+          "risk_weight": 4
+        },
+        {
+          "id": "STA-02",
+          "text": "Do you conduct security assessments of your critical sub-processors and cloud infrastructure providers at least annually?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        },
+        {
+          "id": "STA-03",
+          "text": "Do you provide customers with advance notice (e.g. 30 days) before adding or replacing sub-processors that process customer data?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        }
+      ]
+    },
+    {
+      "id": "TVM",
+      "name": "Threat and Vulnerability Management",
+      "questions": [
+        {
+          "id": "TVM-01",
+          "text": "Do you have a vulnerability management programme that scans cloud infrastructure and applications on at least a monthly basis?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe your patching SLAs: critical vulnerabilities within how many days?",
+          "risk_weight": 4
+        },
+        {
+          "id": "TVM-02",
+          "text": "Are penetration tests conducted on cloud-hosted applications and infrastructure at least annually by an independent party?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe the scope, most recent date, and how findings are remediated.",
+          "risk_weight": 4
+        },
+        {
+          "id": "TVM-03",
+          "text": "Do you participate in a threat intelligence sharing programme or subscribe to cloud-relevant threat feeds?",
+          "type": "yes_no_na",
+          "risk_weight": 2
+        }
+      ]
+    },
+    {
+      "id": "UEM",
+      "name": "Universal Endpoint Management",
+      "questions": [
+        {
+          "id": "UEM-01",
+          "text": "Is a Mobile Device Management (MDM) or Unified Endpoint Management (UEM) solution deployed across all corporate endpoints?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Identify the solution and describe key enforced policies (encryption, screen lock, remote wipe).",
+          "risk_weight": 3
+        },
+        {
+          "id": "UEM-02",
+          "text": "Is full-disk encryption enforced on all endpoints (laptops, desktops) used to access cloud management consoles or customer data?",
+          "type": "yes_no_na",
+          "risk_weight": 4
+        },
+        {
+          "id": "UEM-03",
+          "text": "Is Endpoint Detection and Response (EDR) deployed on all endpoints and monitored continuously?",
+          "type": "yes_no_na",
+          "risk_weight": 4
+        }
+      ]
+    },
+    {
+      "id": "AIS",
+      "name": "Application and Interface Security",
+      "questions": [
+        {
+          "id": "AIS-01",
+          "text": "Do you follow a Secure Development Lifecycle (SDL) that includes threat modelling, security requirements, and security testing prior to release?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe the key security gates and any automated security tooling integrated in your pipeline.",
+          "risk_weight": 4
+        },
+        {
+          "id": "AIS-02",
+          "text": "Do you perform input validation, output encoding, and protection against the OWASP Top 10 vulnerabilities across your cloud-hosted applications?",
+          "type": "yes_no_na",
+          "risk_weight": 4
+        },
+        {
+          "id": "AIS-03",
+          "text": "Are all customer-facing APIs authenticated and authorised using industry-standard mechanisms (e.g. OAuth 2.0, API keys with rate limiting)?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe the authentication mechanism and whether API access logging is in place.",
+          "risk_weight": 4
+        },
+        {
+          "id": "AIS-04",
+          "text": "Is a Web Application Firewall (WAF) deployed in front of public-facing cloud applications?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,187 @@
+slug: ssae18
+name: "SSAE 18 / SOC 1"
+version: "2017"
+category: financial
+issuing_body: AICPA
+description: "Statement on Standards for Attestation Engagements No. 18 — AT-C Section 320 reporting on controls at a service organisation relevant to user entities internal control over financial reporting (ICFR)"
+metadata:
+  renewal_period_days: 365
+  filing_required: false
+  typical_audit_window_days: 180
+  cost_tier: high
+  geographic_scope: global
+  mandatory_for: []
+  report_types:
+    type_i: "Fairness of description and suitability of design at a point in time"
+    type_ii: "Fairness of description, suitability of design, and operating effectiveness over a period"
+
+domains:
+  - name: "Control Environment"
+    prefix: CE
+  - name: "Risk Assessment"
+    prefix: RA
+  - name: "Control Activities — Transaction Processing"
+    prefix: TP
+  - name: "Control Activities — Change Management"
+    prefix: CM
+  - name: "Control Activities — Logical Access"
+    prefix: LA
+  - name: "Control Activities — Computer Operations"
+    prefix: CO
+  - name: "Information and Communication"
+    prefix: IC
+  - name: "Monitoring"
+    prefix: MO
+
+controls:
+  - id: CE-01
+    domain: "Control Environment"
+    title: "Management's commitment to internal controls"
+    description: "Management demonstrates a commitment to integrity and ethical values. The tone at the top supports the effective operation of internal controls relevant to financial reporting."
+    evidence_types: [code_of_conduct, management_communication, policy]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: CE-02
+    domain: "Control Environment"
+    title: "Organisational structure and accountability"
+    description: "An organisational structure exists that supports the effective operation of internal controls, including clearly defined lines of authority and responsibility for controls relevant to ICFR."
+    evidence_types: [org_chart, role_description, reporting_structure_evidence]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: CE-03
+    domain: "Control Environment"
+    title: "Competent personnel for financial reporting functions"
+    description: "Personnel responsible for controls relevant to user entities' ICFR have the appropriate qualifications, training, and experience to perform their assigned responsibilities."
+    evidence_types: [job_description, training_record, competency_evidence]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: RA-01
+    domain: "Risk Assessment"
+    title: "Financial reporting risk assessment"
+    description: "Management conducts a risk assessment to identify risks that could affect the accuracy and completeness of financial reporting, and considers these risks in designing controls."
+    evidence_types: [risk_assessment_report, risk_register, control_matrix]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: RA-02
+    domain: "Risk Assessment"
+    title: "Fraud risk consideration in financial reporting"
+    description: "Management considers the potential for fraud in the risk assessment process, including management override of controls and risks of fraudulent financial reporting."
+    evidence_types: [fraud_risk_assessment, anti_fraud_policy, control_matrix]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: TP-01
+    domain: "Control Activities — Transaction Processing"
+    title: "Completeness of transaction processing"
+    description: "Controls exist to ensure that all authorised transactions are completely processed and recorded in user entities' financial systems."
+    evidence_types: [reconciliation_report, batch_control_evidence, completeness_check_log]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: TP-02
+    domain: "Control Activities — Transaction Processing"
+    title: "Accuracy of transaction processing"
+    description: "Controls exist to ensure that transactions are processed accurately in accordance with user entities' authorisations and business rules."
+    evidence_types: [reconciliation_report, error_log, validation_evidence]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: TP-03
+    domain: "Control Activities — Transaction Processing"
+    title: "Authorisation of transactions"
+    description: "Controls exist to ensure that transactions are authorised in accordance with user entities' policies and procedures before processing."
+    evidence_types: [approval_workflow_evidence, authorisation_log, limit_matrix]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: TP-04
+    domain: "Control Activities — Transaction Processing"
+    title: "Interface and data transfer controls"
+    description: "Controls exist to ensure the completeness and accuracy of data transferred between systems relevant to user entities' financial reporting."
+    evidence_types: [interface_reconciliation_report, transfer_log, exception_report]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: CM-01
+    domain: "Control Activities — Change Management"
+    title: "Change request and authorisation"
+    description: "Changes to systems relevant to user entities' ICFR are formally requested and authorised before implementation."
+    evidence_types: [change_ticket, approval_record, change_authorization_log]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: CM-02
+    domain: "Control Activities — Change Management"
+    title: "Testing of changes prior to production"
+    description: "Changes to in-scope systems are tested in a non-production environment prior to being promoted to production, with documented testing evidence."
+    evidence_types: [test_plan, test_result, uat_sign_off]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: CM-03
+    domain: "Control Activities — Change Management"
+    title: "Segregation of duties in change deployment"
+    description: "Developers are prohibited from promoting their own changes directly to production. A separate, authorised individual or process approves and performs production deployments."
+    evidence_types: [sod_matrix, deployment_log, access_review]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: LA-01
+    domain: "Control Activities — Logical Access"
+    title: "Access provisioning and authorisation"
+    description: "Access to in-scope systems is provisioned only upon formal request and management approval. Access rights are granted based on job function and business need."
+    evidence_types: [access_request_ticket, management_approval, provisioning_log]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: LA-02
+    domain: "Control Activities — Logical Access"
+    title: "Periodic access review"
+    description: "Access rights to in-scope systems are reviewed periodically by management to verify that access remains appropriate."
+    evidence_types: [access_review, management_certification, recertification_log]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: LA-03
+    domain: "Control Activities — Logical Access"
+    title: "Access revocation on termination"
+    description: "Access to in-scope systems is revoked promptly upon termination of employment or change of role."
+    evidence_types: [termination_checklist, access_revocation_ticket, timely_revocation_evidence]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: CO-01
+    domain: "Control Activities — Computer Operations"
+    title: "Scheduled job monitoring"
+    description: "Automated batch jobs and scheduled processes relevant to financial reporting are monitored for successful completion and exceptions are investigated."
+    evidence_types: [job_scheduling_evidence, completion_report, exception_investigation_log]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: CO-02
+    domain: "Control Activities — Computer Operations"
+    title: "Backup and recovery"
+    description: "Backups of systems and data relevant to user entities' financial reporting are performed on a defined schedule and recovery procedures are tested."
+    evidence_types: [backup_policy, backup_report, restore_test_result]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: IC-01
+    domain: "Information and Communication"
+    title: "Communication to user entities"
+    description: "The service organisation communicates to user entities information about system changes, incidents, and other matters relevant to user entities' ICFR in a timely manner."
+    evidence_types: [customer_communication_log, change_notification, incident_notification]
+    testing_frequency: on_change
+    is_key_control: false
+
+  - id: MO-01
+    domain: "Monitoring"
+    title: "Ongoing monitoring of control effectiveness"
+    description: "Management monitors the controls relevant to user entities' ICFR and investigates deficiencies identified."
+    evidence_types: [monitoring_report, deficiency_log, remediation_evidence]
+    testing_frequency: quarterly
+    is_key_control: true

@@ -1,0 +1,428 @@
+slug: nist-800-53-r5
+name: "NIST SP 800-53 Rev 5"
+version: "Rev 5"
+category: security
+issuing_body: NIST
+description: "Security and Privacy Controls for Information Systems and Organizations — comprehensive control catalogue covering 20 control families for federal and non-federal systems"
+metadata:
+  renewal_period_days: null
+  filing_required: false
+  typical_audit_window_days: 90
+  cost_tier: medium
+  geographic_scope: global
+  mandatory_for: [us_federal_agency]
+
+domains:
+  - name: "Access Control (AC)"
+    prefix: AC
+  - name: "Audit and Accountability (AU)"
+    prefix: AU
+  - name: "Assessment, Authorization, and Monitoring (CA)"
+    prefix: CA
+  - name: "Configuration Management (CM)"
+    prefix: CM
+  - name: "Contingency Planning (CP)"
+    prefix: CP
+  - name: "Identification and Authentication (IA)"
+    prefix: IA
+  - name: "Incident Response (IR)"
+    prefix: IR
+  - name: "Maintenance (MA)"
+    prefix: MA
+  - name: "Media Protection (MP)"
+    prefix: MP
+  - name: "Physical and Environmental Protection (PE)"
+    prefix: PE
+  - name: "Planning (PL)"
+    prefix: PL
+  - name: "Program Management (PM)"
+    prefix: PM
+  - name: "Personnel Security (PS)"
+    prefix: PS
+  - name: "Risk Assessment (RA)"
+    prefix: RA
+  - name: "System and Services Acquisition (SA)"
+    prefix: SA
+  - name: "System and Communications Protection (SC)"
+    prefix: SC
+  - name: "System and Information Integrity (SI)"
+    prefix: SI
+  - name: "Supply Chain Risk Management (SR)"
+    prefix: SR
+
+controls:
+  - id: AC-1
+    domain: "Access Control (AC)"
+    title: "Access Control Policy and Procedures"
+    description: "Develop, document, and disseminate an access control policy and procedures to address purpose, scope, roles, responsibilities, management commitment, coordination among entities, and compliance."
+    evidence_types: [access_control_policy, procedure, acknowledgement_log]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: AC-2
+    domain: "Access Control (AC)"
+    title: "Account Management"
+    description: "Manage system accounts including establishing, activating, modifying, reviewing, disabling, and removing accounts. Authorize, monitor, and control use of system accounts."
+    evidence_types: [account_management_procedure, access_review, provisioning_log, deprovisioning_ticket]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: AC-3
+    domain: "Access Control (AC)"
+    title: "Access Enforcement"
+    description: "Enforce approved authorizations for logical access to information and system resources in accordance with applicable access control policies."
+    evidence_types: [access_control_list, rbac_screenshot, access_enforcement_evidence]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: AC-5
+    domain: "Access Control (AC)"
+    title: "Separation of Duties"
+    description: "Separate duties of individuals to reduce the risk of insider threats. Document separation of duties of individuals."
+    evidence_types: [sod_matrix, role_matrix, conflict_review]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: AC-6
+    domain: "Access Control (AC)"
+    title: "Least Privilege"
+    description: "Employ the principle of least privilege, allowing only authorized accesses for users that are necessary to accomplish assigned organizational tasks."
+    evidence_types: [privilege_review, access_review, role_matrix]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: AC-11
+    domain: "Access Control (AC)"
+    title: "Device Lock"
+    description: "Prevent further access to the system by initiating a session lock after a specified period of inactivity."
+    evidence_types: [session_timeout_policy, configuration_screenshot, mdm_report]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: AC-17
+    domain: "Access Control (AC)"
+    title: "Remote Access"
+    description: "Establish and document usage restrictions, configuration/connection requirements, and implementation guidance for each type of remote access allowed."
+    evidence_types: [remote_access_policy, vpn_configuration, mfa_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: AU-2
+    domain: "Audit and Accountability (AU)"
+    title: "Event Logging"
+    description: "Identify the types of events that the system is capable of logging in support of the audit function and coordinate the event logging function with other organizations."
+    evidence_types: [audit_logging_policy, log_configuration_screenshot, event_catalogue]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: AU-3
+    domain: "Audit and Accountability (AU)"
+    title: "Content of Audit Records"
+    description: "Ensure that audit records contain information that establishes the identity of any user/subject/object, the action that was taken, and the outcome."
+    evidence_types: [log_review_report, log_sample_screenshot, log_configuration_screenshot]
+    testing_frequency: quarterly
+    is_key_control: false
+
+  - id: AU-6
+    domain: "Audit and Accountability (AU)"
+    title: "Audit Record Review, Analysis, and Reporting"
+    description: "Review and analyze system audit records for indications of inappropriate or unusual activity and report findings to designated officials."
+    evidence_types: [log_review_report, siem_alert_log, analyst_findings]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: AU-9
+    domain: "Audit and Accountability (AU)"
+    title: "Protection of Audit Information"
+    description: "Protect audit information and audit tools from unauthorized access, modification, and deletion."
+    evidence_types: [log_integrity_evidence, access_control_screenshot, write_once_storage_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: AU-12
+    domain: "Audit and Accountability (AU)"
+    title: "Audit Record Generation"
+    description: "Provide audit record generation capability for the event types identified and allow designated personnel to select which auditable events are to be logged."
+    evidence_types: [log_configuration_screenshot, audit_capability_evidence]
+    testing_frequency: quarterly
+    is_key_control: false
+
+  - id: CA-2
+    domain: "Assessment, Authorization, and Monitoring (CA)"
+    title: "Control Assessments"
+    description: "Select the appropriate assessor or assessment team to conduct control assessments. Develop a control assessment plan, assess controls, produce an assessment report."
+    evidence_types: [assessment_plan, assessment_report, finding_log]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: CA-3
+    domain: "Assessment, Authorization, and Monitoring (CA)"
+    title: "Information Exchange"
+    description: "Approve and manage the exchange of information between the system and other systems using interconnection security agreements."
+    evidence_types: [isa_document, connection_approval_record, network_diagram]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: CA-7
+    domain: "Assessment, Authorization, and Monitoring (CA)"
+    title: "Continuous Monitoring"
+    description: "Develop a system-level continuous monitoring strategy and implement continuous monitoring in accordance with the organizational continuous monitoring strategy."
+    evidence_types: [monitoring_strategy, monitoring_dashboard_screenshot, assessment_schedule]
+    testing_frequency: continuous
+    is_key_control: true
+
+  - id: CM-2
+    domain: "Configuration Management (CM)"
+    title: "Baseline Configuration"
+    description: "Develop, document, and maintain under configuration control a current baseline configuration of the system."
+    evidence_types: [configuration_baseline, cmdb_screenshot, change_log]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: CM-6
+    domain: "Configuration Management (CM)"
+    title: "Configuration Settings"
+    description: "Establish and document configuration settings for components employed within the system that reflect the most restrictive mode consistent with operational requirements."
+    evidence_types: [configuration_standard, compliance_scan_report, hardening_evidence]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: CM-7
+    domain: "Configuration Management (CM)"
+    title: "Least Functionality"
+    description: "Configure the system to provide only essential capabilities. Prohibit or restrict the use of functions, ports, protocols, software, and services not required."
+    evidence_types: [port_scan_report, service_inventory, firewall_rule_review]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: CM-8
+    domain: "Configuration Management (CM)"
+    title: "System Component Inventory"
+    description: "Develop and document an inventory of system components that accurately reflects the system, includes all components within the authorization boundary, is at the level of granularity deemed necessary."
+    evidence_types: [asset_inventory, cmdb_screenshot, hardware_inventory]
+    testing_frequency: quarterly
+    is_key_control: false
+
+  - id: CP-2
+    domain: "Contingency Planning (CP)"
+    title: "Contingency Plan"
+    description: "Develop a contingency plan for the system that addresses essential missions and business functions, recovery objectives, roles and responsibilities, and contact information."
+    evidence_types: [contingency_plan, bcp_document, plan_approval_record]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: CP-4
+    domain: "Contingency Planning (CP)"
+    title: "Contingency Plan Testing"
+    description: "Test the contingency plan for the system at the defined frequency to determine the effectiveness of the plan."
+    evidence_types: [dr_test_result, tabletop_exercise_record, test_plan]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: CP-9
+    domain: "Contingency Planning (CP)"
+    title: "System Backup"
+    description: "Conduct backups of user-level information, system-level information, and system documentation including security and privacy-related documentation."
+    evidence_types: [backup_policy, backup_report, restore_test_result]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: IA-2
+    domain: "Identification and Authentication (IA)"
+    title: "Identification and Authentication — Organizational Users"
+    description: "Uniquely identify and authenticate organizational users and associate that unique identification with processes acting on behalf of those users."
+    evidence_types: [authentication_policy, unique_id_evidence, mfa_enrollment_screenshot]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: IA-3
+    domain: "Identification and Authentication (IA)"
+    title: "Device Identification and Authentication"
+    description: "Uniquely identify and authenticate devices before establishing connections to the system."
+    evidence_types: [device_certificate_evidence, nac_configuration, device_inventory]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: IA-5
+    domain: "Identification and Authentication (IA)"
+    title: "Authenticator Management"
+    description: "Manage system authenticators by verifying identity, establishing initial content, maintaining and changing content, protecting authenticators, and revoking authenticators."
+    evidence_types: [password_policy, mfa_enrollment_screenshot, key_management_evidence]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: IA-8
+    domain: "Identification and Authentication (IA)"
+    title: "Identification and Authentication — Non-Organizational Users"
+    description: "Uniquely identify and authenticate non-organizational users or processes acting on behalf of non-organizational users."
+    evidence_types: [external_identity_policy, b2b_authentication_evidence, api_auth_configuration]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: IR-1
+    domain: "Incident Response (IR)"
+    title: "Incident Response Policy and Procedures"
+    description: "Develop, document, and disseminate an incident response policy and procedures."
+    evidence_types: [incident_response_policy, procedure, acknowledgement_log]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: IR-4
+    domain: "Incident Response (IR)"
+    title: "Incident Handling"
+    description: "Implement an incident handling capability for incidents that includes preparation, detection, analysis, containment, eradication, and recovery."
+    evidence_types: [incident_response_plan, incident_report, post_mortem]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: IR-6
+    domain: "Incident Response (IR)"
+    title: "Incident Reporting"
+    description: "Require personnel to report suspected incidents to the organizational incident response capability and report incident information to designated authorities."
+    evidence_types: [reporting_procedure, incident_log, regulatory_notification_record]
+    testing_frequency: on_change
+    is_key_control: true
+
+  - id: MA-2
+    domain: "Maintenance (MA)"
+    title: "Controlled Maintenance"
+    description: "Schedule, document, and review records of maintenance and repairs on system components."
+    evidence_types: [maintenance_log, change_ticket, vendor_service_record]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: MP-6
+    domain: "Media Protection (MP)"
+    title: "Media Sanitization"
+    description: "Sanitize system media, both digital and non-digital, prior to disposal, release out of organizational control, or release for reuse."
+    evidence_types: [media_sanitization_policy, data_destruction_certificate, disposal_log]
+    testing_frequency: on_change
+    is_key_control: true
+
+  - id: PE-2
+    domain: "Physical and Environmental Protection (PE)"
+    title: "Physical Access Authorizations"
+    description: "Develop, approve, and maintain a list of individuals with authorized access to the facility where the system resides."
+    evidence_types: [physical_access_list, badge_log, access_authorization_record]
+    testing_frequency: quarterly
+    is_key_control: false
+
+  - id: PE-3
+    domain: "Physical and Environmental Protection (PE)"
+    title: "Physical Access Control"
+    description: "Enforce physical access authorizations at ingress/egress points to the facility where the system resides."
+    evidence_types: [badge_log, visitor_log, access_control_screenshot, cctv_evidence]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: PL-2
+    domain: "Planning (PL)"
+    title: "System Security and Privacy Plans"
+    description: "Develop security and privacy plans for the system that describe the security and privacy controls in place or planned for the system and the rules of behavior for individuals accessing the system."
+    evidence_types: [ssp_document, privacy_plan, plan_approval_record]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: PM-9
+    domain: "Program Management (PM)"
+    title: "Risk Management Strategy"
+    description: "Develop and implement a risk management strategy for the organization that includes a determination of risk tolerance."
+    evidence_types: [risk_management_strategy, risk_appetite_statement, programme_document]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: PS-3
+    domain: "Personnel Security (PS)"
+    title: "Personnel Screening"
+    description: "Screen individuals prior to authorizing access to organizational systems. Rescreen individuals according to the organization-defined conditions requiring rescreening."
+    evidence_types: [background_check_policy, background_check_record, screening_schedule]
+    testing_frequency: on_change
+    is_key_control: false
+
+  - id: PS-4
+    domain: "Personnel Security (PS)"
+    title: "Personnel Termination"
+    description: "Upon termination of individual employment, terminate system access, retrieve all system-related property, retain access to organizational information and systems formerly controlled by the terminated individual."
+    evidence_types: [termination_checklist, access_revocation_ticket, exit_record]
+    testing_frequency: on_change
+    is_key_control: true
+
+  - id: RA-3
+    domain: "Risk Assessment (RA)"
+    title: "Risk Assessment"
+    description: "Conduct a risk assessment including threat and vulnerability analyses, and the likelihood and magnitude of harm."
+    evidence_types: [risk_assessment_report, risk_register, threat_model]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: RA-5
+    domain: "Risk Assessment (RA)"
+    title: "Vulnerability Monitoring and Scanning"
+    description: "Monitor and scan for vulnerabilities in the system and hosted applications and when new vulnerabilities potentially affecting the system are identified and reported."
+    evidence_types: [vulnerability_scan, patch_report, cve_register]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: SA-9
+    domain: "System and Services Acquisition (SA)"
+    title: "External System Services"
+    description: "Require that providers of external system services comply with organizational security and privacy requirements and employ security controls consistent with applicable laws, executive orders, directives, regulations, policies, standards, and guidelines."
+    evidence_types: [supplier_contract, vendor_assessment, security_assessment_report]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: SC-7
+    domain: "System and Communications Protection (SC)"
+    title: "Boundary Protection"
+    description: "Monitor and control communications at the external boundary of the system and at key internal boundaries within the system."
+    evidence_types: [firewall_rule_review, network_diagram, boundary_protection_evidence]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: SC-8
+    domain: "System and Communications Protection (SC)"
+    title: "Transmission Confidentiality and Integrity"
+    description: "Implement cryptographic mechanisms to prevent unauthorized disclosure of information and detect changes to information during transmission."
+    evidence_types: [tls_configuration_screenshot, encryption_policy, ssl_scan_report]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: SC-28
+    domain: "System and Communications Protection (SC)"
+    title: "Protection of Information at Rest"
+    description: "Implement cryptographic mechanisms to prevent unauthorized disclosure and modification of information at rest."
+    evidence_types: [encryption_policy, disk_encryption_screenshot, key_management_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: SI-2
+    domain: "System and Information Integrity (SI)"
+    title: "Flaw Remediation"
+    description: "Identify, report, and correct information system flaws. Test software and firmware updates for effectiveness and potential side effects before installation."
+    evidence_types: [patch_report, vulnerability_scan, remediation_ticket]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: SI-3
+    domain: "System and Information Integrity (SI)"
+    title: "Malicious Code Protection"
+    description: "Implement malicious code protection mechanisms at system entry and exit points and at workstations, servers, or mobile computing devices."
+    evidence_types: [antivirus_report, edr_deployment_screenshot, malware_scan_report]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: SI-4
+    domain: "System and Information Integrity (SI)"
+    title: "System Monitoring"
+    description: "Monitor the system to detect attacks and indicators of potential attacks, and unauthorized connections."
+    evidence_types: [siem_report, ids_alert_log, monitoring_dashboard_screenshot]
+    testing_frequency: continuous
+    is_key_control: true
+
+  - id: SR-3
+    domain: "Supply Chain Risk Management (SR)"
+    title: "Supply Chain Controls and Processes"
+    description: "Establish a process or processes to identify and address weaknesses or deficiencies in the supply chain elements and processes."
+    evidence_types: [supply_chain_policy, vendor_assessment, scrm_plan]
+    testing_frequency: annual
+    is_key_control: true

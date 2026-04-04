@@ -1,0 +1,241 @@
+slug: dora
+name: "DORA"
+version: "2025"
+category: operational
+issuing_body: European Parliament
+description: "Digital Operational Resilience Act — ICT risk management, incident reporting, resilience testing, and third-party risk requirements for EU financial entities (effective January 2025)"
+metadata:
+  renewal_period_days: 365
+  filing_required: false
+  typical_audit_window_days: 90
+  cost_tier: high
+  geographic_scope: eu
+  mandatory_for: [eu_financial_entity, ict_third_party_provider]
+  key_articles: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 23, 24, 25, 26, 28, 30]
+
+domains:
+  - name: "ICT Risk Management Framework (Art. 5-16)"
+    prefix: RM
+  - name: "ICT-Related Incident Management and Reporting (Art. 17-23)"
+    prefix: INC
+  - name: "Digital Operational Resilience Testing (Art. 24-27)"
+    prefix: TEST
+  - name: "ICT Third-Party Risk Management (Art. 28-44)"
+    prefix: TPR
+
+controls:
+  - id: RM.1
+    domain: "ICT Risk Management Framework (Art. 5-16)"
+    title: "Art. 5 — Governance and organisation of ICT risk management"
+    description: "Financial entities shall have in place an internal governance and control framework that ensures effective and prudent management of ICT risk. The management body shall bear overall responsibility for managing ICT risk."
+    evidence_types: [ict_governance_framework, board_resolution, management_body_minutes]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: RM.2
+    domain: "ICT Risk Management Framework (Art. 5-16)"
+    title: "Art. 6(1) — ICT risk management framework"
+    description: "Financial entities shall have a sound, comprehensive and well-documented ICT risk management framework as part of their overall risk management system."
+    evidence_types: [ict_risk_framework_document, risk_register, framework_approval_record]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: RM.3
+    domain: "ICT Risk Management Framework (Art. 5-16)"
+    title: "Art. 6(4) — ICT risk management strategy"
+    description: "Financial entities shall have a digital operational resilience strategy setting out how the framework is to be implemented. The strategy shall include methods to address ICT risk on all systems."
+    evidence_types: [resilience_strategy_document, implementation_roadmap, management_approval]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: RM.4
+    domain: "ICT Risk Management Framework (Art. 5-16)"
+    title: "Art. 7 — ICT systems, protocols and tools"
+    description: "Financial entities shall use and maintain updated ICT systems, protocols and tools that are adequate and proportionate to the scale of their operations and that are reliable, technologically resilient, and have sufficient capacity."
+    evidence_types: [asset_inventory, capacity_report, eol_register, technology_lifecycle_policy]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: RM.5
+    domain: "ICT Risk Management Framework (Art. 5-16)"
+    title: "Art. 8 — Identification of ICT risk"
+    description: "Financial entities shall identify and document all ICT-supported business functions, roles, and responsibilities; information assets and ICT assets; ICT risks and their interdependencies."
+    evidence_types: [asset_inventory, risk_register, business_impact_analysis, dependency_map]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: RM.6
+    domain: "ICT Risk Management Framework (Art. 5-16)"
+    title: "Art. 9(2) — Data integrity and availability controls"
+    description: "Financial entities shall design, procure, and implement ICT security policies, procedures, protocols and tools in order to ensure the resilience, continuity and availability of ICT systems, including cryptographic policies."
+    evidence_types: [ict_security_policy, encryption_evidence, availability_sla, continuity_plan]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: RM.7
+    domain: "ICT Risk Management Framework (Art. 5-16)"
+    title: "Art. 9(4)(a) — Access control policies"
+    description: "Dedicated access control policies and measures shall be in place for information systems used by financial entities."
+    evidence_types: [access_control_policy, access_review, rbac_screenshot, mfa_evidence]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: RM.8
+    domain: "ICT Risk Management Framework (Art. 5-16)"
+    title: "Art. 9(4)(b) — Physical security"
+    description: "Physical security policies and measures shall be in place for information systems used by financial entities."
+    evidence_types: [physical_security_policy, badge_log, data_centre_access_log]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: RM.9
+    domain: "ICT Risk Management Framework (Art. 5-16)"
+    title: "Art. 9(4)(d) — Change management"
+    description: "Policies for change management shall be in place for all changes to ICT systems."
+    evidence_types: [change_management_policy, change_ticket, approval_record, change_log]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: RM.10
+    domain: "ICT Risk Management Framework (Art. 5-16)"
+    title: "Art. 10 — Protection and prevention"
+    description: "Financial entities shall have in place ICT security and network security management policies, procedures, and controls and shall employ state-of-the-art ICT security tools."
+    evidence_types: [network_security_policy, vulnerability_scan, patch_report, security_tools_inventory]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: RM.11
+    domain: "ICT Risk Management Framework (Art. 5-16)"
+    title: "Art. 11(1) — Business continuity policy"
+    description: "Financial entities shall have a comprehensive ICT business continuity policy that establishes how the entity will address ICT-related incidents and relevant ICT disruptions."
+    evidence_types: [bcp_document, continuity_policy, management_approval]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: RM.12
+    domain: "ICT Risk Management Framework (Art. 5-16)"
+    title: "Art. 11(3) — Business continuity plan testing"
+    description: "Financial entities shall test their business continuity plans at least yearly."
+    evidence_types: [bcp_test_result, tabletop_exercise_record, test_schedule]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: RM.13
+    domain: "ICT Risk Management Framework (Art. 5-16)"
+    title: "Art. 12 — Backup policies and restoration procedures"
+    description: "Financial entities shall have ICT backup policies and procedures specifying the scope and frequency of backups. Backups shall be maintained in secure locations not affected by events affecting the primary system."
+    evidence_types: [backup_policy, backup_report, offsite_storage_evidence, restore_test_result]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: RM.14
+    domain: "ICT Risk Management Framework (Art. 5-16)"
+    title: "Art. 13 — Learning and evolving"
+    description: "Financial entities shall have in place capabilities and staff to gather information on vulnerabilities and cyber threats, ICT-related incidents, and review post-incident analyses."
+    evidence_types: [threat_intel_subscription, post_mortem, lessons_learned_report]
+    testing_frequency: on_change
+    is_key_control: false
+
+  - id: RM.15
+    domain: "ICT Risk Management Framework (Art. 5-16)"
+    title: "Art. 14 — ICT security awareness programs and digital operational resilience training"
+    description: "Financial entities shall provide ICT security awareness programmes and digital operational resilience training to all staff, including senior management."
+    evidence_types: [training_completion, training_material, board_training_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: RM.16
+    domain: "ICT Risk Management Framework (Art. 5-16)"
+    title: "Art. 16 — Simplified ICT risk management framework"
+    description: "Microenterprises and certain other financial entities may apply simplified obligations provided they document and notify the competent authority."
+    evidence_types: [simplified_framework_document, competent_authority_notification]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: INC.1
+    domain: "ICT-Related Incident Management and Reporting (Art. 17-23)"
+    title: "Art. 17 — ICT-related incident management process"
+    description: "Financial entities shall define, establish, and implement an ICT-related incident management process to detect, manage, and notify ICT-related incidents."
+    evidence_types: [incident_management_policy, incident_response_plan, detection_capability_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: INC.2
+    domain: "ICT-Related Incident Management and Reporting (Art. 17-23)"
+    title: "Art. 18 — Classification of ICT-related incidents"
+    description: "Financial entities shall classify ICT-related incidents based on criteria established by regulatory technical standards — impact on operations, data integrity, clients, reputational, economic significance."
+    evidence_types: [incident_classification_procedure, classification_criteria_document, incident_log]
+    testing_frequency: on_change
+    is_key_control: true
+
+  - id: INC.3
+    domain: "ICT-Related Incident Management and Reporting (Art. 17-23)"
+    title: "Art. 19 — Reporting of major ICT-related incidents"
+    description: "Financial entities shall report major ICT-related incidents to the relevant competent authority. Initial notification within 4 hours of classification (max 24h from awareness), intermediate report within 72 hours, final report within 1 month."
+    evidence_types: [incident_report, regulatory_notification_record, reporting_timeline_evidence]
+    testing_frequency: on_change
+    is_key_control: true
+
+  - id: INC.4
+    domain: "ICT-Related Incident Management and Reporting (Art. 17-23)"
+    title: "Art. 20 — Harmonised reporting"
+    description: "Financial entities shall report major ICT-related incidents using harmonised templates and standardised processes as specified by ESA regulatory technical standards."
+    evidence_types: [reporting_template, regulatory_submission_evidence]
+    testing_frequency: on_change
+    is_key_control: false
+
+  - id: INC.5
+    domain: "ICT-Related Incident Management and Reporting (Art. 17-23)"
+    title: "Art. 23 — Voluntary notification of significant cyber threats"
+    description: "Financial entities may voluntarily notify significant cyber threats to the relevant competent authority when they consider the threat to be of relevance to the financial system."
+    evidence_types: [threat_notification_procedure, voluntary_notification_record]
+    testing_frequency: on_change
+    is_key_control: false
+
+  - id: TEST.1
+    domain: "Digital Operational Resilience Testing (Art. 24-27)"
+    title: "Art. 24 — General requirements for digital operational resilience testing"
+    description: "Financial entities shall carry out a comprehensive digital operational resilience testing programme including basic tests — vulnerability assessments and scans, network assessments, gap analyses, and penetration tests."
+    evidence_types: [testing_programme_document, penetration_test_report, vulnerability_scan, gap_analysis]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: TEST.2
+    domain: "Digital Operational Resilience Testing (Art. 24-27)"
+    title: "Art. 25 — Testing of ICT tools and systems"
+    description: "Financial entities shall test all ICT systems and applications that support critical or important functions at least once a year."
+    evidence_types: [testing_schedule, test_report, critical_function_inventory]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: TEST.3
+    domain: "Digital Operational Resilience Testing (Art. 24-27)"
+    title: "Art. 26 — Advanced testing — Threat-Led Penetration Testing"
+    description: "Financial entities identified by competent authorities as significant shall carry out Threat-Led Penetration Testing (TLPT) at least every three years."
+    evidence_types: [tlpt_report, tlpt_scope_document, competent_authority_designation]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: TPR.1
+    domain: "ICT Third-Party Risk Management (Art. 28-44)"
+    title: "Art. 28(1) — General principles for third-party risk"
+    description: "Financial entities shall manage ICT third-party risk as an integral component of ICT risk within their ICT risk management framework."
+    evidence_types: [third_party_risk_policy, vendor_risk_register, tprm_programme_document]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: TPR.2
+    domain: "ICT Third-Party Risk Management (Art. 28-44)"
+    title: "Art. 28(2) — ICT third-party risk strategy"
+    description: "Financial entities shall adopt and regularly review a strategy on ICT third-party risk, including policy on ICT services supporting critical or important functions."
+    evidence_types: [tprm_strategy, critical_vendor_register, strategy_review_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: TPR.3
+    domain: "ICT Third-Party Risk Management (Art. 28-44)"
+    title: "Art. 30 — Key contractual provisions"
+    description: "Rights and obligations of the financial entity and of the ICT third-party service provider shall be clearly allocated and set out in writing, including exit rights, audit rights, and performance indicators."
+    evidence_types: [ict_service_contract, audit_right_evidence, exit_plan, sla_document]
+    testing_frequency: annual
+    is_key_control: true

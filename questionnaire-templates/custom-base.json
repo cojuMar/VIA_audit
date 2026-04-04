@@ -1,0 +1,199 @@
+{
+  "slug": "custom-base",
+  "name": "Custom Security Questionnaire",
+  "version": "1.0",
+  "description": "Customisable base template — add, remove, or modify questions to match your vendor assessment requirements",
+  "estimated_completion_minutes": 20,
+  "domains": [
+    {
+      "id": "SEC",
+      "name": "Information Security",
+      "questions": [
+        {
+          "id": "SEC-1",
+          "text": "Does your organisation hold a current ISO 27001 certification or SOC 2 Type II attestation?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Please provide the certification date, scope, and certifying body. Attach the certificate or executive summary.",
+          "risk_weight": 4
+        },
+        {
+          "id": "SEC-2",
+          "text": "Is multi-factor authentication enforced for all access to systems that store or process our data?",
+          "type": "yes_no_na",
+          "follow_up_if": "no",
+          "follow_up": "Describe compensating controls in place and your remediation timeline.",
+          "risk_weight": 5
+        },
+        {
+          "id": "SEC-3",
+          "text": "How frequently do you conduct external penetration tests of systems in scope for services provided to us?",
+          "type": "multi_select",
+          "options": [
+            "At least annually",
+            "Every 2 years",
+            "Only on major releases or significant changes",
+            "Never",
+            "Not applicable"
+          ],
+          "risk_weight": 4
+        },
+        {
+          "id": "SEC-4",
+          "text": "Do you have a vulnerability management programme with defined SLAs for remediating critical and high-severity findings?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "What are your SLAs for critical and high-severity vulnerabilities?",
+          "risk_weight": 4
+        },
+        {
+          "id": "SEC-5",
+          "text": "Please rate the overall maturity of your information security programme on a scale of 1 to 5 (1 = ad hoc, 5 = optimised/continuously improving).",
+          "type": "scale_1_5",
+          "risk_weight": 2
+        }
+      ]
+    },
+    {
+      "id": "OPS",
+      "name": "Operations and Availability",
+      "questions": [
+        {
+          "id": "OPS-1",
+          "text": "What is your contractually committed uptime SLA for the services you provide to us?",
+          "type": "text",
+          "risk_weight": 3
+        },
+        {
+          "id": "OPS-2",
+          "text": "Do you have documented recovery time objectives (RTOs) and recovery point objectives (RPOs) for your service?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "State your RTO and RPO for the service tier applicable to our engagement.",
+          "risk_weight": 4
+        },
+        {
+          "id": "OPS-3",
+          "text": "Is your disaster recovery plan tested at least annually?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe the most recent test type and outcome.",
+          "risk_weight": 3
+        },
+        {
+          "id": "OPS-4",
+          "text": "Do you publish a public status page or provide a mechanism for customers to receive real-time service availability notifications?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Provide the URL and describe the notification mechanism.",
+          "risk_weight": 2
+        },
+        {
+          "id": "OPS-5",
+          "text": "When was your last material service outage that affected customer data or service availability?",
+          "type": "date",
+          "risk_weight": 3
+        }
+      ]
+    },
+    {
+      "id": "DATA",
+      "name": "Data Handling and Privacy",
+      "questions": [
+        {
+          "id": "DATA-1",
+          "text": "Is all customer data encrypted at rest using AES-256 or equivalent, and in transit using TLS 1.2 or higher?",
+          "type": "yes_no_na",
+          "follow_up_if": "no",
+          "follow_up": "Identify which data stores or transit paths are not encrypted and provide your remediation plan.",
+          "risk_weight": 5
+        },
+        {
+          "id": "DATA-2",
+          "text": "Can you confirm that our data is logically or physically segregated from other customers' data?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe the isolation mechanism (e.g. dedicated database schema, dedicated storage account, separate environment).",
+          "risk_weight": 5
+        },
+        {
+          "id": "DATA-3",
+          "text": "Do you use sub-processors or third parties who may access or process data you hold on our behalf?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Please provide a list of sub-processors, the data they access, and where they are located.",
+          "risk_weight": 4
+        },
+        {
+          "id": "DATA-4",
+          "text": "Can you securely and verifiably delete our data within 30 days of contract termination upon our request?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe the deletion process and whether a certificate of deletion is provided.",
+          "risk_weight": 4
+        },
+        {
+          "id": "DATA-5",
+          "text": "In which countries or regions is our data stored and/or processed?",
+          "type": "text",
+          "risk_weight": 3
+        }
+      ]
+    },
+    {
+      "id": "COMP",
+      "name": "Compliance and Certifications",
+      "questions": [
+        {
+          "id": "COMP-1",
+          "text": "Which of the following compliance certifications or attestations does your organisation currently hold?",
+          "type": "multi_select",
+          "options": [
+            "SOC 2 Type I",
+            "SOC 2 Type II",
+            "ISO 27001",
+            "ISO 27701",
+            "PCI DSS",
+            "HIPAA / HITECH",
+            "FedRAMP",
+            "GDPR Data Processing Agreement",
+            "CSA STAR",
+            "HITRUST CSF",
+            "None"
+          ],
+          "risk_weight": 4
+        },
+        {
+          "id": "COMP-2",
+          "text": "Have you been subject to any regulatory enforcement actions, data breach notifications to regulators, or material security-related litigation in the past 3 years?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "Describe the nature of the matter, the regulator or court involved, and the resolution.",
+          "risk_weight": 5
+        },
+        {
+          "id": "COMP-3",
+          "text": "Are you willing to sign our standard Data Processing Agreement (DPA) incorporating GDPR Standard Contractual Clauses where applicable?",
+          "type": "yes_no_na",
+          "risk_weight": 3
+        },
+        {
+          "id": "COMP-4",
+          "text": "Do you have cyber liability insurance with a minimum coverage limit that meets our vendor requirements?",
+          "type": "yes_no_na",
+          "follow_up_if": "yes",
+          "follow_up": "State the coverage limit, policy period, and provide a certificate of insurance.",
+          "risk_weight": 3
+        },
+        {
+          "id": "COMP-5",
+          "text": "Are you willing to allow us (or a mutually agreed third party) to conduct a security assessment or audit of your environment with reasonable notice?",
+          "type": "yes_no_na",
+          "follow_up_if": "no",
+          "follow_up": "Please describe any alternative assurance mechanisms you can offer in lieu of a direct audit.",
+          "risk_weight": 3
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,300 @@
+slug: nist-csf-2
+name: "NIST Cybersecurity Framework 2.0"
+version: "2.0"
+category: security
+issuing_body: NIST
+description: "NIST Cybersecurity Framework version 2.0 — voluntary guidance for managing cybersecurity risk across six functions: Govern, Identify, Protect, Detect, Respond, Recover"
+metadata:
+  renewal_period_days: null
+  filing_required: false
+  typical_audit_window_days: 60
+  cost_tier: low
+  geographic_scope: global
+  mandatory_for: []
+
+domains:
+  - name: "Govern (GV)"
+    prefix: GV
+  - name: "Identify (ID)"
+    prefix: ID
+  - name: "Protect (PR)"
+    prefix: PR
+  - name: "Detect (DE)"
+    prefix: DE
+  - name: "Respond (RS)"
+    prefix: RS
+  - name: "Recover (RC)"
+    prefix: RC
+
+controls:
+  - id: GV.OC-01
+    domain: "Govern (GV)"
+    title: "Organizational context — mission and stakeholder expectations"
+    description: "The organizational mission is understood and informs cybersecurity risk management. Stakeholder expectations for cybersecurity are understood."
+    evidence_types: [mission_statement, strategy_document, stakeholder_register]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: GV.OC-02
+    domain: "Govern (GV)"
+    title: "Organizational context — internal and external obligations"
+    description: "Internal and external obligations relating to cybersecurity are understood and inform cybersecurity risk management."
+    evidence_types: [legal_register, compliance_calendar, policy]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: GV.OC-03
+    domain: "Govern (GV)"
+    title: "Organizational context — legal and regulatory requirements"
+    description: "Legal, regulatory, and contractual requirements regarding cybersecurity — including privacy and civil liberties obligations — are understood and managed."
+    evidence_types: [legal_register, regulatory_tracking_report, contract_review]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: GV.RM-01
+    domain: "Govern (GV)"
+    title: "Risk management strategy — organisational risk tolerance"
+    description: "Risk management objectives are established and agreed to by organizational stakeholders."
+    evidence_types: [risk_appetite_statement, board_approval_record, strategy_document]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: GV.RM-02
+    domain: "Govern (GV)"
+    title: "Risk management strategy — risk tolerance communicated"
+    description: "Risk tolerance statements are established, communicated, and maintained."
+    evidence_types: [risk_tolerance_document, communication_log, policy]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: GV.RM-03
+    domain: "Govern (GV)"
+    title: "Risk management strategy — cybersecurity risk management integrated"
+    description: "Cybersecurity risk management activities and outcomes are included in enterprise risk management processes."
+    evidence_types: [erm_framework, risk_committee_minutes, integrated_risk_register]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: GV.PO-01
+    domain: "Govern (GV)"
+    title: "Policy — cybersecurity policy established"
+    description: "Policy for managing cybersecurity risks is established based on organizational context, cybersecurity strategy, and priorities and is communicated and enforced."
+    evidence_types: [cybersecurity_policy, policy_acknowledgement, enforcement_log]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: GV.RO-01
+    domain: "Govern (GV)"
+    title: "Roles and responsibilities — cybersecurity roles defined"
+    description: "Organizational cybersecurity policy is established and communicated. Roles, responsibilities, and authorities for cybersecurity are established, communicated, understood, and enforced."
+    evidence_types: [raci_matrix, role_description, org_chart]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: GV.SC-01
+    domain: "Govern (GV)"
+    title: "Cybersecurity supply chain risk management — programme established"
+    description: "A cybersecurity supply chain risk management programme, strategy, objectives, policies, and processes are established and agreed to by organizational stakeholders."
+    evidence_types: [supply_chain_policy, programme_document, vendor_risk_register]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: ID.AM-01
+    domain: "Identify (ID)"
+    title: "Asset management — hardware inventory"
+    description: "Inventories of hardware managed by the organization are maintained."
+    evidence_types: [hardware_inventory, cmdb_screenshot, asset_discovery_report]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: ID.AM-02
+    domain: "Identify (ID)"
+    title: "Asset management — software inventory"
+    description: "Inventories of software, services, and systems managed by the organization are maintained."
+    evidence_types: [software_inventory, sbom, cmdb_screenshot]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: ID.AM-03
+    domain: "Identify (ID)"
+    title: "Asset management — network representations maintained"
+    description: "Representations of the organization's authorized network communication and internal and external network data flows are maintained."
+    evidence_types: [network_diagram, data_flow_diagram, network_map]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: ID.AM-07
+    domain: "Identify (ID)"
+    title: "Asset management — data inventories maintained"
+    description: "Inventories of data and corresponding metadata for designated data types are maintained."
+    evidence_types: [data_inventory, data_classification_register, metadata_catalogue]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: ID.RA-01
+    domain: "Identify (ID)"
+    title: "Risk assessment — vulnerabilities identified"
+    description: "Vulnerabilities in assets are identified, validated, and recorded."
+    evidence_types: [vulnerability_scan, cve_register, penetration_test_report]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: ID.RA-02
+    domain: "Identify (ID)"
+    title: "Risk assessment — threat intelligence"
+    description: "Cyber threat intelligence is received from information sharing forums and sources."
+    evidence_types: [threat_intel_subscription, isac_membership, threat_report]
+    testing_frequency: monthly
+    is_key_control: false
+
+  - id: ID.RA-05
+    domain: "Identify (ID)"
+    title: "Risk assessment — threats, vulnerabilities, likelihoods, and impacts"
+    description: "Threats, vulnerabilities, likelihoods, and impacts are used to understand inherent risk and inform prioritisation."
+    evidence_types: [risk_assessment_report, risk_register, risk_matrix]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: ID.IM-01
+    domain: "Identify (ID)"
+    title: "Improvement — findings from assessments incorporated"
+    description: "Improvements are identified from evaluations, including cybersecurity assessments and audit findings."
+    evidence_types: [audit_finding, remediation_ticket, improvement_log]
+    testing_frequency: on_change
+    is_key_control: false
+
+  - id: PR.AA-01
+    domain: "Protect (PR)"
+    title: "Identity management — identities and credentials managed"
+    description: "Identities and credentials for authorized users, services, and hardware are managed by the organization."
+    evidence_types: [iam_process_doc, provisioning_log, access_review]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: PR.AA-02
+    domain: "Protect (PR)"
+    title: "Identity management — identities authenticated"
+    description: "Identities are proofed and bound to credentials based on the context of interactions."
+    evidence_types: [mfa_enrollment_screenshot, authentication_policy, identity_proofing_process]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: PR.AA-03
+    domain: "Protect (PR)"
+    title: "Identity management — users, services, and hardware authenticated"
+    description: "Users, services, and hardware are authenticated."
+    evidence_types: [mfa_report, certificate_management_evidence, authentication_log]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: PR.AA-05
+    domain: "Protect (PR)"
+    title: "Identity management — access permissions managed"
+    description: "Access permissions, entitlements, and authorizations are defined in a policy, managed, enforced, and reviewed."
+    evidence_types: [access_control_policy, access_review, rbac_screenshot]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: PR.AT-01
+    domain: "Protect (PR)"
+    title: "Awareness and training — security awareness training"
+    description: "Personnel are provided with awareness and training so that they possess the knowledge and skills to perform general tasks with cybersecurity risks in mind."
+    evidence_types: [training_completion, training_material, awareness_campaign_record]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: PR.DS-01
+    domain: "Protect (PR)"
+    title: "Data security — data-at-rest protected"
+    description: "The confidentiality, integrity, and availability of data-at-rest are protected."
+    evidence_types: [encryption_policy, encryption_configuration_screenshot, data_security_report]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: PR.DS-02
+    domain: "Protect (PR)"
+    title: "Data security — data-in-transit protected"
+    description: "The confidentiality, integrity, and availability of data-in-transit are protected."
+    evidence_types: [tls_configuration_screenshot, vpn_configuration, ssl_scan_report]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: PR.IR-01
+    domain: "Protect (PR)"
+    title: "Technology infrastructure resilience — network integrity protected"
+    description: "Networks and environments are protected from unauthorized logical access and usage."
+    evidence_types: [firewall_rule_review, network_segmentation_diagram, access_control_list]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: PR.PS-01
+    domain: "Protect (PR)"
+    title: "Platform security — configuration management"
+    description: "Configuration management practices are established and applied."
+    evidence_types: [configuration_baseline, cspm_report, change_log]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: PR.PS-02
+    domain: "Protect (PR)"
+    title: "Platform security — software maintained"
+    description: "Software is maintained, replaced, and removed commensurate with risk."
+    evidence_types: [patch_report, software_lifecycle_policy, eol_asset_register]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: DE.CM-01
+    domain: "Detect (DE)"
+    title: "Continuous monitoring — networks monitored"
+    description: "Networks and network services are monitored to find potentially adverse events."
+    evidence_types: [siem_report, ndr_alert_log, network_monitoring_screenshot]
+    testing_frequency: continuous
+    is_key_control: true
+
+  - id: DE.CM-06
+    domain: "Detect (DE)"
+    title: "Continuous monitoring — external service provider activities monitored"
+    description: "External service provider activities and services are monitored to find potentially adverse events."
+    evidence_types: [supplier_monitoring_report, access_log, api_monitoring_screenshot]
+    testing_frequency: monthly
+    is_key_control: false
+
+  - id: DE.AE-02
+    domain: "Detect (DE)"
+    title: "Adverse event analysis — events correlated and analyzed"
+    description: "Potentially adverse events are analyzed to better characterize the events and detect attack behaviors."
+    evidence_types: [siem_correlation_rule, threat_hunting_report, anomaly_detection_report]
+    testing_frequency: continuous
+    is_key_control: true
+
+  - id: RS.MA-01
+    domain: "Respond (RS)"
+    title: "Incident management — response plan executed"
+    description: "The incident response plan is executed in coordination with relevant third parties once an incident is declared."
+    evidence_types: [incident_report, response_execution_log, runbook]
+    testing_frequency: on_change
+    is_key_control: true
+
+  - id: RS.CO-02
+    domain: "Respond (RS)"
+    title: "Incident response communication — events reported"
+    description: "Internal and external stakeholders are notified of incidents in accordance with the response plan."
+    evidence_types: [notification_log, communication_plan, incident_report]
+    testing_frequency: on_change
+    is_key_control: false
+
+  - id: RC.RP-01
+    domain: "Recover (RC)"
+    title: "Incident recovery plan — plan executed"
+    description: "The recovery portion of the incident response plan is executed once initiated from the incident response process."
+    evidence_types: [recovery_plan, recovery_execution_log, dr_test_result]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: RC.CO-03
+    domain: "Recover (RC)"
+    title: "Incident recovery communication — recovery communicated"
+    description: "Recovery activities and progress in restoring operational capabilities are communicated to designated internal and external stakeholders."
+    evidence_types: [status_communication_log, recovery_report, stakeholder_notification]
+    testing_frequency: on_change
+    is_key_control: false

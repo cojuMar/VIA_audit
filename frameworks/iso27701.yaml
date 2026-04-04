@@ -1,0 +1,217 @@
+slug: iso27701
+name: "ISO/IEC 27701:2019"
+version: "2019"
+category: privacy
+issuing_body: ISO
+description: "Extension to ISO/IEC 27001 and 27002 for privacy information management — requirements and guidance for establishing a Privacy Information Management System (PIMS)"
+metadata:
+  renewal_period_days: 1095
+  filing_required: false
+  typical_audit_window_days: 30
+  cost_tier: high
+  geographic_scope: global
+  mandatory_for: []
+  prerequisite: "ISO/IEC 27001 certification required"
+
+domains:
+  - name: "PIMS-specific requirements for ISO/IEC 27001 (Clause 6)"
+    prefix: "6"
+  - name: "PIMS-specific guidance for ISO/IEC 27001 controls (Clause 7)"
+    prefix: "7"
+  - name: "Additional guidance for PII controllers (Clause 7.2-7.5)"
+    prefix: "7.2"
+  - name: "Additional guidance for PII processors (Clause 8.2-8.5)"
+    prefix: "8"
+
+controls:
+  - id: "6.2.1"
+    domain: "PIMS-specific requirements for ISO/IEC 27001 (Clause 6)"
+    title: "Privacy objectives and plans"
+    description: "The organisation shall establish privacy objectives consistent with its privacy policy and assess risks to privacy. Privacy objectives shall be measurable, consider applicable privacy requirements, and be monitored and updated."
+    evidence_types: [privacy_objectives_document, measurement_evidence, review_log]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "6.3.1"
+    domain: "PIMS-specific requirements for ISO/IEC 27001 (Clause 6)"
+    title: "Determining the privacy management context"
+    description: "The organisation shall identify and document the processing activities involving PII, the PII principals, the categories of PII processed, and the purposes of processing."
+    evidence_types: [ropa_document, data_mapping, processing_inventory]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "6.4.1"
+    domain: "PIMS-specific requirements for ISO/IEC 27001 (Clause 6)"
+    title: "Privacy roles and responsibilities"
+    description: "The organisation shall define and allocate all necessary privacy roles and responsibilities, including designation of a data protection officer or equivalent."
+    evidence_types: [privacy_roles_document, dpo_appointment_record, raci_matrix]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "7.2.1"
+    domain: "Additional guidance for PII controllers (Clause 7.2-7.5)"
+    title: "Identify and document purpose"
+    description: "The organisation should document the specific privacy-related purposes for which PII is processed. Documented purposes should specify the legal basis for processing."
+    evidence_types: [purpose_register, legal_basis_register, processing_record]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "7.2.2"
+    domain: "Additional guidance for PII controllers (Clause 7.2-7.5)"
+    title: "Identify lawful basis"
+    description: "The organisation should identify and document the applicable legal basis for processing PII for each identified purpose."
+    evidence_types: [legal_basis_register, consent_records, contractual_necessity_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "7.2.3"
+    domain: "Additional guidance for PII controllers (Clause 7.2-7.5)"
+    title: "Determine when and how consent is to be obtained"
+    description: "Where consent is the legal basis for processing, the organisation should obtain and record consent that is freely given, specific, informed and unambiguous."
+    evidence_types: [consent_mechanism_screenshot, consent_record, withdrawal_procedure]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "7.2.4"
+    domain: "Additional guidance for PII controllers (Clause 7.2-7.5)"
+    title: "Obtain and record consent"
+    description: "The organisation should obtain and record consent as required and provide PII principals with a mechanism to withdraw consent."
+    evidence_types: [consent_record, withdrawal_mechanism_screenshot, consent_management_system]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "7.2.5"
+    domain: "Additional guidance for PII controllers (Clause 7.2-7.5)"
+    title: "Privacy impact assessment"
+    description: "The organisation should use a privacy impact assessment (PIA) process to identify and address privacy risks in changes to existing operations and the introduction of new operations that involve the processing of PII."
+    evidence_types: [dpia_procedure, dpia_register, completed_dpia]
+    testing_frequency: on_change
+    is_key_control: true
+
+  - id: "7.2.6"
+    domain: "Additional guidance for PII controllers (Clause 7.2-7.5)"
+    title: "Contracts with PII processors"
+    description: "The organisation should ensure, through contractual or other means, that PII processors provide sufficient guarantees of their ability to implement the requirements of this document."
+    evidence_types: [data_processing_agreement, processor_assessment, contract]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "7.2.7"
+    domain: "Additional guidance for PII controllers (Clause 7.2-7.5)"
+    title: "Joint PII controller"
+    description: "Where the organisation and another organisation are joint PII controllers, the organisation should establish agreements that determine their respective responsibilities for fulfilling obligations."
+    evidence_types: [joint_controller_agreement, responsibility_matrix]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "7.2.8"
+    domain: "Additional guidance for PII controllers (Clause 7.2-7.5)"
+    title: "Records related to processing PII"
+    description: "The organisation should maintain a record of processing activities containing all required information in accordance with applicable legislation."
+    evidence_types: [ropa_document, record_update_log, review_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "7.3.1"
+    domain: "Additional guidance for PII controllers (Clause 7.2-7.5)"
+    title: "Providing privacy notice to PII principals"
+    description: "The organisation should provide to PII principals a privacy notice that is clear, conspicuous, and uses plain language to disclose its identity, the purpose of processing, and PII principal rights."
+    evidence_types: [privacy_notice, website_screenshot, plain_language_review]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "7.3.2"
+    domain: "Additional guidance for PII controllers (Clause 7.2-7.5)"
+    title: "Providing information to PII principals about the use of PII"
+    description: "The organisation should provide information to PII principals sufficient to support their exercise of rights."
+    evidence_types: [privacy_policy, data_subject_rights_procedure, response_log]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "7.3.3"
+    domain: "Additional guidance for PII controllers (Clause 7.2-7.5)"
+    title: "Handling requests from PII principals"
+    description: "The organisation should establish procedures for handling requests from PII principals to exercise their rights, including access, rectification, erasure, objection, and portability."
+    evidence_types: [dsar_process_doc, response_log, timely_response_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "7.4.1"
+    domain: "Additional guidance for PII controllers (Clause 7.2-7.5)"
+    title: "Limiting collection"
+    description: "The organisation should limit the collection of PII to the minimum necessary for the identified purpose(s) (data minimisation)."
+    evidence_types: [data_mapping, minimisation_review, collection_limitation_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "7.4.2"
+    domain: "Additional guidance for PII controllers (Clause 7.2-7.5)"
+    title: "Limiting processing"
+    description: "The organisation should ensure PII is processed only as necessary for the purposes identified and in accordance with applicable legislation."
+    evidence_types: [processing_limitation_evidence, access_control_evidence, audit_log]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "7.4.3"
+    domain: "Additional guidance for PII controllers (Clause 7.2-7.5)"
+    title: "Accuracy and quality"
+    description: "The organisation should establish and implement procedures to ensure PII is accurate, complete, up to date, and relevant."
+    evidence_types: [data_quality_process, accuracy_review, correction_procedure]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "7.4.4"
+    domain: "Additional guidance for PII controllers (Clause 7.2-7.5)"
+    title: "PII minimisation objectives"
+    description: "The organisation should minimise the amount of PII retained by implementing de-identification, anonymisation, or deletion as soon as the PII is no longer required."
+    evidence_types: [retention_policy, deletion_log, anonymisation_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "7.4.5"
+    domain: "Additional guidance for PII controllers (Clause 7.2-7.5)"
+    title: "Retention and disposal"
+    description: "The organisation should ensure PII is disposed of in a way that prevents unlawful or accidental recovery at the end of the retention period."
+    evidence_types: [retention_policy, disposal_procedure, data_destruction_certificate]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "7.5.1"
+    domain: "Additional guidance for PII controllers (Clause 7.2-7.5)"
+    title: "Identify basis for PII transfer between jurisdictions"
+    description: "The organisation should identify and document the basis for transferring PII to third countries or international organisations."
+    evidence_types: [transfer_mechanism_register, scc_document, adequacy_decision_reference]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "8.2.1"
+    domain: "Additional guidance for PII processors (Clause 8.2-8.5)"
+    title: "Processor — organisation's purposes"
+    description: "The PII processor should process PII only on the documented instructions of the PII controller."
+    evidence_types: [data_processing_agreement, processing_instruction_record, audit_log]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "8.2.3"
+    domain: "Additional guidance for PII processors (Clause 8.2-8.5)"
+    title: "Processor — privacy by design and default"
+    description: "The PII processor should take appropriate measures to implement privacy by design and by default in its services."
+    evidence_types: [privacy_by_design_evidence, dpia, system_design_review]
+    testing_frequency: on_change
+    is_key_control: false
+
+  - id: "8.4.1"
+    domain: "Additional guidance for PII processors (Clause 8.2-8.5)"
+    title: "Processor — PII disclosure notifications"
+    description: "The PII processor should notify the PII controller of legally binding requests for disclosure of PII and of any unintended disclosures."
+    evidence_types: [disclosure_notification_procedure, notification_log, incident_report]
+    testing_frequency: on_change
+    is_key_control: false
+
+  - id: "8.5.1"
+    domain: "Additional guidance for PII processors (Clause 8.2-8.5)"
+    title: "Processor — Basis for PII transfers"
+    description: "The PII processor should transfer PII to a third party only as instructed by the PII controller."
+    evidence_types: [controller_instruction_record, transfer_log, subprocessor_agreement]
+    testing_frequency: annual
+    is_key_control: false

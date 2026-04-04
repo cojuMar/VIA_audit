@@ -1,0 +1,269 @@
+slug: cmmc-2
+name: "CMMC Level 2"
+version: "2.0"
+category: security
+issuing_body: DoD
+description: "Cybersecurity Maturity Model Certification Level 2 — 110 practices from NIST SP 800-171 for defence contractors handling Controlled Unclassified Information (CUI)"
+metadata:
+  renewal_period_days: 1095
+  filing_required: true
+  typical_audit_window_days: 90
+  cost_tier: high
+  geographic_scope: us
+  mandatory_for: [dod_contractor_cui]
+  aligned_standard: "NIST SP 800-171 Rev 2"
+
+domains:
+  - name: "Access Control (AC)"
+    prefix: AC
+  - name: "Awareness and Training (AT)"
+    prefix: AT
+  - name: "Audit and Accountability (AU)"
+    prefix: AU
+  - name: "Configuration Management (CM)"
+    prefix: CM
+  - name: "Identification and Authentication (IA)"
+    prefix: IA
+  - name: "Incident Response (IR)"
+    prefix: IR
+  - name: "Maintenance (MA)"
+    prefix: MA
+  - name: "Media Protection (MP)"
+    prefix: MP
+  - name: "Personnel Security (PS)"
+    prefix: PS
+  - name: "Physical Protection (PE)"
+    prefix: PE
+  - name: "Risk Assessment (RA)"
+    prefix: RA
+  - name: "Security Assessment (CA)"
+    prefix: CA
+  - name: "System and Communications Protection (SC)"
+    prefix: SC
+  - name: "System and Information Integrity (SI)"
+    prefix: SI
+
+controls:
+  - id: AC.L2-3.1.1
+    domain: "Access Control (AC)"
+    title: "Authorized Access Control"
+    description: "Limit system access to authorized users, processes acting on behalf of authorized users, and devices (including other systems)."
+    evidence_types: [access_control_policy, access_review, rbac_screenshot]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: AC.L2-3.1.2
+    domain: "Access Control (AC)"
+    title: "Transaction and Function Control"
+    description: "Limit system access to the types of transactions and functions that authorized users are permitted to execute."
+    evidence_types: [role_matrix, access_control_list, privilege_review]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: AC.L2-3.1.3
+    domain: "Access Control (AC)"
+    title: "Control CUI Flow"
+    description: "Control the flow of CUI in accordance with approved authorizations."
+    evidence_types: [data_flow_control_evidence, dlp_configuration, information_flow_policy]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: AC.L2-3.1.5
+    domain: "Access Control (AC)"
+    title: "Least Privilege"
+    description: "Employ the principle of least privilege, including for specific security functions and privileged accounts."
+    evidence_types: [privilege_review, access_review, pam_report]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: AC.L2-3.1.6
+    domain: "Access Control (AC)"
+    title: "Non-Privileged Account Use"
+    description: "Use non-privileged accounts or roles when accessing non-security functions."
+    evidence_types: [privileged_account_policy, access_review, pam_report]
+    testing_frequency: quarterly
+    is_key_control: false
+
+  - id: AC.L2-3.1.12
+    domain: "Access Control (AC)"
+    title: "Control Remote Access"
+    description: "Monitor and control remote access sessions."
+    evidence_types: [remote_access_policy, vpn_session_log, monitoring_screenshot]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: AC.L2-3.1.13
+    domain: "Access Control (AC)"
+    title: "Remote Access Confidentiality"
+    description: "Employ cryptographic mechanisms to protect the confidentiality of remote access sessions."
+    evidence_types: [tls_configuration_screenshot, vpn_configuration, fips_validation_certificate]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: AC.L2-3.1.14
+    domain: "Access Control (AC)"
+    title: "Remote Access Routing"
+    description: "Route remote access via managed access control points."
+    evidence_types: [network_diagram, vpn_gateway_configuration, access_control_evidence]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: AT.L2-3.2.1
+    domain: "Awareness and Training (AT)"
+    title: "Role-Based Risk Awareness"
+    description: "Ensure that managers, systems administrators, and users of organizational systems are made aware of the security risks associated with their activities."
+    evidence_types: [training_completion, role_specific_training_evidence, awareness_material]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: AT.L2-3.2.2
+    domain: "Awareness and Training (AT)"
+    title: "Role-Based Training"
+    description: "Ensure that organizational personnel are adequately trained to carry out their assigned information security responsibilities."
+    evidence_types: [training_completion, training_record, curriculum_document]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: AU.L2-3.3.1
+    domain: "Audit and Accountability (AU)"
+    title: "System Auditing"
+    description: "Create and retain system audit logs and records to the extent needed to enable the monitoring, analysis, investigation, and reporting of unlawful or unauthorized system activity."
+    evidence_types: [audit_logging_policy, log_configuration_screenshot, retention_evidence]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: AU.L2-3.3.2
+    domain: "Audit and Accountability (AU)"
+    title: "User Accountability"
+    description: "Ensure that the actions of individual system users can be traced to those users so they can be held accountable for their actions."
+    evidence_types: [audit_log_review, unique_id_evidence, attribution_evidence]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: CM.L2-3.4.1
+    domain: "Configuration Management (CM)"
+    title: "System Baselining"
+    description: "Establish and maintain baseline configurations and inventories of organizational systems (including hardware, software, firmware, and documentation) throughout the respective system development life cycles."
+    evidence_types: [configuration_baseline, asset_inventory, cmdb_screenshot]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: CM.L2-3.4.2
+    domain: "Configuration Management (CM)"
+    title: "Security Configuration Enforcement"
+    description: "Establish and enforce security configuration settings for information technology products employed in organizational systems."
+    evidence_types: [configuration_standard, compliance_scan_report, hardening_evidence]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: CM.L2-3.4.6
+    domain: "Configuration Management (CM)"
+    title: "Least Functionality"
+    description: "Employ the principle of least functionality by configuring organizational systems to provide only essential capabilities."
+    evidence_types: [port_scan_report, service_inventory, disabled_services_evidence]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: IA.L2-3.5.1
+    domain: "Identification and Authentication (IA)"
+    title: "Identification"
+    description: "Identify system users, processes acting on behalf of users, and devices."
+    evidence_types: [unique_id_evidence, account_inventory, device_certificate_evidence]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: IA.L2-3.5.3
+    domain: "Identification and Authentication (IA)"
+    title: "Multi-Factor Authentication"
+    description: "Use multifactor authentication for local and network access to privileged accounts and for network access to non-privileged accounts."
+    evidence_types: [mfa_enrollment_screenshot, mfa_policy, mfa_report]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: IR.L2-3.6.1
+    domain: "Incident Response (IR)"
+    title: "Incident Handling"
+    description: "Establish an operational incident-handling capability for organizational systems that includes preparation, detection, analysis, containment, recovery, and user response activities."
+    evidence_types: [incident_response_plan, incident_report, post_mortem]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: IR.L2-3.6.2
+    domain: "Incident Response (IR)"
+    title: "Incident Reporting"
+    description: "Track, document, and report incidents to designated officials and/or authorities both internal and external to the organization."
+    evidence_types: [incident_log, notification_record, reporting_procedure]
+    testing_frequency: on_change
+    is_key_control: true
+
+  - id: MA.L2-3.7.5
+    domain: "Maintenance (MA)"
+    title: "Multi-Factor Authentication for Remote Maintenance"
+    description: "Require MFA to establish nonlocal maintenance sessions via external network connections and terminate such connections when nonlocal maintenance is complete."
+    evidence_types: [remote_maintenance_policy, mfa_evidence, session_termination_log]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: MP.L2-3.8.3
+    domain: "Media Protection (MP)"
+    title: "Media Sanitization"
+    description: "Sanitize or destroy system media before disposal or reuse."
+    evidence_types: [media_sanitization_policy, data_destruction_certificate, disposal_log]
+    testing_frequency: on_change
+    is_key_control: true
+
+  - id: RA.L2-3.11.1
+    domain: "Risk Assessment (RA)"
+    title: "Risk Assessments"
+    description: "Periodically assess the risk to organizational operations, organizational assets, and individuals, resulting from the operation of organizational systems and associated processing, storage, or transmission of CUI."
+    evidence_types: [risk_assessment_report, risk_register, assessment_schedule]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: RA.L2-3.11.2
+    domain: "Risk Assessment (RA)"
+    title: "Vulnerability Scan"
+    description: "Scan for vulnerabilities in organizational systems and applications periodically and when new vulnerabilities affecting those systems and applications are identified."
+    evidence_types: [vulnerability_scan, scan_schedule_evidence, remediation_ticket]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: SC.L2-3.13.1
+    domain: "System and Communications Protection (SC)"
+    title: "Boundary Protection"
+    description: "Monitor, control, and protect communications at the external boundaries and key internal boundaries of organizational systems."
+    evidence_types: [firewall_rule_review, network_diagram, boundary_protection_evidence]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: SC.L2-3.13.8
+    domain: "System and Communications Protection (SC)"
+    title: "Data in Transit"
+    description: "Implement cryptographic mechanisms to prevent unauthorized disclosure of CUI during transmission unless otherwise protected by alternative physical safeguards."
+    evidence_types: [tls_configuration_screenshot, vpn_configuration, fips_validation_certificate]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: SI.L2-3.14.1
+    domain: "System and Information Integrity (SI)"
+    title: "Flaw Remediation"
+    description: "Identify, report, and correct information and information system flaws in a timely manner."
+    evidence_types: [patch_report, vulnerability_scan, remediation_ticket]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: SI.L2-3.14.2
+    domain: "System and Information Integrity (SI)"
+    title: "Malicious Code Protection"
+    description: "Provide protection from malicious code at appropriate locations within organizational systems."
+    evidence_types: [antivirus_report, edr_deployment_screenshot, malware_policy]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: SI.L2-3.14.6
+    domain: "System and Information Integrity (SI)"
+    title: "Security Alerts"
+    description: "Monitor organizational systems, including the detection and investigation of attacks and indications of potential attacks, in support of recognizing potential threats to organizational systems."
+    evidence_types: [siem_alert_log, monitoring_dashboard_screenshot, threat_detection_evidence]
+    testing_frequency: continuous
+    is_key_control: true

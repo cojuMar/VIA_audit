@@ -1,0 +1,173 @@
+slug: nis2
+name: "NIS2 Directive"
+version: "2022"
+category: security
+issuing_body: European Parliament
+description: "Network and Information Security Directive 2 (EU 2022/2555) — cybersecurity obligations for essential and important entities in the EU, including incident reporting and supply chain security"
+metadata:
+  renewal_period_days: 365
+  filing_required: false
+  typical_audit_window_days: 60
+  cost_tier: medium
+  geographic_scope: eu
+  mandatory_for: [eu_essential_entity, eu_important_entity]
+  transposition_deadline: "October 17, 2024"
+  sectors_essential: [energy, transport, banking, financial_market_infrastructure, health, drinking_water, wastewater, digital_infrastructure, ict_service_management, public_administration, space]
+  sectors_important: [postal_services, waste_management, chemicals, food, manufacturing, digital_providers, research]
+
+domains:
+  - name: "Cybersecurity Risk Management Measures (Art. 21)"
+    prefix: ART21
+  - name: "Incident Reporting Obligations (Art. 23)"
+    prefix: ART23
+  - name: "Governance and Accountability (Art. 20)"
+    prefix: ART20
+  - name: "Supply Chain Security (Art. 21(2)(d))"
+    prefix: SC
+  - name: "Registration and Supervisory Requirements"
+    prefix: REG
+
+controls:
+  - id: ART21.1
+    domain: "Cybersecurity Risk Management Measures (Art. 21)"
+    title: "Art. 21(1) — Risk management framework"
+    description: "Essential and important entities shall take appropriate and proportionate technical, operational and organisational measures to manage the risks posed to the security of network and information systems."
+    evidence_types: [risk_management_framework, risk_assessment_report, risk_register]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: ART21.2a
+    domain: "Cybersecurity Risk Management Measures (Art. 21)"
+    title: "Art. 21(2)(a) — Policies on risk analysis and information system security"
+    description: "Entities shall implement policies on risk analysis and information system security."
+    evidence_types: [security_policy, risk_analysis_procedure, management_approval]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: ART21.2b
+    domain: "Cybersecurity Risk Management Measures (Art. 21)"
+    title: "Art. 21(2)(b) — Incident handling"
+    description: "Entities shall implement policies and procedures for incident handling, including monitoring, reporting, and responding to security incidents."
+    evidence_types: [incident_response_plan, incident_log, runbook]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: ART21.2c
+    domain: "Cybersecurity Risk Management Measures (Art. 21)"
+    title: "Art. 21(2)(c) — Business continuity"
+    description: "Entities shall implement business continuity measures including backup management, disaster recovery, and crisis management."
+    evidence_types: [bcp_document, dr_plan, backup_report, dr_test_result]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: ART21.2d
+    domain: "Cybersecurity Risk Management Measures (Art. 21)"
+    title: "Art. 21(2)(d) — Supply chain security"
+    description: "Entities shall address supply chain security including security aspects concerning the relationships between each entity and its direct suppliers or service providers."
+    evidence_types: [supply_chain_policy, vendor_assessment, supplier_contract, due_diligence_report]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: ART21.2e
+    domain: "Cybersecurity Risk Management Measures (Art. 21)"
+    title: "Art. 21(2)(e) — Security in network and information systems acquisition, development and maintenance"
+    description: "Entities shall address security in network and information systems acquisition, development and maintenance, including vulnerability handling and disclosure."
+    evidence_types: [sdlc_policy, vulnerability_management_policy, patch_report, sast_report]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: ART21.2f
+    domain: "Cybersecurity Risk Management Measures (Art. 21)"
+    title: "Art. 21(2)(f) — Policies and procedures to assess the effectiveness of cybersecurity risk management measures"
+    description: "Entities shall implement policies and procedures to assess the effectiveness of cybersecurity risk management measures."
+    evidence_types: [assessment_policy, audit_report, penetration_test_report, metrics_report]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: ART21.2g
+    domain: "Cybersecurity Risk Management Measures (Art. 21)"
+    title: "Art. 21(2)(g) — Basic cyber hygiene practices and cybersecurity training"
+    description: "Entities shall implement basic cyber hygiene practices and cybersecurity training programmes."
+    evidence_types: [training_completion, training_material, hygiene_baseline_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: ART21.2h
+    domain: "Cybersecurity Risk Management Measures (Art. 21)"
+    title: "Art. 21(2)(h) — Policies and procedures regarding cryptography and encryption"
+    description: "Entities shall implement policies and procedures regarding the use of cryptography and encryption."
+    evidence_types: [cryptography_policy, encryption_configuration_screenshot, key_management_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: ART21.2i
+    domain: "Cybersecurity Risk Management Measures (Art. 21)"
+    title: "Art. 21(2)(i) — Human resources security, access control policies and asset management"
+    description: "Entities shall implement human resources security, access control policies, and asset management."
+    evidence_types: [hr_security_policy, access_control_policy, access_review, asset_inventory]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: ART21.2j
+    domain: "Cybersecurity Risk Management Measures (Art. 21)"
+    title: "Art. 21(2)(j) — Multi-factor authentication"
+    description: "Entities shall use multi-factor authentication, continuous authentication solutions, secured voice, video and text communications, and secured emergency communication systems where appropriate."
+    evidence_types: [mfa_enrollment_screenshot, mfa_policy, mfa_report]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: ART23.1
+    domain: "Incident Reporting Obligations (Art. 23)"
+    title: "Art. 23(1) — Early warning"
+    description: "Essential and important entities shall notify their CSIRT or competent authority without undue delay, and in any event within 24 hours of becoming aware of a significant incident, by means of an early warning."
+    evidence_types: [incident_classification_procedure, early_warning_report, csirt_notification_evidence]
+    testing_frequency: on_change
+    is_key_control: true
+
+  - id: ART23.2
+    domain: "Incident Reporting Obligations (Art. 23)"
+    title: "Art. 23(2) — Incident notification within 72 hours"
+    description: "Entities shall submit an incident notification to the CSIRT or competent authority within 72 hours of becoming aware of a significant incident, updating the early warning if applicable."
+    evidence_types: [incident_notification_report, reporting_timeline_evidence, csirt_notification_record]
+    testing_frequency: on_change
+    is_key_control: true
+
+  - id: ART23.3
+    domain: "Incident Reporting Obligations (Art. 23)"
+    title: "Art. 23(3) — Intermediate and final reports"
+    description: "Upon request of the CSIRT or competent authority, entities shall submit an intermediate report. They shall submit a final report within one month of the incident notification."
+    evidence_types: [intermediate_report, final_incident_report, reporting_procedure]
+    testing_frequency: on_change
+    is_key_control: false
+
+  - id: ART23.4
+    domain: "Incident Reporting Obligations (Art. 23)"
+    title: "Art. 23(4) — Significant incident criteria"
+    description: "An incident shall be considered significant if it has caused or is capable of causing severe operational disruption or financial loss, or affected other natural or legal persons by causing considerable material or non-material damage."
+    evidence_types: [incident_classification_criteria, significance_assessment_procedure]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: ART20.1
+    domain: "Governance and Accountability (Art. 20)"
+    title: "Art. 20(1) — Management body approval and accountability"
+    description: "Management bodies of essential and important entities shall approve the cybersecurity risk management measures taken and oversee their implementation."
+    evidence_types: [board_approval_record, management_body_minutes, oversight_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: ART20.2
+    domain: "Governance and Accountability (Art. 20)"
+    title: "Art. 20(2) — Management body training"
+    description: "Members of management bodies shall follow training on cybersecurity and shall encourage their entities to offer similar training to their employees on a regular basis."
+    evidence_types: [board_training_evidence, training_completion, training_schedule]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: REG.1
+    domain: "Registration and Supervisory Requirements"
+    title: "Registration with competent authority"
+    description: "Essential and important entities shall register with the relevant national competent authority, providing information on their sector, size, contact details, and IP ranges."
+    evidence_types: [registration_confirmation, competent_authority_notification]
+    testing_frequency: annual
+    is_key_control: false

@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+  }
+}
+
+@layer components {
+  .score-badge {
+    @apply inline-flex items-center justify-center rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
+  .score-critical {
+    @apply bg-red-100 text-red-700 ring-1 ring-red-600/20;
+  }
+  .score-high {
+    @apply bg-orange-100 text-orange-700 ring-1 ring-orange-600/20;
+  }
+  .score-medium {
+    @apply bg-yellow-100 text-yellow-700 ring-1 ring-yellow-600/20;
+  }
+  .score-low {
+    @apply bg-green-100 text-green-700 ring-1 ring-green-600/20;
+  }
+  .status-badge {
+    @apply inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset;
+  }
+}

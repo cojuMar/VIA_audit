@@ -1,0 +1,209 @@
+slug: sox-itgc
+name: "SOX IT General Controls"
+version: "2024"
+category: financial
+issuing_body: PCAOB
+description: "Sarbanes-Oxley Act IT General Controls — change management, logical access, computer operations, and financial reporting IT controls for public companies under PCAOB AS2201"
+metadata:
+  renewal_period_days: 365
+  filing_required: true
+  typical_audit_window_days: 90
+  cost_tier: high
+  geographic_scope: us
+  mandatory_for: [public_company_sec_filer]
+  aligned_standards: ["PCAOB AS2201", "COSO 2013"]
+
+domains:
+  - name: "Change Management (CM)"
+    prefix: CM
+  - name: "Logical Access (LA)"
+    prefix: LA
+  - name: "Computer Operations (CO)"
+    prefix: CO
+  - name: "Financial Reporting Systems (FR)"
+    prefix: FR
+
+controls:
+  - id: CM-01
+    domain: "Change Management (CM)"
+    title: "Change Management Policy and Procedures"
+    description: "A formal change management policy and procedures are in place that govern the development, testing, approval, and promotion of all changes to production systems supporting financial reporting."
+    evidence_types: [change_management_policy, procedure, management_approval]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: CM-02
+    domain: "Change Management (CM)"
+    title: "Change Request Authorization"
+    description: "All changes to in-scope financial reporting systems are formally requested, reviewed, and approved by authorized personnel prior to implementation in production."
+    evidence_types: [change_ticket, approval_record, change_log]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: CM-03
+    domain: "Change Management (CM)"
+    title: "Change Testing"
+    description: "All changes are tested in a segregated environment prior to promotion to production. Testing evidence is documented and reviewed."
+    evidence_types: [test_plan, test_result, uat_sign_off, environment_segregation_evidence]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: CM-04
+    domain: "Change Management (CM)"
+    title: "Segregation of Duties in Change Deployment"
+    description: "Developers do not have the ability to independently promote changes to the production environment. Segregation exists between development, testing, and production environments."
+    evidence_types: [sod_matrix, access_review, deployment_authorization_evidence]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: CM-05
+    domain: "Change Management (CM)"
+    title: "Emergency Change Procedures"
+    description: "Emergency changes to production systems have a defined process including retrospective approval, documentation, and post-implementation review."
+    evidence_types: [emergency_change_procedure, emergency_change_log, retrospective_approval_record]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: CM-06
+    domain: "Change Management (CM)"
+    title: "Program Change Log Review"
+    description: "Changes to production systems are logged and periodically reviewed by management to ensure only authorised changes have been made."
+    evidence_types: [change_log, management_review_evidence, exception_report]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: CM-07
+    domain: "Change Management (CM)"
+    title: "Patch Management"
+    description: "Security patches and system updates are assessed, approved, tested, and applied in accordance with a defined patch management process."
+    evidence_types: [patch_policy, patch_report, patch_approval_record]
+    testing_frequency: monthly
+    is_key_control: false
+
+  - id: LA-01
+    domain: "Logical Access (LA)"
+    title: "Logical Access Policy"
+    description: "A formal logical access policy exists and is communicated to personnel. The policy addresses user provisioning, access rights, authentication, and termination."
+    evidence_types: [access_control_policy, policy_acknowledgement, distribution_log]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: LA-02
+    domain: "Logical Access (LA)"
+    title: "User Access Provisioning"
+    description: "New user access to in-scope financial reporting systems is formally requested, reviewed, and approved by management prior to provisioning."
+    evidence_types: [access_request_ticket, management_approval, provisioning_log]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: LA-03
+    domain: "Logical Access (LA)"
+    title: "Periodic Access Reviews"
+    description: "User access rights to in-scope financial reporting systems are formally reviewed at least quarterly to verify that access is still appropriate and aligned with job responsibilities."
+    evidence_types: [access_review, management_certification, recertification_log]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: LA-04
+    domain: "Logical Access (LA)"
+    title: "Access Revocation on Termination or Transfer"
+    description: "User access to in-scope systems is revoked promptly upon termination. Upon transfer, access is reviewed and modified to reflect new responsibilities."
+    evidence_types: [termination_checklist, access_revocation_ticket, screenshot, timely_revocation_evidence]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: LA-05
+    domain: "Logical Access (LA)"
+    title: "Privileged Account Management"
+    description: "Privileged access (system administrators, DBA access, security administrators) is restricted to authorized individuals and reviewed periodically. Privileged activity is logged."
+    evidence_types: [privileged_user_list, access_review, privilege_activity_log, pam_report]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: LA-06
+    domain: "Logical Access (LA)"
+    title: "Password and Authentication Standards"
+    description: "Authentication controls meet minimum complexity and configuration standards. Multi-factor authentication is required for privileged and remote access."
+    evidence_types: [password_policy, password_configuration_screenshot, mfa_enrollment_screenshot]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: LA-07
+    domain: "Logical Access (LA)"
+    title: "Generic and Shared Account Controls"
+    description: "The use of generic, shared, or system accounts is restricted and controlled. Where shared accounts exist, compensating controls are in place."
+    evidence_types: [shared_account_policy, generic_account_inventory, compensating_control_evidence]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: CO-01
+    domain: "Computer Operations (CO)"
+    title: "Computer Operations Policy"
+    description: "Policies and procedures for computer operations are documented and communicated, covering job scheduling, monitoring, incident response, and backup/recovery."
+    evidence_types: [operations_policy, procedure, runbook]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: CO-02
+    domain: "Computer Operations (CO)"
+    title: "Backup and Recovery Procedures"
+    description: "System backups for in-scope financial reporting systems are performed according to defined schedules and tested periodically to ensure recoverability."
+    evidence_types: [backup_policy, backup_report, restore_test_result]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: CO-03
+    domain: "Computer Operations (CO)"
+    title: "Job Scheduling and Monitoring"
+    description: "Batch jobs and automated processes that support financial reporting are scheduled, monitored for completion, and exceptions are investigated and resolved."
+    evidence_types: [job_scheduling_evidence, job_monitoring_report, exception_investigation_log]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: CO-04
+    domain: "Computer Operations (CO)"
+    title: "System and Application Monitoring"
+    description: "In-scope financial reporting systems are monitored for availability, performance, and security events. Alerts are generated and investigated."
+    evidence_types: [monitoring_dashboard_screenshot, alert_log, incident_report]
+    testing_frequency: monthly
+    is_key_control: false
+
+  - id: CO-05
+    domain: "Computer Operations (CO)"
+    title: "Incident Management"
+    description: "Incidents affecting in-scope systems are identified, logged, escalated, and resolved in accordance with defined incident management procedures."
+    evidence_types: [incident_response_procedure, incident_log, resolution_evidence]
+    testing_frequency: on_change
+    is_key_control: false
+
+  - id: FR-01
+    domain: "Financial Reporting Systems (FR)"
+    title: "Scoping of In-Scope Financial Reporting Systems"
+    description: "In-scope IT systems that support financial reporting processes have been identified and documented. The scope is reviewed and updated annually."
+    evidence_types: [scope_document, system_inventory, annual_review_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: FR-02
+    domain: "Financial Reporting Systems (FR)"
+    title: "Interface Controls — System-to-System Data Transfer"
+    description: "Interfaces between in-scope systems and other systems (e.g., ERP to consolidation system) are controlled and reconciled to ensure completeness and accuracy of data transfer."
+    evidence_types: [interface_reconciliation_report, error_log, manual_review_evidence]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: FR-03
+    domain: "Financial Reporting Systems (FR)"
+    title: "Report Integrity Controls"
+    description: "Key financial reports generated by in-scope systems are subject to reconciliation and validation controls to ensure completeness and accuracy."
+    evidence_types: [reconciliation_report, report_validation_evidence, sign_off_record]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: FR-04
+    domain: "Financial Reporting Systems (FR)"
+    title: "Data Integrity and Completeness"
+    description: "Controls exist to ensure that data entered into or transferred between in-scope financial reporting systems is complete, accurate, and valid."
+    evidence_types: [input_validation_evidence, reconciliation_report, data_quality_report]
+    testing_frequency: quarterly
+    is_key_control: true

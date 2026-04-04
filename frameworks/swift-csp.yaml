@@ -1,0 +1,257 @@
+slug: swift-csp
+name: "SWIFT Customer Security Programme"
+version: "v2024"
+category: sector-specific
+issuing_body: SWIFT
+description: "SWIFT Customer Security Controls Framework v2024 — mandatory and advisory security controls for all SWIFT users to protect the local SWIFT infrastructure and the broader ecosystem"
+metadata:
+  renewal_period_days: 365
+  filing_required: true
+  typical_audit_window_days: 60
+  cost_tier: medium
+  geographic_scope: global
+  mandatory_for: [swift_member]
+  attestation_deadline: "December 31 annually"
+  architecture_types: [A1, A2, A3, B]
+
+domains:
+  - name: "Restrict Internet Access and Protect Critical Systems (Objective 1)"
+    prefix: OBJ1
+  - name: "Reduce Attack Surface and Vulnerabilities (Objective 2)"
+    prefix: OBJ2
+  - name: "Physically Secure the Environment (Objective 3)"
+    prefix: OBJ3
+  - name: "Prevent Compromise of Credentials (Objective 4)"
+    prefix: OBJ4
+  - name: "Manage Identities and Segregate Privileges (Objective 5)"
+    prefix: OBJ5
+  - name: "Detect Anomalous Activity to Systems or Transaction Records (Objective 6)"
+    prefix: OBJ6
+  - name: "Plan for Incident Response and Information Sharing (Objective 7)"
+    prefix: OBJ7
+
+controls:
+  - id: "1.1"
+    domain: "Restrict Internet Access and Protect Critical Systems (Objective 1)"
+    title: "SWIFT Environment Protection — Mandatory"
+    description: "Ensure the protection of the user's local SWIFT infrastructure from potentially compromised elements of the general IT environment and outside network."
+    guidance: "Implement a secure zone for all SWIFT components, separated from the general IT environment and external networks."
+    evidence_types: [network_segmentation_diagram, firewall_rule_review, secure_zone_architecture]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "1.2"
+    domain: "Restrict Internet Access and Protect Critical Systems (Objective 1)"
+    title: "Privileged Account Control — Mandatory"
+    description: "Restrict and control the allocation and usage of privileged accounts for operating systems and SWIFT-related applications within the SWIFT environment."
+    evidence_types: [privileged_account_list, access_review, pam_report]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "1.3A"
+    domain: "Restrict Internet Access and Protect Critical Systems (Objective 1)"
+    title: "Virtualisation Platform Security — Advisory"
+    description: "Secure the virtualisation platform hosting SWIFT components."
+    evidence_types: [hypervisor_hardening_evidence, virtualisation_policy, vulnerability_scan]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "2.1"
+    domain: "Reduce Attack Surface and Vulnerabilities (Objective 2)"
+    title: "Internal Data Flow Security — Mandatory"
+    description: "Ensure the confidentiality, integrity, and mutual authenticity of data flows between local SWIFT-related application components and interfaces."
+    evidence_types: [tls_configuration_screenshot, certificate_evidence, mutual_auth_configuration]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "2.2"
+    domain: "Reduce Attack Surface and Vulnerabilities (Objective 2)"
+    title: "Security Updates — Mandatory"
+    description: "Minimise the occurrence of known technical vulnerabilities within the local SWIFT infrastructure by ensuring vendor support and applying mandatory security updates."
+    evidence_types: [patch_report, vendor_support_evidence, patch_schedule]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: "2.3"
+    domain: "Reduce Attack Surface and Vulnerabilities (Objective 2)"
+    title: "System Hardening — Mandatory"
+    description: "Reduce the cyberattack surface of SWIFT-related components by performing system hardening."
+    evidence_types: [hardening_baseline, compliance_scan_report, hardening_procedure]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "2.4A"
+    domain: "Reduce Attack Surface and Vulnerabilities (Objective 2)"
+    title: "Back-office Data Flow Security — Advisory"
+    description: "Ensure the confidentiality, integrity, and authenticity of application data flows between the back-office applications and the SWIFT environment."
+    evidence_types: [api_authentication_evidence, tls_screenshot, data_flow_diagram]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "2.5A"
+    domain: "Reduce Attack Surface and Vulnerabilities (Objective 2)"
+    title: "External Transmission Data Confidentiality and Integrity Protection — Advisory"
+    description: "Protect the confidentiality and integrity of data transmitted externally."
+    evidence_types: [transmission_encryption_evidence, ssl_scan_report, policy]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "2.6"
+    domain: "Reduce Attack Surface and Vulnerabilities (Objective 2)"
+    title: "Operator Session Confidentiality and Integrity — Mandatory"
+    description: "Protect the confidentiality and integrity of interactive operator sessions connecting to SWIFT-related components."
+    evidence_types: [session_encryption_configuration, mfa_evidence, session_management_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "2.7"
+    domain: "Reduce Attack Surface and Vulnerabilities (Objective 2)"
+    title: "Vulnerability Scanning — Mandatory"
+    description: "Identify known vulnerabilities within the local SWIFT environment by implementing a regular vulnerability scanning process."
+    evidence_types: [vulnerability_scan, scan_schedule, remediation_ticket]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: "2.8A"
+    domain: "Reduce Attack Surface and Vulnerabilities (Objective 2)"
+    title: "Critical Activity Outsourcing — Advisory"
+    description: "Assess and manage risks associated with critical activities outsourced to service bureaus or other third parties."
+    evidence_types: [third_party_assessment, service_provider_contract, outsourcing_policy]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "2.9"
+    domain: "Reduce Attack Surface and Vulnerabilities (Objective 2)"
+    title: "Transaction Business Controls — Mandatory"
+    description: "Restrict transaction activity to validated and approved counterparties and within expected bounds of normal business."
+    evidence_types: [transaction_controls_configuration, whitelist_evidence, transaction_monitoring_report]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: "3.1"
+    domain: "Physically Secure the Environment (Objective 3)"
+    title: "Physical Security — Mandatory"
+    description: "Prevent unauthorised physical access to sensitive equipment and critical components within the local SWIFT infrastructure."
+    evidence_types: [physical_security_policy, badge_log, data_centre_access_log, cctv_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "4.1"
+    domain: "Prevent Compromise of Credentials (Objective 4)"
+    title: "Password Policy — Mandatory"
+    description: "Ensure passwords meeting minimum standards are used where authentication methods require them."
+    evidence_types: [password_policy, password_configuration_screenshot]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "4.2"
+    domain: "Prevent Compromise of Credentials (Objective 4)"
+    title: "Multi-Factor Authentication — Mandatory"
+    description: "Prevent the compromise of SWIFT-related components and interfaces by implementing multi-factor authentication."
+    evidence_types: [mfa_enrollment_screenshot, mfa_policy, mfa_report]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "5.1"
+    domain: "Manage Identities and Segregate Privileges (Objective 5)"
+    title: "Logical Access Controls — Mandatory"
+    description: "Enforce the security principles of need-to-know access, least privilege, and segregation of duties for operator accounts within the local SWIFT environment."
+    evidence_types: [access_control_list, sod_matrix, access_review, role_matrix]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "5.2"
+    domain: "Manage Identities and Segregate Privileges (Objective 5)"
+    title: "Token Management — Mandatory"
+    description: "Protect physically and logically the repository of authentication tokens used to connect to SWIFT."
+    evidence_types: [token_management_policy, token_inventory, hardware_security_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "5.3A"
+    domain: "Manage Identities and Segregate Privileges (Objective 5)"
+    title: "Staff Screening Process — Advisory"
+    description: "Perform screening of staff in roles with access to the SWIFT environment."
+    evidence_types: [background_check_policy, background_check_record, privileged_role_list]
+    testing_frequency: on_change
+    is_key_control: false
+
+  - id: "5.4"
+    domain: "Manage Identities and Segregate Privileges (Objective 5)"
+    title: "Physical and Logical Password Storage — Mandatory"
+    description: "Protect physically and logically records of passwords."
+    evidence_types: [password_storage_policy, password_manager_evidence, vault_configuration]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "6.1"
+    domain: "Detect Anomalous Activity to Systems or Transaction Records (Objective 6)"
+    title: "Malware Protection — Mandatory"
+    description: "Ensure that the local SWIFT infrastructure is protected against malware."
+    evidence_types: [antivirus_report, edr_deployment_screenshot, malware_scan_report]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: "6.2"
+    domain: "Detect Anomalous Activity to Systems or Transaction Records (Objective 6)"
+    title: "Software Integrity — Mandatory"
+    description: "Ensure the integrity of the SWIFT software by verifying software file integrity."
+    evidence_types: [file_integrity_monitoring_screenshot, hash_verification_evidence, software_inventory]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: "6.3"
+    domain: "Detect Anomalous Activity to Systems or Transaction Records (Objective 6)"
+    title: "Database Integrity — Mandatory"
+    description: "Ensure the integrity of the database records for the SWIFT messaging interface and related back-end systems."
+    evidence_types: [db_integrity_monitoring_evidence, reconciliation_report, fim_screenshot]
+    testing_frequency: daily
+    is_key_control: true
+
+  - id: "6.4"
+    domain: "Detect Anomalous Activity to Systems or Transaction Records (Objective 6)"
+    title: "Logging and Monitoring — Mandatory"
+    description: "Record security events and detect anomalous actions and operations within the local SWIFT environment."
+    evidence_types: [siem_report, audit_log_review_report, anomaly_alert_log]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: "6.5A"
+    domain: "Detect Anomalous Activity to Systems or Transaction Records (Objective 6)"
+    title: "Intrusion Detection — Advisory"
+    description: "Detect and prevent intrusion attempts into the local SWIFT infrastructure."
+    evidence_types: [ids_ips_configuration, alert_log, intrusion_detection_report]
+    testing_frequency: monthly
+    is_key_control: false
+
+  - id: "7.1"
+    domain: "Plan for Incident Response and Information Sharing (Objective 7)"
+    title: "Cyber Incident Response Planning — Mandatory"
+    description: "Ensure a consistent and effective approach for the management of cyber incidents."
+    evidence_types: [incident_response_plan, tabletop_exercise_record, runbook]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "7.2"
+    domain: "Plan for Incident Response and Information Sharing (Objective 7)"
+    title: "Security Training and Awareness — Mandatory"
+    description: "Ensure all staff are aware of and understand their security responsibilities."
+    evidence_types: [training_completion, training_material, awareness_campaign_record]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "7.3A"
+    domain: "Plan for Incident Response and Information Sharing (Objective 7)"
+    title: "Penetration Testing — Advisory"
+    description: "Validate the operational security configuration and identify security gaps by conducting penetration testing."
+    evidence_types: [penetration_test_report, methodology_document, remediation_evidence]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "7.4A"
+    domain: "Plan for Incident Response and Information Sharing (Objective 7)"
+    title: "Scenario Risk Assessment — Advisory"
+    description: "Understand the SWIFT-related risks to which the user is exposed and how to address them effectively."
+    evidence_types: [scenario_risk_assessment, risk_register, control_mapping]
+    testing_frequency: annual
+    is_key_control: false

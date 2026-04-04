@@ -1,0 +1,256 @@
+slug: hipaa
+name: "HIPAA Security Rule"
+version: "2013"
+category: sector-specific
+issuing_body: HHS
+description: "Health Insurance Portability and Accountability Act Security Rule — administrative, physical, and technical safeguards for electronic protected health information (ePHI)"
+metadata:
+  renewal_period_days: 365
+  filing_required: false
+  typical_audit_window_days: 90
+  cost_tier: medium
+  geographic_scope: us
+  mandatory_for: [covered_entity, business_associate]
+
+domains:
+  - name: "Administrative Safeguards (§164.308)"
+    prefix: "164.308"
+  - name: "Physical Safeguards (§164.310)"
+    prefix: "164.310"
+  - name: "Technical Safeguards (§164.312)"
+    prefix: "164.312"
+  - name: "Organizational Requirements (§164.314)"
+    prefix: "164.314"
+
+controls:
+  - id: "164.308(a)(1)(i)"
+    domain: "Administrative Safeguards (§164.308)"
+    title: "Security Management Process — Risk Analysis"
+    description: "Conduct an accurate and thorough assessment of the potential risks and vulnerabilities to the confidentiality, integrity, and availability of ePHI."
+    evidence_types: [risk_assessment_report, risk_register]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "164.308(a)(1)(ii)(B)"
+    domain: "Administrative Safeguards (§164.308)"
+    title: "Security Management Process — Risk Management"
+    description: "Implement security measures sufficient to reduce risks and vulnerabilities to a reasonable and appropriate level."
+    evidence_types: [risk_treatment_plan, control_implementation_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "164.308(a)(1)(ii)(C)"
+    domain: "Administrative Safeguards (§164.308)"
+    title: "Security Management Process — Sanction Policy"
+    description: "Apply appropriate sanctions against workforce members who fail to comply with the security policies and procedures."
+    evidence_types: [sanction_policy, disciplinary_record]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "164.308(a)(1)(ii)(D)"
+    domain: "Administrative Safeguards (§164.308)"
+    title: "Security Management Process — Information System Activity Review"
+    description: "Implement procedures to regularly review records of information system activity, such as audit logs, access reports, and security incident tracking reports."
+    evidence_types: [audit_log_review_report, access_report, incident_log]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: "164.308(a)(2)"
+    domain: "Administrative Safeguards (§164.308)"
+    title: "Assigned Security Responsibility"
+    description: "Identify the security official who is responsible for the development and implementation of the policies and procedures required by this subpart."
+    evidence_types: [role_assignment, org_chart, policy]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "164.308(a)(3)(i)"
+    domain: "Administrative Safeguards (§164.308)"
+    title: "Workforce Security — Authorization and/or Supervision"
+    description: "Implement procedures for the authorization and/or supervision of workforce members who work with ePHI."
+    evidence_types: [access_authorization_policy, access_review, supervisor_checklist]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "164.308(a)(3)(ii)(C)"
+    domain: "Administrative Safeguards (§164.308)"
+    title: "Workforce Security — Termination Procedures"
+    description: "Implement procedures for terminating access to ePHI when employment ends or as required by determinations made for workforce clearance."
+    evidence_types: [termination_checklist, access_revocation_ticket, screenshot]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "164.308(a)(4)(i)"
+    domain: "Administrative Safeguards (§164.308)"
+    title: "Information Access Management — Isolating Healthcare Clearinghouse"
+    description: "If a health care clearinghouse is part of a larger organization, implement policies and procedures that protect the ePHI from unauthorized access."
+    evidence_types: [network_segmentation_diagram, access_control_policy]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "164.308(a)(4)(ii)(B)"
+    domain: "Administrative Safeguards (§164.308)"
+    title: "Information Access Management — Access Authorization"
+    description: "Implement policies and procedures for granting access to ePHI, for example, through access to a workstation, transaction, program, process, or other mechanism."
+    evidence_types: [access_authorization_policy, access_request_ticket, approval_record]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "164.308(a)(5)(i)"
+    domain: "Administrative Safeguards (§164.308)"
+    title: "Security Awareness and Training"
+    description: "Implement a security awareness and training program for all members of its workforce."
+    evidence_types: [training_completion, training_material, training_schedule]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "164.308(a)(6)(i)"
+    domain: "Administrative Safeguards (§164.308)"
+    title: "Security Incident Procedures — Response and Reporting"
+    description: "Implement policies and procedures to address security incidents, including identifying and responding to suspected or known security incidents."
+    evidence_types: [incident_response_plan, incident_report, breach_notification_log]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "164.308(a)(7)(i)"
+    domain: "Administrative Safeguards (§164.308)"
+    title: "Contingency Plan — Data Backup Plan"
+    description: "Establish and implement procedures to create and maintain retrievable exact copies of ePHI."
+    evidence_types: [backup_policy, backup_report, restore_test_result]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: "164.308(a)(7)(ii)(B)"
+    domain: "Administrative Safeguards (§164.308)"
+    title: "Contingency Plan — Disaster Recovery Plan"
+    description: "Establish and implement procedures to restore any loss of data."
+    evidence_types: [dr_plan, dr_test_result, rto_rpo_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "164.308(a)(7)(ii)(D)"
+    domain: "Administrative Safeguards (§164.308)"
+    title: "Contingency Plan — Testing and Revision"
+    description: "Implement procedures for periodic testing and revision of contingency plans."
+    evidence_types: [dr_test_result, tabletop_exercise_record, plan_revision_log]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "164.308(a)(8)"
+    domain: "Administrative Safeguards (§164.308)"
+    title: "Evaluation"
+    description: "Perform a periodic technical and nontechnical evaluation, in response to environmental or operational changes affecting the security of ePHI."
+    evidence_types: [risk_assessment_report, internal_audit_report, evaluation_schedule]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "164.308(b)(1)"
+    domain: "Administrative Safeguards (§164.308)"
+    title: "Business Associate Contracts"
+    description: "A covered entity may permit a business associate to create, receive, maintain, or transmit ePHI on the covered entity's behalf only if the covered entity obtains satisfactory assurances through a business associate agreement."
+    evidence_types: [business_associate_agreement, vendor_list, contract]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "164.310(a)(1)"
+    domain: "Physical Safeguards (§164.310)"
+    title: "Facility Access Controls"
+    description: "Implement policies and procedures to limit physical access to its electronic information systems and the facility or facilities in which they are housed to authorized users."
+    evidence_types: [physical_access_policy, badge_log, visitor_log, cctv_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "164.310(b)"
+    domain: "Physical Safeguards (§164.310)"
+    title: "Workstation Use"
+    description: "Implement policies and procedures that specify the proper functions to be performed, the manner in which those functions are to be performed, and the physical attributes of the surroundings of a specific workstation."
+    evidence_types: [workstation_use_policy, screen_lock_configuration, photo]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "164.310(c)"
+    domain: "Physical Safeguards (§164.310)"
+    title: "Workstation Security"
+    description: "Implement physical safeguards for all workstations that access ePHI to restrict access to authorized users."
+    evidence_types: [workstation_security_policy, cable_lock_evidence, clean_desk_policy]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "164.310(d)(1)"
+    domain: "Physical Safeguards (§164.310)"
+    title: "Device and Media Controls — Disposal"
+    description: "Implement policies and procedures to address the final disposition of ePHI, and/or the hardware or electronic media on which it is stored."
+    evidence_types: [media_disposal_policy, data_destruction_certificate, disposal_log]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "164.312(a)(1)"
+    domain: "Technical Safeguards (§164.312)"
+    title: "Access Control — Unique User Identification"
+    description: "Assign a unique name and/or number for identifying and tracking user identity."
+    evidence_types: [access_control_policy, user_account_report, unique_id_evidence]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "164.312(a)(2)(i)"
+    domain: "Technical Safeguards (§164.312)"
+    title: "Access Control — Emergency Access Procedure"
+    description: "Establish and implement procedures for obtaining necessary ePHI during an emergency."
+    evidence_types: [emergency_access_procedure, break_glass_log, bcp_document]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "164.312(a)(2)(iii)"
+    domain: "Technical Safeguards (§164.312)"
+    title: "Access Control — Automatic Logoff"
+    description: "Implement electronic procedures that terminate an electronic session after a predetermined time of inactivity."
+    evidence_types: [session_timeout_policy, configuration_screenshot]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "164.312(a)(2)(iv)"
+    domain: "Technical Safeguards (§164.312)"
+    title: "Access Control — Encryption and Decryption"
+    description: "Implement a mechanism to encrypt and decrypt ePHI."
+    evidence_types: [encryption_policy, encryption_configuration_screenshot, key_management_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "164.312(b)"
+    domain: "Technical Safeguards (§164.312)"
+    title: "Audit Controls"
+    description: "Implement hardware, software, and/or procedural mechanisms that record and examine activity in information systems that contain or use ePHI."
+    evidence_types: [audit_logging_policy, log_configuration_screenshot, log_review_report]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "164.312(c)(1)"
+    domain: "Technical Safeguards (§164.312)"
+    title: "Integrity Controls"
+    description: "Implement policies and procedures to protect ePHI from improper alteration or destruction."
+    evidence_types: [integrity_policy, checksum_evidence, hash_comparison]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "164.312(d)"
+    domain: "Technical Safeguards (§164.312)"
+    title: "Person or Entity Authentication"
+    description: "Implement procedures to verify that a person or entity seeking access to ePHI is the one claimed."
+    evidence_types: [mfa_enrollment_screenshot, authentication_policy, login_report]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: "164.312(e)(1)"
+    domain: "Technical Safeguards (§164.312)"
+    title: "Transmission Security"
+    description: "Implement technical security measures to guard against unauthorized access to ePHI that is being transmitted over an electronic communications network."
+    evidence_types: [tls_configuration_screenshot, vpn_configuration, encryption_policy]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "164.314(a)(1)"
+    domain: "Organizational Requirements (§164.314)"
+    title: "Business Associate Contracts — Required Content"
+    description: "A business associate contract must provide that the business associate will implement administrative, physical, and technical safeguards that reasonably and appropriately protect the confidentiality, integrity, and availability of the ePHI."
+    evidence_types: [business_associate_agreement, contract_review_log]
+    testing_frequency: annual
+    is_key_control: true

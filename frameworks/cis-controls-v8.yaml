@@ -1,0 +1,286 @@
+slug: cis-controls-v8
+name: "CIS Controls v8"
+version: "8.0"
+category: security
+issuing_body: CIS
+description: "Center for Internet Security Critical Security Controls version 8 — 18 prioritised controls and 153 Safeguards organised into three Implementation Groups"
+metadata:
+  renewal_period_days: null
+  filing_required: false
+  typical_audit_window_days: 60
+  cost_tier: low
+  geographic_scope: global
+  mandatory_for: []
+  implementation_groups:
+    IG1: basic_cyber_hygiene
+    IG2: foundational
+    IG3: organisational
+
+domains:
+  - name: "Control 1 — Inventory and Control of Enterprise Assets"
+    prefix: CIS1
+  - name: "Control 2 — Inventory and Control of Software Assets"
+    prefix: CIS2
+  - name: "Control 3 — Data Protection"
+    prefix: CIS3
+  - name: "Control 4 — Secure Configuration of Enterprise Assets and Software"
+    prefix: CIS4
+  - name: "Control 5 — Account Management"
+    prefix: CIS5
+  - name: "Control 6 — Access Control Management"
+    prefix: CIS6
+  - name: "Control 7 — Continuous Vulnerability Management"
+    prefix: CIS7
+  - name: "Control 8 — Audit Log Management"
+    prefix: CIS8
+  - name: "Control 9 — Email and Web Browser Protections"
+    prefix: CIS9
+  - name: "Control 10 — Malware Defenses"
+    prefix: CIS10
+  - name: "Control 11 — Data Recovery"
+    prefix: CIS11
+  - name: "Control 12 — Network Infrastructure Management"
+    prefix: CIS12
+  - name: "Control 13 — Network Monitoring and Defense"
+    prefix: CIS13
+  - name: "Control 14 — Security Awareness and Skills Training"
+    prefix: CIS14
+  - name: "Control 16 — Application Software Security"
+    prefix: CIS16
+  - name: "Control 17 — Incident Response Management"
+    prefix: CIS17
+  - name: "Control 18 — Penetration Testing"
+    prefix: CIS18
+
+controls:
+  - id: CIS1.1
+    domain: "Control 1 — Inventory and Control of Enterprise Assets"
+    title: "Establish and Maintain Detailed Enterprise Asset Inventory"
+    description: "Establish and maintain an accurate, detailed, and up-to-date inventory of all enterprise assets with the potential to store or process data."
+    evidence_types: [asset_inventory, cmdb_screenshot, automated_discovery_report]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: CIS1.2
+    domain: "Control 1 — Inventory and Control of Enterprise Assets"
+    title: "Address Unauthorized Assets"
+    description: "Ensure that a process exists to address unauthorized assets on a weekly basis. The enterprise may choose to remove the asset from the network, deny the asset from connecting remotely to the network, or quarantine the asset."
+    evidence_types: [nac_configuration, unauthorized_asset_log, quarantine_evidence]
+    testing_frequency: weekly
+    is_key_control: true
+
+  - id: CIS2.1
+    domain: "Control 2 — Inventory and Control of Software Assets"
+    title: "Establish and Maintain a Software Inventory"
+    description: "Establish and maintain a detailed inventory of all licensed software installed on enterprise assets."
+    evidence_types: [software_inventory, sam_tool_screenshot, license_audit_report]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: CIS2.2
+    domain: "Control 2 — Inventory and Control of Software Assets"
+    title: "Ensure Authorized Software is Currently Supported"
+    description: "Ensure that only currently supported software is designated as authorized in the software inventory for enterprise assets."
+    evidence_types: [software_eol_register, vendor_support_confirmation, patch_policy]
+    testing_frequency: quarterly
+    is_key_control: false
+
+  - id: CIS2.3
+    domain: "Control 2 — Inventory and Control of Software Assets"
+    title: "Address Unauthorized Software"
+    description: "Ensure that unauthorized software is either removed from use on enterprise assets or receives a documented exception."
+    evidence_types: [software_blocklist, removal_log, exception_register]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: CIS3.1
+    domain: "Control 3 — Data Protection"
+    title: "Establish and Maintain a Data Management Process"
+    description: "Establish and maintain a data management process. In the process, address data sensitivity, data owner, handling of data, data retention limits, and disposal requirements."
+    evidence_types: [data_management_policy, data_classification_standard, retention_policy]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: CIS3.3
+    domain: "Control 3 — Data Protection"
+    title: "Configure Data Access Control Lists"
+    description: "Configure data access control lists based on a user's need to know. Apply data access control lists, also known as access permissions, to local and remote file systems, databases, and applications."
+    evidence_types: [access_control_list, rbac_screenshot, access_review]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: CIS3.11
+    domain: "Control 3 — Data Protection"
+    title: "Encrypt Sensitive Data at Rest"
+    description: "Encrypt sensitive data at rest on servers, applications, and databases containing sensitive data. Storage-layer encryption, also known as server-side encryption, meets the minimum requirements."
+    evidence_types: [encryption_policy, disk_encryption_screenshot, database_encryption_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: CIS4.1
+    domain: "Control 4 — Secure Configuration of Enterprise Assets and Software"
+    title: "Establish and Maintain a Secure Configuration Process"
+    description: "Establish and maintain a secure configuration process for enterprise assets and software. Review and update documentation annually, or when significant enterprise changes occur."
+    evidence_types: [configuration_standard, cis_benchmark_report, review_log]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: CIS4.2
+    domain: "Control 4 — Secure Configuration of Enterprise Assets and Software"
+    title: "Establish and Maintain a Secure Configuration Process for Network Infrastructure"
+    description: "Establish and maintain a secure configuration process for network devices. Review and update documentation annually."
+    evidence_types: [network_hardening_standard, network_device_scan, change_log]
+    testing_frequency: quarterly
+    is_key_control: false
+
+  - id: CIS5.1
+    domain: "Control 5 — Account Management"
+    title: "Establish and Maintain an Inventory of Accounts"
+    description: "Establish and maintain an inventory of all accounts managed in the enterprise. Review the inventory to verify that all active accounts are authorised, on a recurring basis."
+    evidence_types: [account_inventory, access_review, iam_screenshot]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: CIS5.3
+    domain: "Control 5 — Account Management"
+    title: "Disable Dormant Accounts"
+    description: "Delete or disable any dormant accounts after a period of 45 days of inactivity, where supported."
+    evidence_types: [dormant_account_report, deactivation_log, automation_evidence]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: CIS5.4
+    domain: "Control 5 — Account Management"
+    title: "Restrict Administrator Privileges to Dedicated Administrator Accounts"
+    description: "Restrict administrator privileges to dedicated administrator accounts on enterprise assets. Conduct general computing activities, such as browsing the internet, from the user's primary, non-privileged account."
+    evidence_types: [privileged_account_policy, access_review, pam_report]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: CIS6.2
+    domain: "Control 6 — Access Control Management"
+    title: "Establish an Access Revoking Process"
+    description: "Establish and follow a process, preferably automated, for revoking access to enterprise assets, through disabling accounts immediately upon termination."
+    evidence_types: [termination_procedure, access_revocation_log, automation_evidence]
+    testing_frequency: on_change
+    is_key_control: true
+
+  - id: CIS6.3
+    domain: "Control 6 — Access Control Management"
+    title: "Require MFA for Externally-Exposed Applications"
+    description: "Require all externally-exposed enterprise or third-party applications to enforce MFA."
+    evidence_types: [mfa_enrollment_screenshot, externally_exposed_app_list, mfa_report]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: CIS6.4
+    domain: "Control 6 — Access Control Management"
+    title: "Require MFA for Remote Network Access"
+    description: "Require MFA for remote network access."
+    evidence_types: [vpn_mfa_configuration, mfa_enrollment_screenshot, access_log]
+    testing_frequency: quarterly
+    is_key_control: true
+
+  - id: CIS7.1
+    domain: "Control 7 — Continuous Vulnerability Management"
+    title: "Establish and Maintain a Vulnerability Management Process"
+    description: "Establish and maintain a documented vulnerability management process for enterprise assets. Review and update documentation annually."
+    evidence_types: [vulnerability_management_policy, process_document, review_log]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: CIS7.2
+    domain: "Control 7 — Continuous Vulnerability Management"
+    title: "Establish and Maintain a Remediation Process"
+    description: "Establish and maintain a risk-based remediation strategy documented in a remediation process, with monthly, or more frequent, reviews."
+    evidence_types: [remediation_policy, patch_sla_evidence, remediation_log]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: CIS7.4
+    domain: "Control 7 — Continuous Vulnerability Management"
+    title: "Perform Automated Application Vulnerability Scans"
+    description: "Perform automated vulnerability scans of internally-developed and third-party application code internally, at least biweekly."
+    evidence_types: [sast_report, dast_report, scan_schedule_evidence]
+    testing_frequency: monthly
+    is_key_control: false
+
+  - id: CIS8.1
+    domain: "Control 8 — Audit Log Management"
+    title: "Establish and Maintain an Audit Log Management Process"
+    description: "Establish and maintain an audit log management process that defines the enterprise's logging requirements."
+    evidence_types: [logging_policy, log_management_procedure, siem_configuration]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: CIS8.11
+    domain: "Control 8 — Audit Log Management"
+    title: "Conduct Audit Log Reviews"
+    description: "Conduct reviews of audit logs to detect anomalies or abnormal events that could indicate a potential threat. Conduct reviews on a weekly, or more frequent, basis."
+    evidence_types: [log_review_report, siem_alert_log, anomaly_report]
+    testing_frequency: weekly
+    is_key_control: true
+
+  - id: CIS9.3
+    domain: "Control 9 — Email and Web Browser Protections"
+    title: "Maintain and Enforce Network-Based URL Filters"
+    description: "Enforce and update network-based URL filters to limit an enterprise asset from connecting to potentially malicious or unapproved websites."
+    evidence_types: [web_filter_configuration, url_filter_report, policy]
+    testing_frequency: quarterly
+    is_key_control: false
+
+  - id: CIS10.1
+    domain: "Control 10 — Malware Defenses"
+    title: "Deploy and Maintain Anti-Malware Software"
+    description: "Deploy and maintain anti-malware software on all enterprise assets."
+    evidence_types: [antivirus_deployment_report, edr_screenshot, coverage_report]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: CIS11.2
+    domain: "Control 11 — Data Recovery"
+    title: "Perform Automated Backups"
+    description: "Perform automated backups of in-scope enterprise assets. Run backups weekly, or more frequently, based on the sensitivity of the data."
+    evidence_types: [backup_policy, backup_report, automation_evidence]
+    testing_frequency: weekly
+    is_key_control: true
+
+  - id: CIS16.1
+    domain: "Control 16 — Application Software Security"
+    title: "Establish and Maintain a Secure Application Development Process"
+    description: "Establish and maintain a secure application development process. In the process, address such items as secure design, secure coding practices, developer training, code review, and vulnerability remediation."
+    evidence_types: [sdlc_policy, secure_coding_standard, code_review_log]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: CIS17.1
+    domain: "Control 17 — Incident Response Management"
+    title: "Designate Personnel to Manage Incident Handling"
+    description: "Designate one key person, and at least one backup, who will manage the enterprise's incident handling process."
+    evidence_types: [incident_response_plan, role_assignment, contact_list]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: CIS17.4
+    domain: "Control 17 — Incident Response Management"
+    title: "Establish and Maintain an Incident Response Process"
+    description: "Establish and maintain an incident response process that addresses roles and responsibilities, compliance requirements, and a communication plan."
+    evidence_types: [incident_response_plan, communication_plan, process_document]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: CIS18.1
+    domain: "Control 18 — Penetration Testing"
+    title: "Establish and Maintain a Penetration Testing Program"
+    description: "Establish and maintain a penetration testing programme appropriate to the size, complexity, and maturity of the enterprise."
+    evidence_types: [penetration_test_program, scope_document, methodology_document]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: CIS18.3
+    domain: "Control 18 — Penetration Testing"
+    title: "Remediate Penetration Test Findings"
+    description: "Remediate penetration test findings based on the enterprise's policy for remediation scope and prioritisation."
+    evidence_types: [penetration_test_report, remediation_ticket, validation_evidence]
+    testing_frequency: annual
+    is_key_control: true

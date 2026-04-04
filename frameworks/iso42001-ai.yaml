@@ -1,0 +1,207 @@
+slug: iso42001-ai
+name: "ISO/IEC 42001:2023"
+version: "2023"
+category: ai
+issuing_body: ISO
+description: "Artificial Intelligence Management System (AIMS) — requirements and guidance for establishing, implementing, maintaining, and continually improving an AI management system within organisations"
+metadata:
+  renewal_period_days: 1095
+  filing_required: false
+  typical_audit_window_days: 30
+  cost_tier: high
+  geographic_scope: global
+  mandatory_for: []
+  related_standards: ["ISO/IEC 23053", "ISO/IEC 23894", "ISO/IEC 24029"]
+
+domains:
+  - name: "Context of the Organisation (Clause 4)"
+    prefix: "4"
+  - name: "Leadership (Clause 5)"
+    prefix: "5"
+  - name: "Planning (Clause 6)"
+    prefix: "6"
+  - name: "Support (Clause 7)"
+    prefix: "7"
+  - name: "Operations (Clause 8)"
+    prefix: "8"
+  - name: "Performance Evaluation (Clause 9)"
+    prefix: "9"
+  - name: "Improvement (Clause 10)"
+    prefix: "10"
+
+controls:
+  - id: "4.1"
+    domain: "Context of the Organisation (Clause 4)"
+    title: "Understanding the organisation and its context"
+    description: "The organisation shall determine external and internal issues relevant to its purpose and that affect its ability to achieve the intended outcomes of its AI management system."
+    evidence_types: [context_analysis_document, stakeholder_register, swot_analysis]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "4.2"
+    domain: "Context of the Organisation (Clause 4)"
+    title: "Understanding the needs and expectations of interested parties"
+    description: "The organisation shall determine the interested parties that are relevant to the AI management system, their relevant requirements, and which of those requirements will be addressed through the AIMS."
+    evidence_types: [stakeholder_register, requirements_document, impact_assessment]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "4.3"
+    domain: "Context of the Organisation (Clause 4)"
+    title: "Determining the scope of the AIMS"
+    description: "The organisation shall determine the boundaries and applicability of the AI management system, considering the external and internal issues, the requirements of interested parties, and the AI systems developed or used."
+    evidence_types: [aims_scope_document, ai_system_inventory, scope_exclusions_record]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "4.4"
+    domain: "Context of the Organisation (Clause 4)"
+    title: "AI management system"
+    description: "The organisation shall establish, implement, maintain, and continually improve an AI management system including the processes needed and their interactions."
+    evidence_types: [aims_manual, process_documentation, improvement_log]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "5.1"
+    domain: "Leadership (Clause 5)"
+    title: "Leadership and commitment"
+    description: "Top management shall demonstrate leadership and commitment with respect to the AI management system, including establishing AI policy, ensuring integration with business processes, and providing resources."
+    evidence_types: [ai_policy, management_commitment_evidence, resource_allocation_record]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "5.2"
+    domain: "Leadership (Clause 5)"
+    title: "AI policy"
+    description: "Top management shall establish, implement, and maintain an AI policy that is appropriate to the purpose of the organisation, includes objectives for responsible AI, and commits to continual improvement."
+    evidence_types: [ai_policy, policy_approval_record, policy_communication_evidence]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "5.3"
+    domain: "Leadership (Clause 5)"
+    title: "Roles, responsibilities, and authorities"
+    description: "Top management shall ensure that responsibilities and authorities for relevant roles are assigned, communicated, and understood within the organisation."
+    evidence_types: [role_description, org_chart, responsibility_matrix]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "6.1.1"
+    domain: "Planning (Clause 6)"
+    title: "Actions to address risks and opportunities — AI risk assessment"
+    description: "The organisation shall determine AI risks and opportunities and establish processes to assess AI risks considering technical, ethical, legal, societal, and environmental impacts."
+    evidence_types: [ai_risk_assessment, risk_register, impact_assessment]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "6.1.2"
+    domain: "Planning (Clause 6)"
+    title: "AI risk treatment"
+    description: "The organisation shall determine and apply AI risk treatment options including avoiding, mitigating, transferring, or accepting AI risks."
+    evidence_types: [risk_treatment_plan, control_implementation_evidence, residual_risk_record]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "6.1.3"
+    domain: "Planning (Clause 6)"
+    title: "AI impact assessment"
+    description: "The organisation shall conduct impact assessments for AI systems to identify and evaluate potential negative impacts on individuals, groups, and society."
+    evidence_types: [ai_impact_assessment, dpia, stakeholder_consultation_evidence]
+    testing_frequency: on_change
+    is_key_control: true
+
+  - id: "6.2"
+    domain: "Planning (Clause 6)"
+    title: "AI objectives and planning to achieve them"
+    description: "The organisation shall establish AI objectives at relevant functions and levels, ensuring they are measurable, monitored, communicated, and updated as appropriate."
+    evidence_types: [ai_objectives_document, measurement_plan, progress_report]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "8.1"
+    domain: "Operations (Clause 8)"
+    title: "Operational planning and control — AI system lifecycle"
+    description: "The organisation shall plan, implement, control, and review the processes needed to meet the requirements for AI system design, development, deployment, operation, and decommissioning."
+    evidence_types: [ai_lifecycle_policy, sdlc_procedure, operational_plan]
+    testing_frequency: on_change
+    is_key_control: true
+
+  - id: "8.2"
+    domain: "Operations (Clause 8)"
+    title: "AI risk assessment process"
+    description: "The organisation shall perform AI risk assessments at planned intervals and when significant changes occur. Assessments shall consider performance, fairness, transparency, security, and privacy."
+    evidence_types: [ai_risk_assessment, fairness_evaluation, bias_testing_report]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "8.3"
+    domain: "Operations (Clause 8)"
+    title: "AI system impact assessment"
+    description: "The organisation shall carry out AI impact assessments for new or significantly changed AI systems, documented and communicated to relevant stakeholders."
+    evidence_types: [ai_impact_assessment, stakeholder_communication, assessment_register]
+    testing_frequency: on_change
+    is_key_control: true
+
+  - id: "8.4"
+    domain: "Operations (Clause 8)"
+    title: "AI system documentation"
+    description: "The organisation shall establish and maintain documentation for AI systems covering the system purpose, intended use, technical specifications, data used, performance metrics, and known limitations."
+    evidence_types: [ai_system_card, model_documentation, technical_specification, data_card]
+    testing_frequency: on_change
+    is_key_control: true
+
+  - id: "8.5"
+    domain: "Operations (Clause 8)"
+    title: "AI system operations"
+    description: "The organisation shall implement processes to operate AI systems according to documented procedures, monitor performance, and respond to unexpected outputs."
+    evidence_types: [operational_procedure, monitoring_report, exception_log, drift_detection_evidence]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: "8.6"
+    domain: "Operations (Clause 8)"
+    title: "AI system retirement"
+    description: "When retiring an AI system, the organisation shall consider impacts on users, data subjects, and dependent processes, and communicate the retirement plan to affected parties."
+    evidence_types: [retirement_plan, stakeholder_notification, data_disposal_evidence]
+    testing_frequency: on_change
+    is_key_control: false
+
+  - id: "9.1"
+    domain: "Performance Evaluation (Clause 9)"
+    title: "Monitoring, measurement, analysis, and evaluation"
+    description: "The organisation shall determine what needs to be monitored and measured to evaluate AI system performance, including effectiveness of the AIMS, AI system fairness, accuracy, and robustness."
+    evidence_types: [monitoring_plan, performance_report, fairness_metrics_report]
+    testing_frequency: monthly
+    is_key_control: true
+
+  - id: "9.2"
+    domain: "Performance Evaluation (Clause 9)"
+    title: "Internal audit"
+    description: "The organisation shall conduct internal audits of the AI management system at planned intervals to provide information on whether the AIMS conforms to requirements and is effectively implemented."
+    evidence_types: [internal_audit_plan, internal_audit_report, finding_log]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "9.3"
+    domain: "Performance Evaluation (Clause 9)"
+    title: "Management review"
+    description: "Top management shall review the organisation's AI management system at planned intervals to ensure its continuing suitability, adequacy, and effectiveness."
+    evidence_types: [management_review_minutes, review_inputs, action_items_log]
+    testing_frequency: annual
+    is_key_control: true
+
+  - id: "10.1"
+    domain: "Improvement (Clause 10)"
+    title: "Continual improvement"
+    description: "The organisation shall continually improve the suitability, adequacy, and effectiveness of the AI management system."
+    evidence_types: [improvement_plan, improvement_log, metrics_trend_report]
+    testing_frequency: annual
+    is_key_control: false
+
+  - id: "10.2"
+    domain: "Improvement (Clause 10)"
+    title: "Nonconformity and corrective action"
+    description: "When a nonconformity occurs, the organisation shall take action to control and correct it, evaluate the need for corrective action, implement corrective action as needed, and review effectiveness."
+    evidence_types: [nonconformity_log, root_cause_analysis, corrective_action_evidence]
+    testing_frequency: on_change
+    is_key_control: false
