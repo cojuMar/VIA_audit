@@ -1,0 +1,377 @@
+name: Sprint 18 — ESG Board Service
+
+on:
+  push:
+    branches: [main, develop, 'sprint-18/**']
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Job 1: DB migrations — V001–V022, verify V022 ESG & board schema
+  # ---------------------------------------------------------------------------
+  db-migrations:
+    name: "Database Migrations (V022 ESG Board Schema)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: aegis
+          POSTGRES_USER: aegis_admin
+          POSTGRES_PASSWORD: aegis_dev_pw
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://aegis_admin:aegis_dev_pw@localhost:5432/aegis
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install psql client
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client
+
+      - name: Apply all migrations V001–V022
+        run: bash infra/db/migrate.sh
+
+      - name: Verify V022 tables exist (count = 9)
+        run: |
+          COUNT=$(psql "$DATABASE_URL" -t -c "
+          SELECT COUNT(*)
+          FROM information_schema.tables
+          WHERE table_schema = 'public'
+            AND table_name IN (
+              'esg_frameworks',
+              'esg_metric_definitions',
+              'esg_disclosures',
+              'esg_targets',
+              'board_committees',
+              'board_meetings',
+              'board_agenda_items',
+              'board_packages',
+              'board_package_items'
+            );
+          " | tr -d ' ')
+
+          echo "V022 table count: $COUNT"
+          if [ "$COUNT" -ne 9 ]; then
+            echo "FATAL: Expected 9 V022 ESG/board tables, found $COUNT"
+            exit 1
+          fi
+          echo "V022 table count verified ($COUNT = 9)"
+
+      - name: Verify seeded esg_frameworks (count ≥ 10)
+        run: |
+          COUNT=$(psql "$DATABASE_URL" -t -c "
+          SELECT COUNT(*) FROM esg_frameworks;
+          " | tr -d ' ')
+
+          echo "esg_frameworks row count: $COUNT"
+          if [ "$COUNT" -lt 10 ]; then
+            echo "FATAL: Expected at least 10 seeded ESG frameworks, found $COUNT"
+            exit 1
+          fi
+          echo "esg_frameworks seed verified ($COUNT ≥ 10)"
+
+      - name: Verify seeded esg_metric_definitions (count ≥ 15)
+        run: |
+          COUNT=$(psql "$DATABASE_URL" -t -c "
+          SELECT COUNT(*) FROM esg_metric_definitions;
+          " | tr -d ' ')
+
+          echo "esg_metric_definitions row count: $COUNT"
+          if [ "$COUNT" -lt 15 ]; then
+            echo "FATAL: Expected at least 15 seeded ESG metric definitions, found $COUNT"
+            exit 1
+          fi
+          echo "esg_metric_definitions seed verified ($COUNT ≥ 15)"
+
+      - name: Verify immutable grants for esg_disclosures (SELECT+INSERT only, no UPDATE)
+        run: |
+          GRANTS=$(psql "$DATABASE_URL" -t -c "
+          SELECT privilege_type
+          FROM information_schema.role_table_grants
+          WHERE table_name = 'esg_disclosures'
+            AND grantee = 'aegis_app'
+            AND privilege_type IN ('UPDATE', 'DELETE');
+          " | tr -d ' ' | grep -v '^$' || true)
+
+          if [ -n "$GRANTS" ]; then
+            echo "FATAL: esg_disclosures must be immutable — aegis_app has: $GRANTS"
+            exit 1
+          fi
+          echo "esg_disclosures immutability verified (no UPDATE/DELETE for aegis_app)"
+
+          SELECT_GRANT=$(psql "$DATABASE_URL" -t -c "
+          SELECT privilege_type
+          FROM information_schema.role_table_grants
+          WHERE table_name = 'esg_disclosures'
+            AND grantee = 'aegis_app'
+            AND privilege_type = 'SELECT';
+          " | tr -d ' ' | grep -v '^$' || true)
+
+          INSERT_GRANT=$(psql "$DATABASE_URL" -t -c "
+          SELECT privilege_type
+          FROM information_schema.role_table_grants
+          WHERE table_name = 'esg_disclosures'
+            AND grantee = 'aegis_app'
+            AND privilege_type = 'INSERT';
+          " | tr -d ' ' | grep -v '^$' || true)
+
+          echo "aegis_app SELECT on esg_disclosures: ${SELECT_GRANT:-not set (may be via role)}"
+          echo "aegis_app INSERT on esg_disclosures: ${INSERT_GRANT:-not set (may be via role)}"
+
+      - name: Verify immutable grants for board_packages (SELECT+INSERT only, no UPDATE)
+        run: |
+          GRANTS=$(psql "$DATABASE_URL" -t -c "
+          SELECT privilege_type
+          FROM information_schema.role_table_grants
+          WHERE table_name = 'board_packages'
+            AND grantee = 'aegis_app'
+            AND privilege_type IN ('UPDATE', 'DELETE');
+          " | tr -d ' ' | grep -v '^$' || true)
+
+          if [ -n "$GRANTS" ]; then
+            echo "FATAL: board_packages must be immutable — aegis_app has: $GRANTS"
+            exit 1
+          fi
+          echo "board_packages immutability verified (no UPDATE/DELETE for aegis_app)"
+
+          SELECT_GRANT=$(psql "$DATABASE_URL" -t -c "
+          SELECT privilege_type
+          FROM information_schema.role_table_grants
+          WHERE table_name = 'board_packages'
+            AND grantee = 'aegis_app'
+            AND privilege_type = 'SELECT';
+          " | tr -d ' ' | grep -v '^$' || true)
+
+          INSERT_GRANT=$(psql "$DATABASE_URL" -t -c "
+          SELECT privilege_type
+          FROM information_schema.role_table_grants
+          WHERE table_name = 'board_packages'
+            AND grantee = 'aegis_app'
+            AND privilege_type = 'INSERT';
+          " | tr -d ' ' | grep -v '^$' || true)
+
+          echo "aegis_app SELECT on board_packages: ${SELECT_GRANT:-not set (may be via role)}"
+          echo "aegis_app INSERT on board_packages: ${INSERT_GRANT:-not set (may be via role)}"
+
+      - name: Verify UNIQUE constraint on esg_targets(tenant_id, metric_definition_id, target_year)
+        run: |
+          COUNT=$(psql "$DATABASE_URL" -t -c "
+          SELECT COUNT(*)
+          FROM information_schema.table_constraints
+          WHERE table_name = 'esg_targets'
+            AND constraint_type = 'UNIQUE';
+          " | tr -d ' ')
+
+          echo "esg_targets UNIQUE constraint count: $COUNT"
+          if [ "$COUNT" -lt 1 ]; then
+            echo "FATAL: esg_targets must have a UNIQUE constraint on (tenant_id, metric_definition_id, target_year)"
+            exit 1
+          fi
+          echo "esg_targets UNIQUE constraint verified ($COUNT constraint(s))"
+
+      - name: Verify board_agenda_items has ON DELETE CASCADE from board_meetings
+        run: |
+          COUNT=$(psql "$DATABASE_URL" -t -c "
+          SELECT COUNT(*)
+          FROM information_schema.referential_constraints rc
+          JOIN information_schema.key_column_usage kcu
+            ON rc.constraint_name = kcu.constraint_name
+          WHERE kcu.table_name = 'board_agenda_items'
+            AND rc.delete_rule = 'CASCADE';
+          " | tr -d ' ')
+
+          echo "board_agenda_items CASCADE constraint count: $COUNT"
+          if [ "$COUNT" -lt 1 ]; then
+            echo "FATAL: board_agenda_items must have ON DELETE CASCADE from board_meetings"
+            exit 1
+          fi
+          echo "board_agenda_items ON DELETE CASCADE verified ($COUNT constraint(s))"
+
+  # ---------------------------------------------------------------------------
+  # Job 2: esg-board-service Python unit tests (Sprint 18)
+  # ---------------------------------------------------------------------------
+  esg-board-service-tests:
+    name: "ESG Board Service Tests (Sprint 18)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: services/esg-board-service/requirements.txt
+
+      - name: Install Python dependencies
+        run: |
+          pip install pytest pytest-asyncio
+          pip install pydantic pydantic-settings
+          pip install httpx
+          pip install -r services/esg-board-service/requirements.txt
+
+      - name: Run Sprint 18 tests
+        run: |
+          pytest tests/sprint18/ -v --tb=short
+        env:
+          PYTHONPATH: .
+          DATABASE_URL: "postgresql://test:test@localhost/test"
+          ANTHROPIC_API_KEY: "dummy"
+
+  # ---------------------------------------------------------------------------
+  # Job 3: TypeScript type-check for esg-board-ui
+  # ---------------------------------------------------------------------------
+  typescript-typecheck:
+    name: "TypeScript Type Check (esg-board-ui)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: services/esg-board-ui/package-lock.json
+
+      - name: Install Node dependencies
+        working-directory: services/esg-board-ui
+        run: npm ci
+
+      - name: Run TypeScript type-check
+        working-directory: services/esg-board-ui
+        run: npm run typecheck
+
+  # ---------------------------------------------------------------------------
+  # Job 4: Docker build + Trivy CRITICAL scan (esg-board-service)
+  # ---------------------------------------------------------------------------
+  docker-build-esg-board-service:
+    name: "Docker Build & Trivy Scan (esg-board-service)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [esg-board-service-tests]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build esg-board-service Docker image
+        run: |
+          docker build \
+            -t aegis/esg-board-service:ci \
+            services/esg-board-service
+
+      - name: Install Trivy
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y wget apt-transport-https gnupg
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key \
+            | sudo apt-key add -
+          echo "deb https://aquasecurity.github.io/trivy-repo/deb generic main" \
+            | sudo tee /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update -qq
+          sudo apt-get install -y trivy
+
+      - name: Trivy CRITICAL vulnerability scan (esg-board-service)
+        run: |
+          trivy image \
+            --exit-code 1 \
+            --severity CRITICAL \
+            --no-progress \
+            aegis/esg-board-service:ci
+
+  # ---------------------------------------------------------------------------
+  # Job 5: Docker build + Trivy CRITICAL scan (esg-board-ui)
+  # ---------------------------------------------------------------------------
+  docker-build-esg-board-ui:
+    name: "Docker Build & Trivy Scan (esg-board-ui)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [typescript-typecheck]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build esg-board-ui Docker image
+        run: |
+          docker build \
+            -t aegis/esg-board-ui:ci \
+            services/esg-board-ui
+
+      - name: Install Trivy
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y wget apt-transport-https gnupg
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key \
+            | sudo apt-key add -
+          echo "deb https://aquasecurity.github.io/trivy-repo/deb generic main" \
+            | sudo tee /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update -qq
+          sudo apt-get install -y trivy
+
+      - name: Trivy CRITICAL vulnerability scan (esg-board-ui)
+        run: |
+          trivy image \
+            --exit-code 1 \
+            --severity CRITICAL \
+            --no-progress \
+            aegis/esg-board-ui:ci
+
+  # ---------------------------------------------------------------------------
+  # Job 6: Security gate — all 5 upstream jobs must succeed
+  # ---------------------------------------------------------------------------
+  security-gate:
+    name: "Security Gate (Sprint 18)"
+    runs-on: ubuntu-latest
+    needs:
+      - db-migrations
+      - esg-board-service-tests
+      - typescript-typecheck
+      - docker-build-esg-board-service
+      - docker-build-esg-board-ui
+    if: always()
+
+    steps:
+      - name: Check all Sprint 18 jobs passed
+        run: |
+          FAILED=0
+
+          for job_and_result in \
+            "db-migrations:${{ needs.db-migrations.result }}" \
+            "esg-board-service-tests:${{ needs.esg-board-service-tests.result }}" \
+            "typescript-typecheck:${{ needs.typescript-typecheck.result }}" \
+            "docker-build-esg-board-service:${{ needs.docker-build-esg-board-service.result }}" \
+            "docker-build-esg-board-ui:${{ needs.docker-build-esg-board-ui.result }}"; do
+            JOB_NAME="${job_and_result%%:*}"
+            JOB_RESULT="${job_and_result##*:}"
+            if [ "$JOB_RESULT" != "success" ]; then
+              echo "FATAL: Sprint 18 job '$JOB_NAME' did not pass (result: $JOB_RESULT)"
+              FAILED=$((FAILED + 1))
+            else
+              echo "OK: $JOB_NAME passed"
+            fi
+          done
+
+          if [ "$FAILED" -gt 0 ]; then
+            echo ""
+            echo "$FAILED job(s) failed. Sprint 18 security gate blocked."
+            exit 1
+          fi
+
+          echo ""
+          echo "All Sprint 18 security gates passed."

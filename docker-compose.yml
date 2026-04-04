@@ -1018,3 +1018,170 @@ services:
       - "5182:80"
     depends_on:
       - risk-service
+
+  # ---------------------------------------------------------------------------
+  # Audit Planning Service – Sprint 17 Audit Planning & Engagement Management
+  # Manages the audit universe, annual audit plans, plan items, engagements,
+  # time entries, milestones, and resource assignments. Stores all data in
+  # the V021 schema. Integrates with risk, PBC, and monitoring services for
+  # cross-domain planning context and Claude for AI-assisted audit analysis.
+  # ---------------------------------------------------------------------------
+  audit-planning-service:
+    build: services/audit-planning-service
+    ports:
+      - "3022:3022"
+    environment:
+      DATABASE_URL: postgresql://aegis_admin:aegis_dev_pw@postgres:5432/aegis
+      AUDIT_PLANNING_SERVICE_PORT: "3022"
+      REDIS_URL: redis://redis:6379/13
+      RISK_SERVICE_URL: http://risk-service:3021
+      PBC_SERVICE_URL: http://pbc-service:3018
+      MONITORING_SERVICE_URL: http://monitoring-service:3016
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3022/health"]
+      interval: 10s
+      retries: 5
+    networks:
+      - aegis-internal
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+
+  # ---------------------------------------------------------------------------
+  # Audit Planning UI – Sprint 17 static frontend for the Audit Planning dashboard
+  # Vite/React build served via nginx; communicates with audit-planning-service.
+  # ---------------------------------------------------------------------------
+  audit-planning-ui:
+    build: services/audit-planning-ui
+    ports:
+      - "5183:80"
+    depends_on:
+      - audit-planning-service
+    networks:
+      - aegis-internal
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+
+  # ---------------------------------------------------------------------------
+  # ESG Board Service – Sprint 18 ESG Disclosure & Board Governance
+  # Manages ESG framework mappings, metric disclosures, reduction targets,
+  # board committee and meeting records, agenda items, and board pack assembly.
+  # Stores all data in the V022 schema. Integrates with risk, monitoring, and
+  # audit-planning services for cross-domain data and Claude for AI-generated
+  # executive summaries and ESG narrative drafting.
+  # ---------------------------------------------------------------------------
+  esg-board-service:
+    build: services/esg-board-service
+    ports:
+      - "3023:3023"
+    environment:
+      DATABASE_URL: postgresql://aegis_admin:aegis_dev_pw@postgres:5432/aegis
+      ESG_BOARD_SERVICE_PORT: "3023"
+      REDIS_URL: redis://redis:6379/14
+      RISK_SERVICE_URL: http://risk-service:3021
+      MONITORING_SERVICE_URL: http://monitoring-service:3016
+      AUDIT_PLANNING_SERVICE_URL: http://audit-planning-service:3022
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: aegis_minio
+      MINIO_SECRET_KEY: aegis_minio_dev_pw
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3023/health"]
+      interval: 10s
+      retries: 5
+    networks:
+      - aegis-internal
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+
+  # ---------------------------------------------------------------------------
+  # ESG Board UI – Sprint 18 static frontend for the ESG & Board Governance dashboard
+  # Vite/React build served via nginx; communicates with esg-board-service.
+  # ---------------------------------------------------------------------------
+  esg-board-ui:
+    build: services/esg-board-ui
+    ports:
+      - "5184:80"
+    depends_on:
+      - esg-board-service
+    networks:
+      - aegis-internal
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+
+  # ---------------------------------------------------------------------------
+  # Mobile Sync Service – Sprint 19 Mobile Field Audit & Offline Sync
+  # Handles offline-first sync for mobile field auditors: receives batched
+  # audit responses, photos, and sync sessions from the mobile app; resolves
+  # conflicts; stores evidence in MinIO (aegis-field-evidence bucket); and
+  # links completed field audits back to audit-planning engagements.
+  # ---------------------------------------------------------------------------
+  mobile-sync-service:
+    build: services/mobile-sync-service
+    ports:
+      - "3024:3024"
+    environment:
+      DATABASE_URL: postgresql://aegis_admin:aegis_dev_pw@postgres:5432/aegis
+      MOBILE_SYNC_SERVICE_PORT: "3024"
+      REDIS_URL: redis://redis:6379/15
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: aegis_minio
+      MINIO_SECRET_KEY: aegis_minio_dev_pw
+      MINIO_BUCKET: aegis-field-evidence
+      AUDIT_PLANNING_SERVICE_URL: http://audit-planning-service:3022
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3024/health"]
+      interval: 10s
+      retries: 5
+    networks:
+      - aegis-internal
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+
+  # ---------------------------------------------------------------------------
+  # Mobile App – Sprint 19 static frontend for the Mobile Field Audit app
+  # React Native Web / Vite build served via nginx; communicates exclusively
+  # with mobile-sync-service for upload/download sync cycles.
+  # ---------------------------------------------------------------------------
+  mobile-app:
+    build: services/mobile-app
+    ports:
+      - "5185:80"
+    depends_on:
+      - mobile-sync-service
+    networks:
+      - aegis-internal
+    deploy:
+      resources:
+        limits:
+          memory: 128m
