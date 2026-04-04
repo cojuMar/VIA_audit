@@ -80,8 +80,11 @@ $SERVICES = @(
 )
 
 $svcArgs = $SERVICES -join " "
+# Limit parallel builds to avoid resource exhaustion on first run.
+# COMPOSE_PARALLEL_LIMIT controls how many service images build simultaneously.
+$env:COMPOSE_PARALLEL_LIMIT = "4"
 $cmd = "docker compose up -d --build $svcArgs"
-Write-Info "Starting: $($SERVICES.Count) services"
+Write-Info "Starting: $($SERVICES.Count) services (build parallelism: 4)"
 Invoke-Expression $cmd
 if ($LASTEXITCODE -ne 0) {
     Write-Fail "docker compose up failed. Run 'docker compose logs' to investigate."
