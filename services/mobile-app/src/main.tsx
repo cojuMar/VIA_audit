@@ -10,8 +10,8 @@ const queryClient = new QueryClient({
       staleTime: 5 * 60 * 1000,
       retry: (failureCount, error) => {
         // Don't retry on 4xx errors
-        if ((error as { response?: { status?: number } }).response?.status) {
-          const status = (error as { response: { status: number } }).response.status;
+        if ((error as unknown as { response?: { status?: number } }).response?.status) {
+          const status = (error as unknown as { response: { status: number } }).response.status;
           if (status >= 400 && status < 500) return false;
         }
         return failureCount < 2;

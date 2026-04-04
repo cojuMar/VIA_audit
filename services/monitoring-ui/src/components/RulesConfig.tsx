@@ -10,6 +10,7 @@ import {
   ChevronRight,
   Save,
   Check,
+  type LucideIcon,
 } from 'lucide-react';
 import { getRules, getTenantConfig, updateRuleConfig } from '../api';
 import type { MonitoringRule, TenantRuleConfig, Severity } from '../types';
@@ -20,7 +21,7 @@ interface Props {
 
 type Category = 'payroll' | 'ap' | 'card' | 'sod' | 'cloud';
 
-const CATEGORY_META: Record<Category, { label: string; icon: React.ComponentType<{ size?: number; className?: string }> }> = {
+const CATEGORY_META: Record<Category, { label: string; icon: LucideIcon }> = {
   payroll: { label: 'Payroll', icon: DollarSign },
   ap: { label: 'Accounts Payable', icon: TrendingUp },
   card: { label: 'Card Spend', icon: CreditCard },

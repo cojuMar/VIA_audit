@@ -28,6 +28,7 @@ export interface AuditTemplate {
   template_key: string;
   display_name: string;
   description?: string;
+  icon?: string;
   estimated_duration_minutes: number;
   requires_photo_evidence: boolean;
   requires_signature: boolean;

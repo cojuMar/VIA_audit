@@ -5,6 +5,7 @@ import PBCRequestList from './components/PBCRequestList';
 import IssueRegister from './components/IssueRegister';
 import WorkpaperEditor from './components/WorkpaperEditor';
 import ExportPanel from './components/ExportPanel';
+import type { AuditEngagement } from './types';
 
 const queryClient = new QueryClient();
 
@@ -22,10 +23,13 @@ function AppInner() {
     return (
       <EngagementDashboard
         tenantId={tenantId}
-        onSelectEngagement={(id: string) => {
-          setSelectedEngagementId(id);
+        selectedEngagement={null}
+        onSelectEngagement={(eng: AuditEngagement) => {
+          setSelectedEngagementId(eng.id);
           setActiveTab('pbc');
         }}
+        onNavigate={() => {}}
+        onBack={() => {}}
       />
     );
   }

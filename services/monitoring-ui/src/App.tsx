@@ -9,6 +9,7 @@ import {
   Cloud,
   Settings,
   Shield,
+  type LucideIcon,
 } from 'lucide-react';
 import MonitoringDashboard from './components/MonitoringDashboard';
 import FindingsTable from './components/FindingsTable';
@@ -30,7 +31,7 @@ const queryClient = new QueryClient({
 
 type TabId = 'dashboard' | 'findings' | 'payroll' | 'invoices' | 'sod' | 'cloud' | 'rules';
 
-const TABS: { id: TabId; label: string; icon: React.ComponentType<{ size?: number; className?: string }> }[] = [
+const TABS: { id: TabId; label: string; icon: LucideIcon }[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'findings', label: 'All Findings', icon: List },
   { id: 'payroll', label: 'Payroll', icon: DollarSign },

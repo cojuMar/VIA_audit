@@ -772,10 +772,10 @@ export default function AuditPlayer({
           )}
           <button
             onClick={handleSubmit}
-            disabled={stage === 'submitting'}
+            disabled={(stage as PlayerStage) === 'submitting'}
             className="btn-primary w-full gap-2 py-4"
           >
-            {stage === 'submitting' ? (
+            {(stage as PlayerStage) === 'submitting' ? (
               <><Loader2 size={18} className="animate-spin" /> Submitting…</>
             ) : (
               <><Send size={18} /> Submit Audit</>

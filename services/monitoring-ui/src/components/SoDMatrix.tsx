@@ -160,7 +160,7 @@ export default function SoDMatrix({ tenantId }: Props) {
     entity_type: 'user',
     entity_id: v.user_id,
     entity_name: v.user_name,
-    evidence: { role_a: v.role_a_detail, role_b: v.role_b_detail, dept: v.department },
+    evidence: { role_a: v.role_a_detail, role_b: v.role_b_detail, dept: v.department } as Record<string, unknown>,
     risk_score: v.risk_score,
     status: 'open' as const,
     detected_at: v.detected_at,

@@ -20,6 +20,7 @@ import {
   CheckCircle,
   XCircle,
   AlertTriangle,
+  type LucideIcon,
 } from 'lucide-react';
 import {
   listSyncLogs,
@@ -62,7 +63,7 @@ function duration(start: string, end: string | null): string {
 }
 
 function SyncStatusBadge({ status }: { status: SyncLog['status'] }) {
-  const cfg: Record<SyncLog['status'], { cls: string; label: string; Icon?: React.FC<{ size?: number; className?: string }> }> = {
+  const cfg: Record<SyncLog['status'], { cls: string; label: string; Icon?: LucideIcon }> = {
     success: { cls: 'bg-green-500/20 text-green-400 border border-green-500/30', label: 'Success' },
     partial: { cls: 'bg-amber-500/20 text-amber-400 border border-amber-500/30', label: 'Partial' },
     failed: { cls: 'bg-red-500/20 text-red-400 border border-red-500/30', label: 'Failed' },

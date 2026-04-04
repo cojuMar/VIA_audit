@@ -397,11 +397,11 @@ export default function CloudConfigDrift({ tenantId }: Props) {
             <Shield size={16} className="text-indigo-400" />
             Historical Cloud Config Checks
           </h3>
-          {cloudSummary && (
+          {Boolean(cloudSummary) && (
             <div className="flex items-center gap-4 text-sm">
               <span className="text-gray-400">
                 Total issues: <span className="text-white font-semibold">
-                  {(cloudSummary as Record<string, unknown>)['total_issues'] as number ?? '—'}
+                  {(cloudSummary as Record<string, unknown>)['total_issues'] as React.ReactNode ?? '—'}
                 </span>
               </span>
             </div>
