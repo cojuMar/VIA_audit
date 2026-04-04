@@ -25,14 +25,12 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 # Copy nginx config
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Create non-root user for nginx worker processes
-RUN addgroup -g 101 -S nginx-worker || true \
-    && adduser -S -D -H -u 101 -h /var/cache/nginx -s /sbin/nologin -G nginx-worker -g nginx-worker nginx-worker || true \
-    && touch /var/run/nginx.pid \
-    && chown -R nginx-worker:nginx-worker /var/run/nginx.pid \
-    && chown -R nginx-worker:nginx-worker /var/cache/nginx \
-    && chown -R nginx-worker:nginx-worker /var/log/nginx \
-    && chown -R nginx-worker:nginx-worker /usr/share/nginx/html
+# nginx:alpine already ships with user 'nginx' (uid/gid 101); just set ownership
+RUN touch /var/run/nginx.pid \
+    && chown -R nginx:nginx /var/run/nginx.pid \
+    && chown -R nginx:nginx /var/cache/nginx \
+    && chown -R nginx:nginx /var/log/nginx \
+    && chown -R nginx:nginx /usr/share/nginx/html
 
 EXPOSE 80
 
