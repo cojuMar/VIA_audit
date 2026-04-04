@@ -14,14 +14,8 @@
 @layer components {
   .module-card {
     @apply relative bg-slate-800 border border-slate-700 rounded-xl p-5
-           hover:border-slate-500 hover:bg-slate-750
-           transition-all duration-200 cursor-pointer group overflow-hidden;
-  }
-  .module-card::before {
-    content: '';
-    @apply absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200
-           rounded-xl;
-    background: radial-gradient(circle at top left, rgba(99,102,241,0.08), transparent 60%);
+           hover:border-slate-500 hover:bg-slate-700/50
+           transition-all duration-200 cursor-pointer overflow-hidden;
   }
   .pill {
     @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium;
