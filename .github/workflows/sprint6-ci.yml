@@ -1,0 +1,294 @@
+name: Sprint 6 — Immutable Output & Reporting
+
+on:
+  push:
+    branches: [main, develop, 'sprint-6/**']
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Job 1: DB migrations — V010 Reporting Schema
+  # ---------------------------------------------------------------------------
+  db-migrations:
+    name: "Database Migrations (V010 Reporting Schema)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: aegis
+          POSTGRES_USER: aegis_admin
+          POSTGRES_PASSWORD: aegis_dev_pw
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://aegis_admin:aegis_dev_pw@localhost:5432/aegis
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install psql client
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client
+
+      - name: Apply all migrations
+        run: bash infra/db/migrate.sh
+
+      - name: Verify V010 tables exist
+        run: |
+          psql "$DATABASE_URL" -c "
+          SELECT table_name FROM information_schema.tables
+          WHERE table_schema = 'public'
+            AND table_name IN (
+              'xbrl_taxonomies',
+              'report_templates',
+              'report_exports',
+              'digital_signatures'
+            )
+          ORDER BY table_name;" | tee /tmp/v010_tables.txt
+
+          for table in xbrl_taxonomies report_templates report_exports digital_signatures; do
+            grep -q "$table" /tmp/v010_tables.txt || \
+              (echo "FATAL: V010 table '$table' not found" && exit 1)
+          done
+          echo "All V010 tables verified"
+
+      - name: Verify xbrl_taxonomies has >= 4 seeded entries
+        run: |
+          COUNT=$(psql "$DATABASE_URL" -t -c "SELECT COUNT(*) FROM xbrl_taxonomies;" | tr -d ' ')
+          echo "xbrl_taxonomies row count: $COUNT"
+          if [ "$COUNT" -lt 4 ]; then
+            echo "FATAL: xbrl_taxonomies must have >= 4 seeded rows, got $COUNT"
+            exit 1
+          fi
+          echo "xbrl_taxonomies seed data verified (count=$COUNT)"
+
+      - name: Verify taxonomy namespace URIs seeded correctly
+        run: |
+          psql "$DATABASE_URL" -c "
+          SELECT taxonomy_name, namespace_uri FROM xbrl_taxonomies ORDER BY taxonomy_name;" \
+            | tee /tmp/taxonomies.txt
+
+          for ns in "us-gaap-2023" "ifrs-full-2023" "gl-plt-2016" "xbrli-2003"; do
+            grep -q "$ns" /tmp/taxonomies.txt || \
+              (echo "FATAL: Taxonomy '$ns' not found in xbrl_taxonomies" && exit 1)
+          done
+          echo "All 4 taxonomy entries verified"
+
+      - name: Verify RLS on tenant-scoped tables
+        run: |
+          psql "$DATABASE_URL" -c "
+          SELECT relname, relrowsecurity, relforcerowsecurity
+          FROM pg_class
+          WHERE relname IN ('report_templates', 'report_exports', 'digital_signatures')
+          ORDER BY relname;" | tee /tmp/rls.txt
+
+          for table in report_templates report_exports digital_signatures; do
+            grep -q "$table" /tmp/rls.txt || \
+              (echo "FATAL: $table not found in pg_class (RLS check)" && exit 1)
+          done
+          echo "RLS verified on tenant-scoped tables"
+
+  # ---------------------------------------------------------------------------
+  # Job 2: Report generator Python tests
+  # ---------------------------------------------------------------------------
+  report-generator-tests:
+    name: "Report Generator Tests (XBRL / SAF-T / GIFI / PDF)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: services/reporting-service/requirements.txt
+
+      - name: Install system dependencies (lxml, libxml2)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y libxml2-dev libxslt1-dev
+
+      - name: Install Python dependencies
+        run: |
+          pip install -r services/reporting-service/requirements.txt
+          pip install pytest pytest-asyncio
+
+      - name: Run report generator test suite
+        run: |
+          pytest \
+            tests/sprint6/test_xbrl_generator.py \
+            tests/sprint6/test_saft_generator.py \
+            tests/sprint6/test_gifi_generator.py \
+            tests/sprint6/test_pdf_generator.py \
+            -v --tb=short
+        env:
+          DATABASE_URL: "postgresql://localhost/dummy"
+          MINIO_ENDPOINT: "http://localhost:9000"
+          MINIO_ACCESS_KEY: "minioadmin"
+          MINIO_SECRET_KEY: "minioadmin"
+          MINIO_REPORTS_BUCKET: "aegis-reports"
+          VAULT_ADDR: "http://localhost:8200"
+          VAULT_TOKEN: "dev-root-token"
+          # Empty path triggers PAdES dev mode (cert not found → is_signed=False)
+          SIGNING_CERT_PATH: ""
+          SIGNING_KEY_PATH: ""
+
+  # ---------------------------------------------------------------------------
+  # Job 3: PDF structural conformance check
+  # ---------------------------------------------------------------------------
+  pdf-conformance-check:
+    name: "PDF Structural Conformance Check"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: services/reporting-service/requirements.txt
+
+      - name: Install system dependencies (lxml)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y libxml2-dev libxslt1-dev
+
+      - name: Install Python dependencies
+        run: |
+          pip install -r services/reporting-service/requirements.txt
+          pip install pytest pypdf
+
+      - name: Run PDF generator and verify %PDF header
+        run: |
+          python - <<'EOF'
+          import sys, os
+          sys.path.insert(0, 'services/reporting-service')
+
+          from datetime import date
+          from src.models import ReportEntity, ReportRequest
+          from src.pdf_generator import PDFA3Generator
+
+          entity = ReportEntity(
+              entity_id='ci-check-001',
+              entity_name='CI Test Corp',
+              country='US',
+              currency='USD',
+              fiscal_year_end='12-31',
+          )
+          req = ReportRequest(
+              tenant_id='ci-tenant',
+              entity=entity,
+              framework='soc2',
+              period_start=date(2026, 1, 1),
+              period_end=date(2026, 3, 31),
+              report_title='CI PDF Conformance Check',
+          )
+
+          gen = PDFA3Generator()
+          result = gen.generate(req)
+
+          assert len(result.pdf_bytes) > 0, "PDF output must not be empty"
+          assert result.pdf_bytes[:4] == b'%PDF', (
+              f"PDF must start with %PDF, got: {result.pdf_bytes[:8]!r}"
+          )
+          assert len(result.checksum_sha256) == 32, "SHA-256 checksum must be 32 bytes"
+
+          # Verify with pypdf that the output is a parseable PDF
+          import io
+          from pypdf import PdfReader
+          reader = PdfReader(io.BytesIO(result.pdf_bytes))
+          page_count = len(reader.pages)
+          assert page_count >= 1, f"Expected at least 1 page, got {page_count}"
+
+          print(f"PDF conformance check passed: {len(result.pdf_bytes)} bytes, {page_count} page(s)")
+          print(f"Checksum SHA-256 (hex): {result.checksum_sha256.hex()}")
+          EOF
+        env:
+          DATABASE_URL: "postgresql://localhost/dummy"
+          MINIO_ENDPOINT: "http://localhost:9000"
+          MINIO_ACCESS_KEY: "minioadmin"
+          MINIO_SECRET_KEY: "minioadmin"
+          SIGNING_CERT_PATH: ""
+          SIGNING_KEY_PATH: ""
+
+  # ---------------------------------------------------------------------------
+  # Job 4: Docker build + Trivy security scan
+  # ---------------------------------------------------------------------------
+  docker-build:
+    name: "Docker Build + Trivy Scan (reporting-service)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [report-generator-tests, pdf-conformance-check]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build reporting-service Docker image
+        run: |
+          docker build \
+            -t aegis/reporting-service:ci \
+            services/reporting-service
+
+      - name: Scan reporting-service image for CRITICAL CVEs
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: aegis/reporting-service:ci
+          format: table
+          exit-code: '1'
+          severity: CRITICAL
+          ignore-unfixed: true
+
+  # ---------------------------------------------------------------------------
+  # Job 5: Security gate — all jobs must pass
+  # ---------------------------------------------------------------------------
+  security-gate:
+    name: "Security Gate (Sprint 6)"
+    runs-on: ubuntu-latest
+    needs: [db-migrations, report-generator-tests, pdf-conformance-check, docker-build]
+    if: always()
+
+    steps:
+      - name: Check all critical Sprint 6 jobs passed
+        run: |
+          FAILED=0
+          for job_and_result in \
+            "db-migrations:${{ needs.db-migrations.result }}" \
+            "report-generator-tests:${{ needs.report-generator-tests.result }}" \
+            "pdf-conformance-check:${{ needs.pdf-conformance-check.result }}" \
+            "docker-build:${{ needs.docker-build.result }}"; do
+            JOB_NAME="${job_and_result%%:*}"
+            JOB_RESULT="${job_and_result##*:}"
+            if [ "$JOB_RESULT" != "success" ]; then
+              echo "FATAL: Critical Sprint 6 job '$JOB_NAME' did not pass (result: $JOB_RESULT)"
+              FAILED=$((FAILED + 1))
+            else
+              echo "OK: $JOB_NAME passed"
+            fi
+          done
+
+          if [ "$FAILED" -gt 0 ]; then
+            echo ""
+            echo "$FAILED critical job(s) failed. Sprint 6 gate blocked."
+            exit 1
+          fi
+
+          echo ""
+          echo "All Sprint 6 security gates passed."

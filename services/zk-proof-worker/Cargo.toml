@@ -1,0 +1,59 @@
+[package]
+name = "zk-proof-worker"
+version = "0.1.0"
+edition = "2021"
+description = "Zero-knowledge proof generation and verification for Aegis compliance assertions"
+
+[dependencies]
+# ZK proof system — Halo2 (trusted-setup-free, IPA polynomial commitment)
+halo2_proofs = { git = "https://github.com/zcash/halo2", rev = "4a3b05e" }
+halo2curves = { git = "https://github.com/privacy-scaling-explorations/halo2curves", rev = "696cb22" }
+
+# Poseidon hash (designed for ZK circuits — 3-5x fewer constraints than SHA-256)
+poseidon = { git = "https://github.com/privacy-scaling-explorations/poseidon", optional = true }
+
+# HTTP server
+axum = { version = "0.7", features = ["json", "macros"] }
+tokio = { version = "1", features = ["full"] }
+tower = "0.4"
+tower-http = { version = "0.5", features = ["trace", "cors"] }
+
+# Kafka consumer
+rdkafka = { version = "0.36", features = ["cmake-build", "ssl"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+
+# S3/MinIO client
+aws-sdk-s3 = { version = "1", features = [] }
+aws-config = "1"
+
+# Async PostgreSQL
+tokio-postgres = { version = "0.7", features = ["with-uuid-1", "with-chrono-0_4", "with-serde_json-1"] }
+
+# Cryptographic utilities
+sha2 = "0.10"
+rand = "0.8"
+
+# Observability
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# Configuration
+config = "0.14"
+dotenvy = "0.15"
+
+[features]
+default = []
+poseidon = ["dep:poseidon"]
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+
+[profile.dev]
+opt-level = 1  # Balance compile time vs. ZK proof generation speed in dev

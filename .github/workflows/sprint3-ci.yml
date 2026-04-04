@@ -1,0 +1,719 @@
+# =============================================================================
+# Project Aegis 2026 — Sprint 3 CI/CD Pipeline
+# Forensic AI & Anomaly Detection
+#
+# Jobs (in dependency order):
+#   1. db-migrations               — apply V007, verify schema & seed data
+#   2. ml-unit-tests               — pytest sprint3 suite, CPU-only
+#   3. ml-integration-tests        — full train+score cycle (postgres + redis)
+#   4. docker-build                — build forensic-ml-service, scan CVEs
+#   5. cross-tenant-ml-isolation-gate — CRITICAL: blocks merge on isolation failure
+#   6. security-gate               — depends on all; final merge gate
+# =============================================================================
+
+name: Sprint 3 — Forensic AI & Anomaly Detection
+
+on:
+  push:
+    branches:
+      - "sprint3/**"
+      - "main"
+      - "release/**"
+  pull_request:
+    branches:
+      - main
+      - "release/**"
+  workflow_dispatch:
+
+# ---------------------------------------------------------------------------
+# Global defaults
+# ---------------------------------------------------------------------------
+defaults:
+  run:
+    shell: bash
+
+env:
+  PYTHON_VERSION: "3.11"
+  POSTGRES_DB: aegis_test
+  POSTGRES_USER: aegis
+  POSTGRES_PASSWORD: aegis_secret
+  POSTGRES_HOST: localhost
+  POSTGRES_PORT: "5432"
+  REDIS_URL: redis://localhost:6379/0
+  # All ML jobs run on CPU — no GPU required or expected.
+  CUDA_VISIBLE_DEVICES: ""
+  # Flyway image used for migrations
+  FLYWAY_IMAGE: flyway/flyway:10-alpine
+  # forensic-ml-service source root
+  ML_SERVICE_ROOT: services/forensic-ml-service
+
+# =============================================================================
+# JOB 1 — db-migrations
+# Apply V007, verify new tables, verify seed data row counts.
+# =============================================================================
+jobs:
+
+  db-migrations:
+    name: "DB Migrations — V007 + schema/seed verification"
+    runs-on: ubuntu-22.04
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Flyway migrations (up to V007)
+        run: |
+          docker run --rm \
+            --network host \
+            -v "${{ github.workspace }}/db/migrations:/flyway/sql" \
+            -e FLYWAY_URL="jdbc:postgresql://${{ env.POSTGRES_HOST }}:${{ env.POSTGRES_PORT }}/${{ env.POSTGRES_DB }}" \
+            -e FLYWAY_USER="${{ env.POSTGRES_USER }}" \
+            -e FLYWAY_PASSWORD="${{ env.POSTGRES_PASSWORD }}" \
+            -e FLYWAY_LOCATIONS="filesystem:/flyway/sql" \
+            ${{ env.FLYWAY_IMAGE }} migrate
+
+      - name: Install psql client
+        run: sudo apt-get install -y --no-install-recommends postgresql-client
+
+      - name: Verify V007 migrations applied
+        env:
+          PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        run: |
+          echo "=== Checking Flyway schema_version for V007 ==="
+          psql -h ${{ env.POSTGRES_HOST }} \
+               -U ${{ env.POSTGRES_USER }} \
+               -d ${{ env.POSTGRES_DB }} \
+               -c "SELECT version, description, success
+                   FROM flyway_schema_history
+                   ORDER BY installed_rank DESC
+                   LIMIT 5;"
+
+          # Assert V007 is present and successful
+          RESULT=$(psql -h ${{ env.POSTGRES_HOST }} \
+                        -U ${{ env.POSTGRES_USER }} \
+                        -d ${{ env.POSTGRES_DB }} \
+                        -tAc "SELECT COUNT(*) FROM flyway_schema_history
+                               WHERE version = '007' AND success = true;")
+          if [ "$RESULT" != "1" ]; then
+            echo "ERROR: V007 migration not found or marked failed."
+            exit 1
+          fi
+          echo "V007 migration verified successfully."
+
+      - name: Verify new tables exist
+        env:
+          PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        run: |
+          REQUIRED_TABLES=(
+            "jurisdiction_risk_scores"
+            "dri_framework_weights"
+            "benford_analysis_results"
+            "vae_model_registry"
+            "anomaly_detections"
+          )
+          for TABLE in "${REQUIRED_TABLES[@]}"; do
+            COUNT=$(psql -h ${{ env.POSTGRES_HOST }} \
+                         -U ${{ env.POSTGRES_USER }} \
+                         -d ${{ env.POSTGRES_DB }} \
+                         -tAc "SELECT COUNT(*) FROM information_schema.tables
+                                WHERE table_schema = 'public'
+                                AND table_name = '${TABLE}';")
+            if [ "$COUNT" != "1" ]; then
+              echo "ERROR: Required table '${TABLE}' does not exist after V007."
+              exit 1
+            fi
+            echo "  ✓ table '${TABLE}' exists"
+          done
+
+      - name: Verify jurisdiction_risk_scores seeded (≥20 rows)
+        env:
+          PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        run: |
+          ROW_COUNT=$(psql -h ${{ env.POSTGRES_HOST }} \
+                           -U ${{ env.POSTGRES_USER }} \
+                           -d ${{ env.POSTGRES_DB }} \
+                           -tAc "SELECT COUNT(*) FROM jurisdiction_risk_scores;")
+          echo "jurisdiction_risk_scores row count: ${ROW_COUNT}"
+          if [ "$ROW_COUNT" -lt 20 ]; then
+            echo "ERROR: jurisdiction_risk_scores must have ≥20 seed rows, found ${ROW_COUNT}."
+            exit 1
+          fi
+
+      - name: Verify dri_framework_weights has exactly 3 rows
+        env:
+          PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        run: |
+          ROW_COUNT=$(psql -h ${{ env.POSTGRES_HOST }} \
+                           -U ${{ env.POSTGRES_USER }} \
+                           -d ${{ env.POSTGRES_DB }} \
+                           -tAc "SELECT COUNT(*) FROM dri_framework_weights;")
+          echo "dri_framework_weights row count: ${ROW_COUNT}"
+          if [ "$ROW_COUNT" != "3" ]; then
+            echo "ERROR: dri_framework_weights must have exactly 3 rows, found ${ROW_COUNT}."
+            exit 1
+          fi
+
+# =============================================================================
+# JOB 2 — ml-unit-tests
+# CPU-only pytest run for all Sprint 3 test files.
+# No GPU required — CUDA_VISIBLE_DEVICES="" is enforced.
+# =============================================================================
+
+  ml-unit-tests:
+    name: "ML Unit Tests — Sprint 3 (CPU-only)"
+    runs-on: ubuntu-22.04
+    # Unit tests do not need a database or cache.
+    env:
+      # Enforce CPU-only execution — no GPU devices visible.
+      CUDA_VISIBLE_DEVICES: ""
+      # Suppress PyTorch CUDA warnings in CI logs.
+      PYTORCH_NO_CUDA_MEMORY_CACHING: "1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: ${{ env.ML_SERVICE_ROOT }}/requirements*.txt
+
+      - name: Install ML service requirements
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r ${{ env.ML_SERVICE_ROOT }}/requirements.txt
+          # Install test dependencies (pytest, etc.)
+          if [ -f "${{ env.ML_SERVICE_ROOT }}/requirements-test.txt" ]; then
+            pip install -r ${{ env.ML_SERVICE_ROOT }}/requirements-test.txt
+          else
+            pip install pytest pytest-cov pytest-timeout
+          fi
+
+      - name: Confirm CPU-only execution (no CUDA)
+        run: |
+          python - <<'EOF'
+          import os, sys
+          cuda_env = os.environ.get("CUDA_VISIBLE_DEVICES", "NOT SET")
+          print(f"CUDA_VISIBLE_DEVICES={cuda_env!r}")
+          try:
+              import torch
+              print(f"PyTorch version: {torch.__version__}")
+              print(f"CUDA available: {torch.cuda.is_available()}")
+              if torch.cuda.is_available():
+                  print("WARNING: CUDA is visible — tests should still run on CPU")
+              else:
+                  print("OK: CUDA not available — all tensor operations use CPU")
+          except ImportError:
+              print("PyTorch not installed (some tests will be skipped)")
+          EOF
+
+      - name: Run Sprint 3 unit tests
+        env:
+          CUDA_VISIBLE_DEVICES: ""
+          PYTHONPATH: ${{ env.ML_SERVICE_ROOT }}/src
+        run: |
+          python -m pytest \
+            tests/sprint3/test_benford.py \
+            tests/sprint3/test_features.py \
+            tests/sprint3/test_vae.py \
+            tests/sprint3/test_ensemble.py \
+            --tb=short \
+            -v \
+            --timeout=120 \
+            --junit-xml=reports/sprint3-unit-tests.xml \
+            -p no:cacheprovider
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sprint3-unit-test-results
+          path: reports/sprint3-unit-tests.xml
+          retention-days: 14
+
+# =============================================================================
+# JOB 3 — ml-integration-tests
+# Full train+score cycle on synthetic data.
+# Requires postgres + redis services.
+# =============================================================================
+
+  ml-integration-tests:
+    name: "ML Integration Tests — Train + Score Cycle"
+    runs-on: ubuntu-22.04
+    needs: [ml-unit-tests]
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      CUDA_VISIBLE_DEVICES: ""
+      DATABASE_URL: "postgresql://${{ env.POSTGRES_USER }}:${{ env.POSTGRES_PASSWORD }}@${{ env.POSTGRES_HOST }}:${{ env.POSTGRES_PORT }}/${{ env.POSTGRES_DB }}"
+      REDIS_URL: "redis://localhost:6379/0"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: ${{ env.ML_SERVICE_ROOT }}/requirements*.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r ${{ env.ML_SERVICE_ROOT }}/requirements.txt
+          if [ -f "${{ env.ML_SERVICE_ROOT }}/requirements-test.txt" ]; then
+            pip install -r ${{ env.ML_SERVICE_ROOT }}/requirements-test.txt
+          else
+            pip install pytest pytest-timeout
+          fi
+          pip install psycopg2-binary redis
+
+      - name: Apply DB migrations for integration tests
+        run: |
+          docker run --rm \
+            --network host \
+            -v "${{ github.workspace }}/db/migrations:/flyway/sql" \
+            -e FLYWAY_URL="jdbc:postgresql://${{ env.POSTGRES_HOST }}:${{ env.POSTGRES_PORT }}/${{ env.POSTGRES_DB }}" \
+            -e FLYWAY_USER="${{ env.POSTGRES_USER }}" \
+            -e FLYWAY_PASSWORD="${{ env.POSTGRES_PASSWORD }}" \
+            -e FLYWAY_LOCATIONS="filesystem:/flyway/sql" \
+            ${{ env.FLYWAY_IMAGE }} migrate
+
+      - name: Wait for services to be healthy
+        run: |
+          python - <<'EOF'
+          import socket, time, sys
+
+          def wait_for_port(host, port, timeout=30, label=""):
+              start = time.time()
+              while True:
+                  try:
+                      with socket.create_connection((host, port), timeout=1):
+                          print(f"  {label} ({host}:{port}) is ready.")
+                          return
+                  except OSError:
+                      if time.time() - start > timeout:
+                          print(f"ERROR: {label} not ready after {timeout}s", file=sys.stderr)
+                          sys.exit(1)
+                      time.sleep(1)
+
+          wait_for_port("127.0.0.1", 5432, label="PostgreSQL")
+          wait_for_port("127.0.0.1", 6379, label="Redis")
+          EOF
+
+      - name: Run integration test — full train+score cycle
+        env:
+          CUDA_VISIBLE_DEVICES: ""
+          PYTHONPATH: ${{ env.ML_SERVICE_ROOT }}/src
+        run: |
+          python - <<'EOF'
+          """
+          Synthetic integration test:
+          1. Generate 500 synthetic transaction feature vectors.
+          2. Train a VAE on 80% of the data.
+          3. Score all 500 samples with the trained VAE.
+          4. Train a DRI ensemble meta-classifier on labelled subset.
+          5. Score 50 held-out samples through the full DRI pipeline.
+          6. Assert all scores are finite and in [0, 1].
+          """
+          import os, sys, math, random
+          import numpy as np
+
+          sys.path.insert(0, os.path.join(os.environ["PYTHONPATH"]))
+
+          # Imports — if any are missing the job fails with a clear ImportError.
+          from vae import AnomalyVAE, VAETrainer, compute_anomaly_score
+          from ensemble import DRIEnsemble, DRIWeights, EnsembleInput
+
+          try:
+              import torch
+          except ImportError:
+              print("PyTorch not available — skipping VAE integration step.")
+              torch = None
+
+          SEED = 2026
+          N = 500
+          INPUT_DIM = 12
+          LATENT_DIM = 16
+
+          random.seed(SEED)
+          np.random.seed(SEED)
+
+          print("=== Generating synthetic data ===")
+          data_np = np.random.uniform(0.0, 1.0, (N, INPUT_DIM)).astype(np.float32)
+
+          # --- VAE train + score ---
+          if torch is not None:
+              torch.manual_seed(SEED)
+              print("=== Training VAE (20 epochs, CPU) ===")
+              data_tensor = torch.from_numpy(data_np)
+              model = AnomalyVAE(input_dim=INPUT_DIM, latent_dim=LATENT_DIM)
+              trainer = VAETrainer(model=model, learning_rate=1e-3)
+              history = trainer.fit(data_tensor[:400], n_epochs=20, batch_size=64)
+
+              print(f"  Loss history (first/last): {history[0]:.4f} / {history[-1]:.4f}")
+              assert math.isfinite(history[-1]), "VAE final loss is not finite"
+              assert history[-1] < history[0], "VAE loss did not decrease"
+
+              print("=== Scoring all 500 samples with VAE ===")
+              model.eval()
+              with torch.no_grad():
+                  vae_scores = compute_anomaly_score(model, data_tensor).numpy()
+              assert np.all(np.isfinite(vae_scores)), "VAE scores contain NaN/Inf"
+              assert np.all(vae_scores >= 0), "VAE scores contain negative values"
+              print(f"  VAE scores — min: {vae_scores.min():.4f}, max: {vae_scores.max():.4f}, mean: {vae_scores.mean():.4f}")
+
+              # Normalise VAE scores to [0, 1] for use as ensemble input
+              vae_norm = np.clip(vae_scores / (vae_scores.max() + 1e-8), 0.0, 1.0)
+          else:
+              vae_norm = np.random.uniform(0.0, 1.0, N)
+
+          # --- DRI ensemble train + score ---
+          print("=== Building DRI ensemble inputs ===")
+          weights = DRIWeights(
+              benford_weight=0.15,
+              vae_weight=0.20,
+              velocity_weight=0.15,
+              round_number_weight=0.10,
+              new_vendor_weight=0.10,
+              off_hours_weight=0.10,
+              geo_risk_weight=0.10,
+              jurisdiction_weight=0.10,
+          )
+          ensemble = DRIEnsemble(weights=weights, tenant_id="integration-test-tenant")
+
+          rng = np.random.RandomState(SEED + 1)
+          ensemble_inputs = [
+              EnsembleInput(
+                  benford_score=float(rng.uniform(0, 1)),
+                  vae_score=float(vae_norm[i]),
+                  velocity_score=float(rng.uniform(0, 1)),
+                  round_number_score=float(rng.uniform(0, 1)),
+                  new_vendor_score=float(rng.uniform(0, 1)),
+                  off_hours_score=float(rng.uniform(0, 1)),
+                  geo_risk_score=float(rng.uniform(0, 1)),
+                  jurisdiction_score=float(rng.uniform(0, 1)),
+              )
+              for i in range(N)
+          ]
+
+          print("=== Scoring with weighted_sum (pre-training) ===")
+          for inp in ensemble_inputs[:50]:
+              result = ensemble.score(inp)
+              assert 0.0 <= result.dri_score <= 1.0, (
+                  f"Weighted-sum DRI score out of [0,1]: {result.dri_score}"
+              )
+
+          print("=== Training meta-classifier ===")
+          # Build a separable labelled subset
+          labelled_inputs = ensemble_inputs[:200]
+          labels = [1 if i < 100 else 0 for i in range(200)]
+          # Make the first 100 have high scores
+          for i in range(100):
+              labelled_inputs[i] = EnsembleInput(**{
+                  f: 0.8 + rng.uniform(0, 0.2) for f in [
+                      "benford_score", "vae_score", "velocity_score",
+                      "round_number_score", "new_vendor_score",
+                      "off_hours_score", "geo_risk_score", "jurisdiction_score",
+                  ]
+              })
+          for i in range(100, 200):
+              labelled_inputs[i] = EnsembleInput(**{
+                  f: rng.uniform(0, 0.2) for f in [
+                      "benford_score", "vae_score", "velocity_score",
+                      "round_number_score", "new_vendor_score",
+                      "off_hours_score", "geo_risk_score", "jurisdiction_score",
+                  ]
+              })
+
+          train_result = ensemble.train_meta_classifier(labelled_inputs, labels)
+          print(f"  Meta-classifier train accuracy: {train_result.train_accuracy:.3f}")
+          assert train_result.train_accuracy > 0.5, (
+              f"Meta-classifier accuracy {train_result.train_accuracy:.3f} not above chance"
+          )
+
+          print("=== Scoring 50 held-out samples with meta-classifier ===")
+          for inp in ensemble_inputs[450:]:
+              result = ensemble.score(inp)
+              assert result.scored_by == "meta_classifier", (
+                  f"Expected 'meta_classifier', got '{result.scored_by}'"
+              )
+              assert 0.0 <= result.dri_score <= 1.0, (
+                  f"Meta-classifier DRI score out of [0,1]: {result.dri_score}"
+              )
+
+          print("=== Integration test PASSED ===")
+          EOF
+
+      - name: Upload integration test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sprint3-integration-test-logs
+          path: reports/
+          retention-days: 7
+
+# =============================================================================
+# JOB 4 — docker-build
+# Build forensic-ml-service Docker image and scan for CRITICAL CVEs.
+# =============================================================================
+
+  docker-build:
+    name: "Docker Build — forensic-ml-service + CVE scan"
+    runs-on: ubuntu-22.04
+    needs: [ml-unit-tests]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-forensic-ml-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-forensic-ml-
+
+      - name: Build forensic-ml-service image
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ env.ML_SERVICE_ROOT }}
+          file: ${{ env.ML_SERVICE_ROOT }}/Dockerfile
+          push: false
+          load: true
+          tags: |
+            aegis/forensic-ml-service:${{ github.sha }}
+            aegis/forensic-ml-service:sprint3-ci
+          build-args: |
+            CUDA_VISIBLE_DEVICES=
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      - name: Move Docker cache (prevent unbounded growth)
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      - name: Install Trivy CVE scanner
+        run: |
+          sudo apt-get install -y wget apt-transport-https gnupg lsb-release
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key \
+            | sudo gpg --dearmor -o /usr/share/keyrings/trivy.gpg
+          echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] \
+            https://aquasecurity.github.io/trivy-repo/deb \
+            $(lsb_release -sc) main" \
+            | sudo tee /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update && sudo apt-get install -y trivy
+
+      - name: Scan image for CRITICAL CVEs
+        id: trivy-scan
+        run: |
+          trivy image \
+            --severity CRITICAL \
+            --exit-code 1 \
+            --ignore-unfixed \
+            --format table \
+            --output reports/trivy-critical-cves.txt \
+            aegis/forensic-ml-service:sprint3-ci
+        # Continue to allow artifact upload even on CVE failure
+        continue-on-error: true
+
+      - name: Display CVE scan results
+        if: always()
+        run: |
+          if [ -f reports/trivy-critical-cves.txt ]; then
+            cat reports/trivy-critical-cves.txt
+          fi
+
+      - name: Fail pipeline if CRITICAL CVEs found
+        if: steps.trivy-scan.outcome == 'failure'
+        run: |
+          echo "FATAL: CRITICAL CVEs detected in forensic-ml-service image."
+          echo "Review reports/trivy-critical-cves.txt and remediate before merging."
+          exit 1
+
+      - name: Upload CVE scan report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-cve-report
+          path: reports/trivy-critical-cves.txt
+          retention-days: 30
+
+# =============================================================================
+# JOB 5 — cross-tenant-ml-isolation-gate
+# CRITICAL: runs TestCrossTenantsIsolation exclusively.
+# Merge is BLOCKED if this job fails.
+# =============================================================================
+
+  cross-tenant-ml-isolation-gate:
+    name: "CRITICAL — Cross-Tenant ML Isolation Gate"
+    runs-on: ubuntu-22.04
+    # Isolation test is independent; run in parallel with other jobs.
+
+    env:
+      CUDA_VISIBLE_DEVICES: ""
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: ${{ env.ML_SERVICE_ROOT }}/requirements*.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r ${{ env.ML_SERVICE_ROOT }}/requirements.txt
+          if [ -f "${{ env.ML_SERVICE_ROOT }}/requirements-test.txt" ]; then
+            pip install -r ${{ env.ML_SERVICE_ROOT }}/requirements-test.txt
+          else
+            pip install pytest pytest-timeout
+          fi
+
+      - name: Run cross-tenant isolation tests (CRITICAL — blocks merge on failure)
+        env:
+          CUDA_VISIBLE_DEVICES: ""
+          PYTHONPATH: ${{ env.ML_SERVICE_ROOT }}/src
+        run: |
+          echo "================================================================"
+          echo "CRITICAL SECURITY CHECK: Cross-Tenant ML Model Isolation"
+          echo "A failure here BLOCKS the merge."
+          echo "================================================================"
+          python -m pytest \
+            tests/sprint3/test_ensemble.py::TestCrossTenantsIsolation \
+            --tb=long \
+            -v \
+            --timeout=60 \
+            --junit-xml=reports/cross-tenant-isolation.xml \
+            -p no:cacheprovider \
+            --no-header
+
+      - name: Upload isolation test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cross-tenant-isolation-results
+          path: reports/cross-tenant-isolation.xml
+          retention-days: 90
+
+      - name: Post isolation gate summary
+        if: failure()
+        run: |
+          echo "::error title=Cross-Tenant Isolation Failure::TestCrossTenantsIsolation FAILED."
+          echo "::error::Merging this branch would introduce a cross-tenant data leak in the ML scoring pipeline."
+          echo "::error::Fix the DRIEnsemble implementation so that training one tenant's meta-classifier"
+          echo "::error::cannot affect any other tenant's ensemble instance."
+          exit 1
+
+# =============================================================================
+# JOB 6 — security-gate
+# Final merge gate. Fails if any upstream job failed.
+# Summarises all job outcomes in a single required status check.
+# =============================================================================
+
+  security-gate:
+    name: "Security Gate — All Sprint 3 Checks Passed"
+    runs-on: ubuntu-22.04
+    # Waits for every other job to complete.
+    needs:
+      - db-migrations
+      - ml-unit-tests
+      - ml-integration-tests
+      - docker-build
+      - cross-tenant-ml-isolation-gate
+    # Always runs to produce a summary, even if upstream jobs failed.
+    if: always()
+
+    steps:
+      - name: Evaluate upstream job results
+        env:
+          DB_MIGRATIONS_RESULT: ${{ needs.db-migrations.result }}
+          ML_UNIT_RESULT: ${{ needs.ml-unit-tests.result }}
+          ML_INTEGRATION_RESULT: ${{ needs.ml-integration-tests.result }}
+          DOCKER_BUILD_RESULT: ${{ needs.docker-build.result }}
+          ISOLATION_GATE_RESULT: ${{ needs.cross-tenant-ml-isolation-gate.result }}
+        run: |
+          echo "======================================================"
+          echo "  Sprint 3 Security Gate — Job Status Summary"
+          echo "======================================================"
+          echo "  db-migrations                  : ${DB_MIGRATIONS_RESULT}"
+          echo "  ml-unit-tests                  : ${ML_UNIT_RESULT}"
+          echo "  ml-integration-tests           : ${ML_INTEGRATION_RESULT}"
+          echo "  docker-build                   : ${DOCKER_BUILD_RESULT}"
+          echo "  cross-tenant-isolation-gate    : ${ISOLATION_GATE_RESULT} [CRITICAL]"
+          echo "======================================================"
+
+          FAILED=()
+
+          [ "$DB_MIGRATIONS_RESULT" != "success" ] && FAILED+=("db-migrations")
+          [ "$ML_UNIT_RESULT" != "success" ] && FAILED+=("ml-unit-tests")
+          [ "$ML_INTEGRATION_RESULT" != "success" ] && FAILED+=("ml-integration-tests")
+          [ "$DOCKER_BUILD_RESULT" != "success" ] && FAILED+=("docker-build")
+          [ "$ISOLATION_GATE_RESULT" != "success" ] && FAILED+=("cross-tenant-ml-isolation-gate [CRITICAL]")
+
+          if [ ${#FAILED[@]} -gt 0 ]; then
+            echo ""
+            echo "SECURITY GATE FAILED. The following jobs did not pass:"
+            for JOB in "${FAILED[@]}"; do
+              echo "  - ${JOB}"
+            done
+            echo ""
+            echo "This PR cannot be merged until all Sprint 3 checks pass."
+            exit 1
+          fi
+
+          echo ""
+          echo "All Sprint 3 jobs passed. Security gate approved."
+          echo "This PR is safe to merge."

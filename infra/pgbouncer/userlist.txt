@@ -1,0 +1,2 @@
+"aegis_admin" "aegis_dev_pw"
+"aegis_app" "aegis_app_pw"

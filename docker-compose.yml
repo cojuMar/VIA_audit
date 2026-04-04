@@ -1,0 +1,648 @@
+version: "3.9"
+
+# ---------------------------------------------------------------------------
+# Project Aegis 2026 – Local Development Environment
+# ---------------------------------------------------------------------------
+
+networks:
+  aegis-internal:
+    driver: bridge
+    internal: true
+  aegis-external:
+    driver: bridge
+
+volumes:
+  pgdata:
+  tsdata:
+  redis-data:
+  minio-data:
+  kafka-data:
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL 16 – primary OLTP store
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: aegis
+      POSTGRES_USER: aegis_admin
+      POSTGRES_PASSWORD: aegis_dev_pw
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aegis_admin -d aegis"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - aegis-internal
+
+  # ---------------------------------------------------------------------------
+  # TimescaleDB – time-series / metrics store
+  # ---------------------------------------------------------------------------
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: aegis_timeseries
+      POSTGRES_USER: aegis_admin
+      POSTGRES_PASSWORD: aegis_dev_pw
+    ports:
+      - "5433:5432"
+    volumes:
+      - tsdata:/var/lib/postgresql/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - aegis-internal
+
+  # ---------------------------------------------------------------------------
+  # PgBouncer – connection pooler
+  # ---------------------------------------------------------------------------
+  pgbouncer:
+    image: pgbouncer/pgbouncer:latest
+    restart: unless-stopped
+    ports:
+      - "6432:6432"
+    volumes:
+      - ./infra/pgbouncer/pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini:ro
+      - ./infra/pgbouncer/userlist.txt:/etc/pgbouncer/userlist.txt:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - aegis-internal
+
+  # ---------------------------------------------------------------------------
+  # Redis 7 – session cache and pub/sub
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - aegis-internal
+
+  # ---------------------------------------------------------------------------
+  # HashiCorp Vault – secrets management
+  # ---------------------------------------------------------------------------
+  vault:
+    image: hashicorp/vault:1.16
+    restart: unless-stopped
+    cap_add:
+      - IPC_LOCK
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: aegis-dev-root-token
+      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
+    ports:
+      - "8200:8200"
+      - "8201:8201"
+    volumes:
+      - ./infra/vault/vault-config.hcl:/vault/config/vault-config.hcl:ro
+    command: vault server -dev -config=/vault/config/vault-config.hcl
+    healthcheck:
+      test: ["CMD-SHELL", "vault status -address=http://127.0.0.1:8200 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    networks:
+      - aegis-internal
+
+  # ---------------------------------------------------------------------------
+  # Vault Init – one-shot initialisation job
+  # ---------------------------------------------------------------------------
+  vault-init:
+    image: hashicorp/vault:1.16
+    restart: "no"
+    environment:
+      VAULT_ADDR: "http://vault:8200"
+      VAULT_TOKEN: aegis-dev-root-token
+    volumes:
+      - ./infra/vault/init-vault.sh:/init-vault.sh:ro
+    entrypoint: ["/bin/sh", "/init-vault.sh"]
+    depends_on:
+      vault:
+        condition: service_healthy
+    networks:
+      - aegis-internal
+
+  # ---------------------------------------------------------------------------
+  # Auth Service – issues and validates JWTs
+  # ---------------------------------------------------------------------------
+  auth-service:
+    build: ./services/auth-service
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: "postgresql://aegis_admin:aegis_dev_pw@pgbouncer:6432/aegis"
+      REDIS_URL: "redis://redis:6379"
+      VAULT_ADDR: "http://vault:8200"
+      VAULT_TOKEN: aegis-dev-root-token
+      JWT_ISSUER: "https://auth.aegis.local"
+      JWT_AUDIENCE: aegis-platform
+    volumes:
+      - ./services/auth-service:/app:cached
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - aegis-internal
+      - aegis-external
+
+  # ---------------------------------------------------------------------------
+  # PAM Broker – privileged-access management
+  # ---------------------------------------------------------------------------
+  pam-broker:
+    build: ./services/pam-broker
+    restart: unless-stopped
+    ports:
+      - "3002:3002"
+    environment:
+      DATABASE_URL: "postgresql://aegis_admin:aegis_dev_pw@pgbouncer:6432/aegis"
+      VAULT_ADDR: "http://vault:8200"
+      VAULT_TOKEN: aegis-dev-root-token
+      AUTH_SERVICE_JWKS_URL: "http://auth-service:3001/.well-known/jwks.json"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      vault:
+        condition: service_healthy
+    networks:
+      - aegis-internal
+      - aegis-external
+
+  # ---------------------------------------------------------------------------
+  # Tenant Registry – multi-tenant configuration store
+  # ---------------------------------------------------------------------------
+  tenant-registry:
+    build: ./services/tenant-registry
+    restart: unless-stopped
+    ports:
+      - "3003:3003"
+    environment:
+      DATABASE_URL: "postgresql://aegis_admin:aegis_dev_pw@pgbouncer:6432/aegis"
+      AUTH_SERVICE_JWKS_URL: "http://auth-service:3001/.well-known/jwks.json"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - aegis-internal
+      - aegis-external
+
+  # ---------------------------------------------------------------------------
+  # MinIO – S3-compatible WORM object storage for evidence blobs and ZK proofs
+  # ---------------------------------------------------------------------------
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: aegis_minio
+      MINIO_ROOT_PASSWORD: aegis_minio_dev_pw
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - aegis-internal
+
+  # ---------------------------------------------------------------------------
+  # MinIO Init – one-shot bucket provisioning job
+  # ---------------------------------------------------------------------------
+  minio-init:
+    image: minio/mc:latest
+    restart: "no"
+    environment:
+      MINIO_ROOT_USER: aegis_minio
+      MINIO_ROOT_PASSWORD: aegis_minio_dev_pw
+      MINIO_ENDPOINT: "http://minio:9000"
+    volumes:
+      - ./infra/minio/minio-init.sh:/init/minio-init.sh:ro
+    entrypoint: ["/bin/sh", "/init/minio-init.sh"]
+    depends_on:
+      minio:
+        condition: service_healthy
+    networks:
+      - aegis-internal
+
+  # ---------------------------------------------------------------------------
+  # ZooKeeper – Kafka coordination service
+  # ---------------------------------------------------------------------------
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.1
+    restart: unless-stopped
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - aegis-internal
+
+  # ---------------------------------------------------------------------------
+  # Kafka – event streaming backbone
+  # ---------------------------------------------------------------------------
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    restart: unless-stopped
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    networks:
+      - aegis-internal
+
+  # ---------------------------------------------------------------------------
+  # Kafka Init – one-shot topic provisioning job
+  # ---------------------------------------------------------------------------
+  kafka-init:
+    image: confluentinc/cp-kafka:7.6.1
+    restart: "no"
+    volumes:
+      - ./infra/kafka/kafka-topics.sh:/init/kafka-topics.sh:ro
+    entrypoint: ["/bin/bash", "/init/kafka-topics.sh"]
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - aegis-internal
+
+  # ---------------------------------------------------------------------------
+  # Ingestion Orchestrator – schedules connector polls and emits evidence events
+  # ---------------------------------------------------------------------------
+  ingestion-orchestrator:
+    build: ./services/ingestion-orchestrator
+    restart: unless-stopped
+    ports:
+      - "3004:3004"
+    environment:
+      DATABASE_URL: "postgresql://aegis_admin:aegis_dev_pw@pgbouncer:6432/aegis"
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
+      VAULT_ADDR: "http://vault:8200"
+      VAULT_TOKEN: aegis-dev-root-token
+      AUTH_SERVICE_JWKS_URL: "http://auth-service:3001/.well-known/jwks.json"
+      MINIO_ENDPOINT: "http://minio:9000"
+      MINIO_ACCESS_KEY: aegis_minio
+      MINIO_SECRET_KEY: aegis_minio_dev_pw
+      EVIDENCE_STORE_URL: "http://evidence-store:3005"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      vault:
+        condition: service_healthy
+    networks:
+      - aegis-internal
+      - aegis-external
+
+  # ---------------------------------------------------------------------------
+  # Evidence Store – durable evidence record persistence and retrieval API
+  # ---------------------------------------------------------------------------
+  evidence-store:
+    build: ./services/evidence-store
+    restart: unless-stopped
+    ports:
+      - "3005:3005"
+    environment:
+      DATABASE_URL: "postgresql://aegis_admin:aegis_dev_pw@pgbouncer:6432/aegis"
+      MINIO_ENDPOINT: "http://minio:9000"
+      MINIO_ACCESS_KEY: aegis_minio
+      MINIO_SECRET_KEY: aegis_minio_dev_pw
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
+      AUTH_SERVICE_JWKS_URL: "http://auth-service:3001/.well-known/jwks.json"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - aegis-internal
+      - aegis-external
+
+  # ---------------------------------------------------------------------------
+  # ZK Proof Worker – generates and verifies zero-knowledge proofs
+  # Memory-intensive: allocated up to 15 GB RAM for large batch proof generation
+  # ---------------------------------------------------------------------------
+  zk-proof-worker:
+    build: ./services/zk-proof-worker
+    restart: unless-stopped
+    ports:
+      - "3006:3006"
+    environment:
+      DATABASE_URL: "postgresql://aegis_admin:aegis_dev_pw@pgbouncer:6432/aegis"
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
+      MINIO_ENDPOINT: "http://minio:9000"
+      MINIO_ACCESS_KEY: aegis_minio
+      MINIO_SECRET_KEY: aegis_minio_dev_pw
+      ZK_WORKER_MAX_RAM_GB: "14"
+      ZK_WORKER_MAX_BATCH_SIZE: "262144"
+      RUST_LOG: info
+    deploy:
+      resources:
+        limits:
+          memory: 15g
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - aegis-internal
+      - aegis-external
+
+  # ---------------------------------------------------------------------------
+  # MLflow – experiment tracking server backed by PostgreSQL + MinIO
+  # Provides model versioning, run metadata, and artifact proxy for the
+  # forensic-ml-service training pipeline.
+  # ---------------------------------------------------------------------------
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.12.2
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    command: >
+      mlflow server
+      --backend-store-uri postgresql://aegis_admin:aegis_dev_pw@postgres:5432/aegis_mlflow
+      --default-artifact-root s3://aegis-ml-artifacts/
+      --host 0.0.0.0
+      --port 5000
+    environment:
+      MLFLOW_S3_ENDPOINT_URL: "http://minio:9000"
+      AWS_ACCESS_KEY_ID: aegis_minio
+      AWS_SECRET_ACCESS_KEY: aegis_minio_dev_pw
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - aegis-internal
+
+  # ---------------------------------------------------------------------------
+  # Forensic ML Service – anomaly detection, Benford analysis, and DRI scoring
+  # Memory-intensive: allocated up to 8 GB RAM for in-process ML model serving
+  # (VAE + Isolation Forest inference).  Trains weekly via cron schedule.
+  # ---------------------------------------------------------------------------
+  forensic-ml-service:
+    build: ./services/forensic-ml-service
+    restart: unless-stopped
+    ports:
+      - "3007:3007"
+    environment:
+      DATABASE_URL: "postgresql://aegis_admin:aegis_dev_pw@pgbouncer:6432/aegis"
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
+      MLFLOW_TRACKING_URI: "http://mlflow:5000"
+      MLFLOW_S3_ENDPOINT_URL: "http://minio:9000"
+      AWS_ACCESS_KEY_ID: aegis_minio
+      AWS_SECRET_ACCESS_KEY: aegis_minio_dev_pw
+      REDIS_URL: "redis://redis:6379"
+      AUTH_SERVICE_JWKS_URL: "http://auth-service:3001/.well-known/jwks.json"
+      # Weekly retraining: every Sunday at 02:00
+      ML_MODEL_RETRAIN_CRON: "0 2 * * 0"
+      # Feature vector dimensionality (must match VAE input layer)
+      ML_FEATURE_DIM: "12"
+      # VAE latent space dimensionality
+      ML_LATENT_DIM: "16"
+    deploy:
+      resources:
+        limits:
+          memory: 8g
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      mlflow:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - aegis-internal
+      - aegis-external
+
+  # ---------------------------------------------------------------------------
+  # RAG Pipeline Service – retrieval-augmented generation for audit narratives
+  # Generates compliance narrative documents by retrieving relevant evidence
+  # chunks via pgvector ANN search and synthesising them with Claude.
+  # Escalates low-confidence outputs to the HITL review queue automatically.
+  # ---------------------------------------------------------------------------
+  rag-pipeline-service:
+    build: ./services/rag-pipeline-service
+    ports:
+      - "3008:3008"
+    environment:
+      DATABASE_URL: postgresql://aegis_app:aegis_app_pw@pgbouncer:5432/aegis
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      REDIS_URL: redis://redis:6379/3
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      VOYAGE_API_KEY: ${VOYAGE_API_KEY}
+      EMBEDDING_MODEL: voyage-law-2
+      EMBEDDING_DIMENSIONS: "1536"
+      GENERATION_MODEL: claude-opus-4-6
+      HALLUCINATION_THRESHOLD: "0.45"
+      HITL_ESCALATION_ENABLED: "true"
+      MAX_CONTEXT_CHUNKS: "12"
+      MAX_CONTEXT_TOKENS: "8192"
+      PORT: "3008"
+    depends_on:
+      postgres: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+    networks:
+      - aegis-internal
+      - aegis-external
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3008/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ---------------------------------------------------------------------------
+  # Dashboard Service – BFF aggregation API for the Tri-Modal UX dashboard
+  # Aggregates data from forensic-ml-service, rag-pipeline-service, and the
+  # evidence store; computes health scores on a cron schedule; exposes a
+  # WebSocket endpoint for real-time dashboard updates.
+  # ---------------------------------------------------------------------------
+  dashboard-service:
+    build: ./services/dashboard-service
+    ports:
+      - "3009:3009"
+    environment:
+      DATABASE_URL: postgresql://aegis_app:aegis_app_pw@pgbouncer:5432/aegis
+      REDIS_URL: redis://redis:6379/4
+      FORENSIC_ML_URL: http://forensic-ml-service:3007
+      RAG_PIPELINE_URL: http://rag-pipeline-service:3008
+      EVIDENCE_STORE_URL: http://evidence-store:3005
+      AUTH_SERVICE_JWKS_URL: http://auth-service:3001/.well-known/jwks.json
+      PORT: "3009"
+      WS_HEARTBEAT_INTERVAL: "30"
+      HEALTH_SCORE_CRON: "*/15 * * * *"
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      forensic-ml-service: { condition: service_healthy }
+      rag-pipeline-service: { condition: service_healthy }
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+    networks:
+      - aegis-internal
+      - aegis-external
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3009/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ---------------------------------------------------------------------------
+  # Dashboard UI – React frontend for the Tri-Modal UX dashboard
+  # Served as a static Vite build; communicates with dashboard-service over
+  # HTTP (REST) and WebSocket for real-time health score and alert updates.
+  # ---------------------------------------------------------------------------
+  dashboard-ui:
+    build: ./services/dashboard-ui
+    ports:
+      - "3010:3010"
+    environment:
+      VITE_DASHBOARD_API_URL: http://localhost:3009
+      VITE_WS_URL: ws://localhost:3009/ws
+    depends_on:
+      dashboard-service: { condition: service_healthy }
+    networks:
+      - aegis-external
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3010"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ---------------------------------------------------------------------------
+  # Reporting Service – Sprint 6 Immutable Output & Reporting
+  # Generates XBRL, iXBRL, SAF-T, GIFI, and PDF/A audit report exports.
+  # Reads narrative and evidence data, renders output files, stores them in
+  # MinIO (aegis-reports bucket), applies PAdES digital signatures, and records
+  # export metadata in PostgreSQL.
+  #
+  # Note: the aegis-reports MinIO bucket is already provisioned by the
+  # minio-init service (infra/minio/minio-init.sh, init_reports_bucket).
+  # No additional bucket initialisation step is required.
+  # ---------------------------------------------------------------------------
+  reporting-service:
+    build: ./services/reporting-service
+    ports:
+      - "3011:3011"
+    environment:
+      DATABASE_URL: postgresql://aegis_app:aegis_app_pw@pgbouncer:5432/aegis
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: aegis_minio
+      MINIO_SECRET_KEY: aegis_minio_dev_pw
+      MINIO_REPORTS_BUCKET: aegis-reports
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      RAG_PIPELINE_URL: http://rag-pipeline-service:3008
+      EVIDENCE_STORE_URL: http://evidence-store:3005
+      SIGNING_CERT_PATH: /run/secrets/signing_cert.pem
+      SIGNING_KEY_PATH: /run/secrets/signing_key.pem
+      TSA_URL: http://timestamp.digicert.com
+      PORT: "3011"
+      REPORTS_RETENTION_DAYS: "2555"
+    depends_on:
+      postgres: { condition: service_healthy }
+      minio: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+    networks:
+      - aegis-internal
+      - aegis-external
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3011/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ---------------------------------------------------------------------------
+  # PQ Crypto Service – Sprint 7 MAESTRO – post-quantum key management
+  # Handles Kyber KEM and Dilithium signing operations; integrates with Vault
+  # for key material and Redis for ephemeral session state.
+  # ---------------------------------------------------------------------------
+  pq-crypto-service:
+    build: services/pq-crypto-service
+    ports:
+      - "3012:3012"
+    environment:
+      DATABASE_URL: postgresql://aegis_admin:aegis_dev_pw@postgres:5432/aegis
+      PQ_SERVICE_PORT: "3012"
+      VAULT_ADDR: http://vault:8200
+      VAULT_TOKEN: aegis-dev-root-token
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3012/health"]
+      interval: 10s
+      retries: 5
+    networks:
+      - aegis-internal
+    deploy:
+      resources:
+        limits:
+          memory: 512m
