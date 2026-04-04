@@ -1066,6 +1066,7 @@ services:
       - audit-planning-service
     networks:
       - aegis-internal
+      - aegis-external
     deploy:
       resources:
         limits:
@@ -1124,6 +1125,7 @@ services:
       - esg-board-service
     networks:
       - aegis-internal
+      - aegis-external
     deploy:
       resources:
         limits:
@@ -1181,6 +1183,7 @@ services:
       - mobile-sync-service
     networks:
       - aegis-internal
+      - aegis-external
     deploy:
       resources:
         limits:
