@@ -73,7 +73,7 @@ function AppInner() {
         </nav>
         <div className="via-sidebar-footer">
           <div className="text-xs truncate font-mono" style={{ color: '#334155' }}>
-            {selectedEngagement ? selectedEngagement.name ?? selectedEngagement.id : tenantId}
+            {selectedEngagement ? selectedEngagement.engagement_name ?? selectedEngagement.id : tenantId}
           </div>
         </div>
       </aside>
