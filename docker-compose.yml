@@ -1241,14 +1241,43 @@ services:
           cpus: "0.5"
 
   # ---------------------------------------------------------------------------
-  # Hub UI – Central platform dashboard, module navigator, and tutorial area
-  # Static React/Vite app served via nginx. No backend dependency.
+  # Auth Service – VIA JWT authentication (login, register, /auth/me)
+  # FastAPI + bcrypt + python-jose. Port 3010.
+  # ---------------------------------------------------------------------------
+  auth-service:
+    build: services/auth-service
+    ports:
+      - "3010:3010"
+    environment:
+      DATABASE_URL: postgresql://aegis_app:${POSTGRES_APP_PASSWORD:-aegis_app_dev_pw}@postgres:5432/aegis
+      JWT_SECRET: ${JWT_SECRET:-aegis_dev_jwt_secret_change_in_prod}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3010/health"]
+      interval: 10s
+      retries: 5
+    networks:
+      - aegis-internal
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+          cpus: "0.5"
+
+  # ---------------------------------------------------------------------------
+  # Hub UI – VIA platform dashboard, module navigator, tutorials, and auth
+  # Static React/Vite app served via nginx. Proxies /auth/ to auth-service.
   # ---------------------------------------------------------------------------
   hub-ui:
     build: services/hub-ui
     ports:
       - "5173:80"
+    depends_on:
+      - auth-service
     networks:
+      - aegis-internal
       - aegis-external
     deploy:
       resources:

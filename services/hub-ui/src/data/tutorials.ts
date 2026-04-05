@@ -24,7 +24,7 @@ export const TUTORIALS: Tutorial[] = [
   // ─────────────────────────────────────────────
   {
     id: 'welcome',
-    title: 'Welcome to Aegis 2026',
+    title: 'Welcome to VIA',
     description:
       'A quick orientation to the platform — what it does, who it\'s for, and how to get started.',
     category: 'Getting Started',
@@ -33,9 +33,9 @@ export const TUTORIALS: Tutorial[] = [
     roles: ['super_admin', 'admin', 'end_user'],
     steps: [
       {
-        title: 'What is Aegis 2026?',
+        title: 'What is VIA?',
         content:
-          'Aegis 2026 is a tri-modal audit and governance platform. It combines risk management, compliance frameworks, continuous monitoring, audit planning, and ESG reporting into a single integrated system. Every module shares the same data model and talks to the same underlying risk register.',
+          'VIA is a tri-modal audit and governance platform. It combines risk management, compliance frameworks, continuous monitoring, audit planning, and ESG reporting into a single integrated system. Every module shares the same data model and talks to the same underlying risk register.',
       },
       {
         title: 'The Hub is Your Home Page',
@@ -45,7 +45,7 @@ export const TUTORIALS: Tutorial[] = [
       {
         title: 'Tenant Scoping',
         content:
-          'All data in Aegis is scoped to a tenant. Append ?tenantId=YOUR-UUID to any module URL to scope the data you see. A demo tenant is always available at tenantId=00000000-0000-0000-0000-000000000001.',
+          'All data in VIA is scoped to a tenant. Append ?tenantId=YOUR-UUID to any module URL to scope the data you see. A demo tenant is always available at tenantId=00000000-0000-0000-0000-000000000001.',
       },
       {
         title: 'Getting Help',
@@ -484,7 +484,7 @@ export const TUTORIALS: Tutorial[] = [
       {
         title: 'Limitations',
         content:
-          'The AI Agent does not have access to systems outside Aegis, cannot send emails or make changes on your behalf, and will not answer questions about data from other tenants. Always review AI-generated content before distributing externally.',
+          'The AI Agent does not have access to systems outside VIA, cannot send emails or make changes on your behalf, and will not answer questions about data from other tenants. Always review AI-generated content before distributing externally.',
       },
     ],
     tags: ['ai', 'agent', 'narrative', 'automation'],
@@ -506,7 +506,7 @@ export const TUTORIALS: Tutorial[] = [
       {
         title: 'Service Topology',
         content:
-          'Aegis 2026 runs 16 Python FastAPI microservices and 10 React/Vite frontends in Docker containers on a single Docker Compose stack. All services communicate on the aegis-internal Docker network. Only UI containers are exposed on aegis-external for host port publishing.',
+          'VIA runs 16 Python FastAPI microservices and 10 React/Vite frontends in Docker containers on a single Docker Compose stack. All services communicate on the aegis-internal Docker network. Only UI containers are exposed on aegis-external for host port publishing.',
       },
       {
         title: 'Data Stores',
@@ -535,7 +535,7 @@ export const TUTORIALS: Tutorial[] = [
     id: 'tenant-management',
     title: 'Managing Tenants',
     description:
-      'Create, configure, and isolate tenants in the multi-tenant Aegis deployment.',
+      'Create, configure, and isolate tenants in the multi-tenant VIA deployment.',
     category: 'System Administration',
     duration: '20 min',
     difficulty: 'Advanced',
@@ -576,7 +576,7 @@ export const TUTORIALS: Tutorial[] = [
       {
         title: 'Migration Strategy',
         content:
-          'Aegis uses sequential SQL migration files named V001__description.sql through V023__description.sql. Migrations are applied at startup by start.ps1 using a temporary postgres:16-alpine container. Each migration is idempotent — already-applied migrations are skipped (errors are suppressed with || true).',
+          'VIA uses sequential SQL migration files named V001__description.sql through V023__description.sql. Migrations are applied at startup by start.ps1 using a temporary postgres:16-alpine container. Each migration is idempotent — already-applied migrations are skipped (errors are suppressed with || true).',
       },
       {
         title: 'Adding a New Migration',
@@ -689,7 +689,7 @@ export const TUTORIALS: Tutorial[] = [
       {
         title: 'Webhook Configuration',
         content:
-          'Aegis can send webhook events to external systems. Configure webhook endpoints in Integrations → Webhooks → New Webhook. Choose the events to subscribe to (risk.created, finding.critical, audit.closed, etc.). Events are sent as JSON POST requests with HMAC signatures.',
+          'VIA can send webhook events to external systems. Configure webhook endpoints in Integrations → Webhooks → New Webhook. Choose the events to subscribe to (risk.created, finding.critical, audit.closed, etc.). Events are sent as JSON POST requests with HMAC signatures.',
       },
       {
         title: 'Service Health Endpoints',

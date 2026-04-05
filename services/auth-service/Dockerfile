@@ -1,48 +1,19 @@
-# ---------------------------------------------------------------------------
-# Stage 1 — Builder
-# Compiles TypeScript to JavaScript in a full Node image that has the
-# native build toolchain available (for any native npm modules).
-# ---------------------------------------------------------------------------
-FROM node:20-alpine AS builder
+FROM python:3.12-slim
 
 WORKDIR /app
 
-# Copy dependency manifests first so Docker layer cache is not busted
-# every time source files change.
-COPY package.json package-lock.json* ./
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential libffi-dev && \
+    rm -rf /var/lib/apt/lists/*
 
-# Install ALL dependencies (including devDependencies — we need tsc and tsx).
-RUN npm ci --ignore-scripts
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy source and compile
-COPY tsconfig.json ./
 COPY src/ ./src/
 
-RUN npm run build
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-# ---------------------------------------------------------------------------
-# Stage 2 — Runtime
-# Only production artifacts are copied — no devDependencies, no source.
-# Runs as the non-root `node` user for defence-in-depth.
-# ---------------------------------------------------------------------------
-FROM node:20-alpine AS runtime
+EXPOSE 3010
 
-# Add tini as PID 1 so signals (SIGTERM/SIGINT) are forwarded correctly
-# to the Node process, enabling graceful shutdown.
-RUN apk add --no-cache tini
-
-WORKDIR /app
-
-# Copy compiled output and production node_modules from the builder stage.
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
-
-# Drop privileges — never run production services as root.
-USER node
-
-EXPOSE 3001
-
-# Use tini as the init process so that SIGTERM is properly forwarded.
-ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["node", "dist/index.js"]
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "3010", "--workers", "1"]

@@ -1,5 +1,5 @@
 #Requires -Version 5.1
-# Project Aegis 2026 - One-Click Launcher
+# VIA - Very Intelligent Auditing - One-Click Launcher
 
 Set-Location $PSScriptRoot
 
@@ -7,7 +7,7 @@ function Write-Header {
     Clear-Host
     Write-Host ""
     Write-Host "  +================================================================+" -ForegroundColor Cyan
-    Write-Host "  |       PROJECT AEGIS 2026 - Tri-Modal Audit Platform            |" -ForegroundColor Cyan
+    Write-Host "  |       VIA - Very Intelligent Auditing Platform                   |" -ForegroundColor Cyan
     Write-Host "  +================================================================+" -ForegroundColor Cyan
     Write-Host ""
 }
@@ -77,6 +77,7 @@ $SERVICES = @(
     "audit-planning-service","audit-planning-ui",
     "esg-board-service",    "esg-board-ui",
     "mobile-sync-service",  "mobile-app",
+    "auth-service",
     "hub-ui"
 )
 
@@ -153,7 +154,7 @@ Write-OK "Database migrations complete (already-applied migrations are skipped a
 # -----------------------------------------------------------------------
 Write-Host ""
 Write-Host "  +================================================================+" -ForegroundColor Green
-Write-Host "  |                  AEGIS 2026 IS RUNNING                        |" -ForegroundColor Green
+Write-Host "  |                  VIA PLATFORM IS RUNNING                                             |" -ForegroundColor Green
 Write-Host "  +================================================================+" -ForegroundColor Green
 Write-Host ""
 

@@ -1,0 +1,209 @@
+from __future__ import annotations
+
+import asyncpg
+import os
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from pydantic import BaseModel, EmailStr
+from passlib.context import CryptContext
+from typing import Optional
+import logging
+
+from .auth import create_access_token, decode_access_token
+
+logger = logging.getLogger(__name__)
+
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql://aegis_app:aegis_app_dev_pw@postgres:5432/aegis"
+)
+JWT_SECRET = os.getenv("JWT_SECRET", "aegis_dev_jwt_secret_change_in_prod")
+DEMO_TENANT_ID = "00000000-0000-0000-0000-000000000001"
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+bearer_scheme = HTTPBearer(auto_error=False)
+
+pool: Optional[asyncpg.Pool] = None
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global pool
+    pool = await asyncpg.create_pool(DATABASE_URL, min_size=2, max_size=10)
+    await seed_demo_users()
+    yield
+    await pool.close()
+
+
+async def seed_demo_users():
+    """Seed demo users for each role on the demo tenant."""
+    demo_users = [
+        ("admin@via.com",   "admin123",   "Platform Administrator", "super_admin"),
+        ("auditor@via.com", "auditor123", "Senior Auditor",          "admin"),
+        ("user@via.com",    "user123",    "Audit Analyst",           "end_user"),
+    ]
+    async with pool.acquire() as conn:
+        for email, password, full_name, role in demo_users:
+            existing = await conn.fetchval(
+                "SELECT id FROM via_users WHERE email=$1 AND tenant_id=$2",
+                email, DEMO_TENANT_ID
+            )
+            if not existing:
+                hashed = pwd_context.hash(password)
+                await conn.execute(
+                    """INSERT INTO via_users (tenant_id, email, password_hash, full_name, role)
+                       VALUES ($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING""",
+                    DEMO_TENANT_ID, email, hashed, full_name, role
+                )
+                logger.info(f"Seeded demo user: {email} ({role})")
+
+
+app = FastAPI(title="VIA Auth Service", version="1.0.0", lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# ── Models ────────────────────────────────────────────────────────────────────
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+    tenant_id: Optional[str] = DEMO_TENANT_ID
+
+class RegisterRequest(BaseModel):
+    email: str
+    password: str
+    full_name: str
+    role: str = "end_user"
+    tenant_id: Optional[str] = DEMO_TENANT_ID
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: dict
+
+class UserOut(BaseModel):
+    id: str
+    email: str
+    full_name: str
+    role: str
+    tenant_id: str
+
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+async def get_current_user(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
+):
+    if not credentials:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    payload = decode_access_token(credentials.credentials, JWT_SECRET)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    return payload
+
+
+# ── Routes ────────────────────────────────────────────────────────────────────
+
+@app.get("/health")
+async def health():
+    return {"status": "ok", "service": "auth-service"}
+
+
+@app.post("/auth/login", response_model=TokenResponse)
+async def login(req: LoginRequest):
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow(
+            """SELECT id, email, password_hash, full_name, role, tenant_id
+               FROM via_users
+               WHERE email = $1 AND tenant_id = $2 AND is_active = true""",
+            req.email.lower().strip(),
+            req.tenant_id or DEMO_TENANT_ID,
+        )
+    if not row or not pwd_context.verify(req.password, row["password_hash"]):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+        )
+    token_data = {
+        "sub": str(row["id"]),
+        "email": row["email"],
+        "full_name": row["full_name"],
+        "role": row["role"],
+        "tenant_id": str(row["tenant_id"]),
+    }
+    token = create_access_token(token_data, JWT_SECRET)
+    return TokenResponse(
+        access_token=token,
+        user={
+            "id": str(row["id"]),
+            "email": row["email"],
+            "full_name": row["full_name"],
+            "role": row["role"],
+            "tenant_id": str(row["tenant_id"]),
+        },
+    )
+
+
+@app.post("/auth/register", response_model=TokenResponse)
+async def register(req: RegisterRequest):
+    if req.role not in ("super_admin", "admin", "end_user"):
+        raise HTTPException(400, "Invalid role")
+    hashed = pwd_context.hash(req.password)
+    async with pool.acquire() as conn:
+        try:
+            row = await conn.fetchrow(
+                """INSERT INTO via_users (tenant_id, email, password_hash, full_name, role)
+                   VALUES ($1,$2,$3,$4,$5)
+                   RETURNING id, email, full_name, role, tenant_id""",
+                req.tenant_id or DEMO_TENANT_ID,
+                req.email.lower().strip(),
+                hashed,
+                req.full_name,
+                req.role,
+            )
+        except asyncpg.UniqueViolationError:
+            raise HTTPException(409, "Email already registered")
+    token_data = {
+        "sub": str(row["id"]),
+        "email": row["email"],
+        "full_name": row["full_name"],
+        "role": row["role"],
+        "tenant_id": str(row["tenant_id"]),
+    }
+    token = create_access_token(token_data, JWT_SECRET)
+    return TokenResponse(
+        access_token=token,
+        user={
+            "id": str(row["id"]),
+            "email": row["email"],
+            "full_name": row["full_name"],
+            "role": row["role"],
+            "tenant_id": str(row["tenant_id"]),
+        },
+    )
+
+
+@app.get("/auth/me", response_model=UserOut)
+async def me(user=Depends(get_current_user)):
+    return UserOut(
+        id=user["sub"],
+        email=user["email"],
+        full_name=user["full_name"],
+        role=user["role"],
+        tenant_id=user["tenant_id"],
+    )
+
+
+@app.post("/auth/logout")
+async def logout():
+    # Stateless JWT — client just discards the token
+    return {"message": "Logged out successfully"}
