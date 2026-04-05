@@ -72,7 +72,7 @@ class VendorDocAnalyzer:
             minio_path = None
 
         async with self._pool.acquire() as conn:
-            await conn.execute("SET LOCAL app.tenant_id = $1", str(tenant_id))
+            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
             doc_id = await conn.fetchval("""
                 INSERT INTO vendor_documents
                     (tenant_id, vendor_id, document_type, filename, minio_path,
@@ -101,7 +101,7 @@ class VendorDocAnalyzer:
 
         import json
         async with self._pool.acquire() as conn:
-            await conn.execute("SET LOCAL app.tenant_id = $1", str(tenant_id))
+            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
             await conn.execute("""
                 UPDATE vendor_documents SET
                     ai_analysis = $1::jsonb,

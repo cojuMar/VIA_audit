@@ -52,7 +52,7 @@ class HITLEscalationService:
             reason += f"; error={guardrail_result.error}"
 
         async with self._pool.acquire() as conn:
-            await conn.execute('SET LOCAL app.tenant_id = $1', tenant_id)
+            await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
             queue_id = await conn.fetchval("""
                 INSERT INTO hitl_narrative_queue
                     (narrative_id, tenant_id, escalation_reason, flagged_claims, priority)

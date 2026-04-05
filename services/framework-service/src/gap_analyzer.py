@@ -32,7 +32,7 @@ class GapAnalyzer:
         Returns list of GapItems sorted by severity (critical first).
         """
         async with self._pool.acquire() as conn:
-            await conn.execute("SET LOCAL app.tenant_id = $1", str(tenant_id))
+            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
 
             rows = await conn.fetch("""
                 SELECT

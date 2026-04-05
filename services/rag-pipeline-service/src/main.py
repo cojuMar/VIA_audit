@@ -192,7 +192,7 @@ async def list_narratives(
 
     where = " AND ".join(conditions)
     async with db.acquire() as conn:
-        await conn.execute('SET LOCAL app.tenant_id = $1', tenant_id)
+        await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
         rows = await conn.fetch(f"""
             SELECT narrative_id, framework, control_id, period_start, period_end,
                    combined_score, hitl_required, hitl_reviewed, created_at
@@ -212,7 +212,7 @@ async def get_narrative(
 ):
     """Get a narrative with its citations."""
     async with db.acquire() as conn:
-        await conn.execute('SET LOCAL app.tenant_id = $1', tenant_id)
+        await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
         row = await conn.fetchrow(
             "SELECT * FROM audit_narratives WHERE narrative_id = $1::uuid AND tenant_id = $2::uuid",
             narrative_id, tenant_id
@@ -236,7 +236,7 @@ async def get_hitl_queue(
 ):
     """List pending HITL review items."""
     async with db.acquire() as conn:
-        await conn.execute('SET LOCAL app.tenant_id = $1', tenant_id)
+        await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
         rows = await conn.fetch("""
             SELECT q.queue_id, q.narrative_id, q.escalation_reason,
                    q.flagged_claims, q.priority, q.status, q.created_at,
@@ -261,7 +261,7 @@ async def submit_hitl_review(
     """Submit a HITL review decision for a flagged narrative."""
     async with db.acquire() as conn:
         async with conn.transaction():
-            await conn.execute('SET LOCAL app.tenant_id = $1', tenant_id)
+            await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
 
             queue_row = await conn.fetchrow(
                 "SELECT * FROM hitl_narrative_queue WHERE queue_id = $1::uuid AND tenant_id = $2::uuid",

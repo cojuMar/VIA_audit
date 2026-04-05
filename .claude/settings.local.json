@@ -82,7 +82,28 @@
       "Bash(docker build:*)",
       "Bash(grep \"class does not exist\\\\|does not exist\\\\|warning\\\\|The \\\\`\")",
       "Bash(rm -f package.json tsconfig.json src/config.ts src/db.ts src/index.ts src/jwt.ts src/redis.ts src/tenant_context_middleware.ts src/types.ts)",
-      "Bash(rm -rf src/fido2 src/routes)"
+      "Bash(rm -rf src/fido2 src/routes)",
+      "Bash(docker run:*)",
+      "Bash(docker restart:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(curl -s -X POST http://localhost:3010/auth/login -H \"Content-Type: application/json\" -d \"{\"\"email\"\":\"\"user@via.com\"\",\"\"password\"\":\"\"user123\"\"}\")",
+      "Bash(TENANT=\"00000000-0000-0000-0000-000000000001\")",
+      "Bash(__NEW_LINE_b2a4e28f2f7e0163__ docker run --rm --network audit_aegis-internal curlimages/curl sh -c \":*)",
+      "Bash(grep -r \"app.get\\\\|app.post\\\\|@app.get\\\\|@app.post\\\\|router.get\\\\|router.post\" C:UsersjermaDocumentsCodeClaude_CodeAuditservicesrisk-servicesrc --include=*.py -h)",
+      "Bash(head -30 __NEW_LINE_18d51285a6d8b84e__ echo --- grep -r \"app.get\\\\|app.post\\\\|@app.get\\\\|@app.post\\\\|router.get\\\\|router.post\" C:UsersjermaDocumentsCodeClaude_CodeAuditservicesaudit-planning-servicesrc --include=*.py -h)",
+      "Bash(echo '=== audit_plans vs audit tables ===' grep -r \"audit_plans\\\\|FROM audit\" C:UsersjermaDocumentsCodeClaude_CodeAuditservicesaudit-planning-servicesrc --include=*.py -h)",
+      "Bash(grep -rn \"current_tenant\\\\|app\\\\.\" C:UsersjermaDocumentsCodeClaude_CodeAuditservicesintegration-servicesrc --include=*.py)",
+      "Bash(head -10 __NEW_LINE_843d946cbfcc3267__ echo --- grep -n \"audit_plans\\\\|CREATE TABLE\" C:UsersjermaDocumentsCodeClaude_CodeAuditinfradbmigrationsV021__create_audit_planning_schema.sql)",
+      "Bash(__NEW_LINE_b995ffb22a26a095__ echo:*)",
+      "Bash(1:*)",
+      "Bash(__NEW_LINE_bd0349ef21ccdde0__ echo:*)",
+      "Bash(grep -rn \"SET LOCAL app.tenant_id = $1\" \"C:\\\\Users\\\\jerma\\\\Documents\\\\Code\\\\Claude_Code\\\\Audit\\\\services\\\\tprm-service\\\\src\" --include=\"*.py\")",
+      "Bash(python -c \":*)",
+      "Bash(BASE=\"C:/Users/jerma/Documents/Code/Claude_Code/Audit/services/tprm-service/src\")",
+      "Bash(__NEW_LINE_5193985394c2c7bb__ python3 -c \":*)",
+      "Bash(where python:*)",
+      "Bash(where python3:*)",
+      "Bash(py --version)"
     ]
   }
 }

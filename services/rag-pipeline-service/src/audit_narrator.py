@@ -179,7 +179,7 @@ class AuditNarrator:
 
         async with self._pool.acquire() as conn:
             async with conn.transaction():
-                await conn.execute('SET LOCAL app.tenant_id = $1', tenant_id)
+                await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
 
                 narrative_id = await conn.fetchval("""
                     INSERT INTO audit_narratives (

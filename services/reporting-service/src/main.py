@@ -91,7 +91,7 @@ async def generate_report(
     period_end = date.fromisoformat(body.period_end)
 
     async with db.acquire() as conn:
-        await conn.execute('SET LOCAL app.tenant_id = $1', tenant_id)
+        await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
         export_id = await conn.fetchval("""
             INSERT INTO report_exports (tenant_id, format, framework, period_start, period_end, status)
             VALUES ($1::uuid, $2, $3, $4::date, $5::date, 'pending')
@@ -124,7 +124,7 @@ async def _generate_report_async(
 
     try:
         async with db.acquire() as conn:
-            await conn.execute('SET LOCAL app.tenant_id = $1', tenant_id)
+            await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
             await conn.execute(
                 "UPDATE report_exports SET status='generating' WHERE export_id=$1::uuid",
                 export_id
@@ -187,7 +187,7 @@ async def _generate_report_async(
                 # Persist signature record
                 if sig_result.is_signed:
                     async with db.acquire() as conn:
-                        await conn.execute('SET LOCAL app.tenant_id = $1', tenant_id)
+                        await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
                         await conn.execute("""
                             INSERT INTO digital_signatures
                                 (export_id, tenant_id, signer_cert_sha256, signer_dn,
@@ -217,7 +217,7 @@ async def _generate_report_async(
 
         # Mark complete in DB
         async with db.acquire() as conn:
-            await conn.execute('SET LOCAL app.tenant_id = $1', tenant_id)
+            await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
             await conn.execute("""
                 UPDATE report_exports
                 SET status='completed', storage_path=$1, file_size_bytes=$2,
@@ -234,7 +234,7 @@ async def _generate_report_async(
         logger.error("Report generation failed for %s: %s", export_id, e, exc_info=True)
         try:
             async with db.acquire() as conn:
-                await conn.execute('SET LOCAL app.tenant_id = $1', tenant_id)
+                await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
                 await conn.execute("""
                     UPDATE report_exports SET status='failed', generation_log=$1 WHERE export_id=$2::uuid
                 """, str(e), export_id)
@@ -250,7 +250,7 @@ async def get_report(
     _auth = Depends(_require_bearer),
 ):
     async with db.acquire() as conn:
-        await conn.execute('SET LOCAL app.tenant_id = $1', tenant_id)
+        await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
         row = await conn.fetchrow(
             "SELECT * FROM report_exports WHERE export_id=$1::uuid AND tenant_id=$2::uuid",
             export_id, tenant_id
@@ -269,7 +269,7 @@ async def download_report(
 ):
     """Get a presigned download URL for a completed report."""
     async with db.acquire() as conn:
-        await conn.execute('SET LOCAL app.tenant_id = $1', tenant_id)
+        await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
         row = await conn.fetchrow(
             "SELECT status, storage_path, format FROM report_exports WHERE export_id=$1::uuid AND tenant_id=$2::uuid",
             export_id, tenant_id
@@ -309,7 +309,7 @@ async def list_reports(
 
     where = " AND ".join(conditions)
     async with db.acquire() as conn:
-        await conn.execute('SET LOCAL app.tenant_id = $1', tenant_id)
+        await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
         rows = await conn.fetch(f"""
             SELECT export_id, format, framework, period_start, period_end,
                    status, file_size_bytes, created_at, completed_at

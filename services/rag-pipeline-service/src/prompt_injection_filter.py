@@ -318,7 +318,7 @@ class PromptInjectionFilter:
         """Insert detection event into prompt_injection_logs."""
         async with self._pool.acquire() as conn:
             async with conn.transaction():
-                await conn.execute("SET LOCAL app.tenant_id = $1", tenant_id)
+                await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
                 await conn.execute(
                     """
                     INSERT INTO prompt_injection_logs (

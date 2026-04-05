@@ -60,7 +60,7 @@ class EvidenceRetriever:
 
         async with self._pool.acquire() as conn:
             # Set tenant context for RLS
-            await conn.execute('SET LOCAL app.tenant_id = $1', tenant_id)
+            await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
 
             # Build dynamic WHERE clause
             conditions = ['ee.tenant_id = $1::uuid']

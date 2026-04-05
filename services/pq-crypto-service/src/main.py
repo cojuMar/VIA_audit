@@ -110,7 +110,7 @@ async def _store_public_key(
     """Persist a public key to pq_public_keys; return the generated key_id."""
     async with pool.acquire() as conn:
         async with conn.transaction():
-            await conn.execute("SET LOCAL app.tenant_id = $1", tenant_id)
+            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
             key_id = await conn.fetchval(
                 """
                 INSERT INTO pq_public_keys (
@@ -381,7 +381,7 @@ async def list_keys(
     pool = _get_db()
     async with pool.acquire() as conn:
         async with conn.transaction():
-            await conn.execute("SET LOCAL app.tenant_id = $1", tenant_id)
+            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
             rows = await conn.fetch(
                 """
                 SELECT

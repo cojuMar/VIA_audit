@@ -43,7 +43,7 @@ class ReportBuilder:
             ReportRequest ready for any generator.
         """
         async with self._pool.acquire() as conn:
-            await conn.execute('SET LOCAL app.tenant_id = $1', tenant_id)
+            await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
 
             # Get entity info from tenants table
             tenant_row = await conn.fetchrow(

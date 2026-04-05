@@ -54,7 +54,7 @@ class CrosswalkEngine:
         Returns coverage stats per framework pair.
         """
         async with self._pool.acquire() as conn:
-            await conn.execute("SET LOCAL app.tenant_id = $1", str(tenant_id))
+            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
 
             # Get tenant's active frameworks
             active_frameworks = await conn.fetch("""
@@ -99,7 +99,7 @@ class CrosswalkEngine:
 
         credited = 0
         async with self._pool.acquire() as conn:
-            await conn.execute("SET LOCAL app.tenant_id = $1", str(tenant_id))
+            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
             for eq in equivalents:
                 if eq['equivalence_type'] == 'full':
                     # Full equivalence: auto-credit passing status

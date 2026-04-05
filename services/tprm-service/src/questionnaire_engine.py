@@ -72,7 +72,7 @@ class QuestionnaireEngine:
         due_date = datetime.now(timezone.utc) + timedelta(days=due_days)
 
         async with self._pool.acquire() as conn:
-            await conn.execute("SET LOCAL app.tenant_id = $1", str(tenant_id))
+            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
             qid = await conn.fetchval("""
                 INSERT INTO vendor_questionnaires
                     (tenant_id, vendor_id, template_slug, template_version, status, sent_at, due_date)
@@ -89,7 +89,7 @@ class QuestionnaireEngine:
         Returns AI scoring result.
         """
         async with self._pool.acquire() as conn:
-            await conn.execute("SET LOCAL app.tenant_id = $1", str(tenant_id))
+            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
 
             row = await conn.fetchrow("""
                 SELECT template_slug FROM vendor_questionnaires

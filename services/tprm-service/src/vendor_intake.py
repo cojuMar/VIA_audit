@@ -122,7 +122,7 @@ class VendorIntake:
         rubric = self.score_vendor(intake)
 
         async with self._pool.acquire() as conn:
-            await conn.execute("SET LOCAL app.tenant_id = $1", str(tenant_id))
+            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
             async with conn.transaction():
                 vendor_id = await conn.fetchval("""
                     INSERT INTO vendors (

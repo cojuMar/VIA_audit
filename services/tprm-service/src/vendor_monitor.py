@@ -41,7 +41,7 @@ class VendorMonitor:
         Returns number of events recorded.
         """
         async with self._pool.acquire() as conn:
-            await conn.execute("SET LOCAL app.tenant_id = $1", str(tenant_id))
+            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
             vendors = await conn.fetch("""
                 SELECT id, name, website FROM vendors
                 WHERE tenant_id = $1 AND status = 'active'
@@ -136,7 +136,7 @@ class VendorMonitor:
         """Persist monitoring events to DB."""
         import json
         async with self._pool.acquire() as conn:
-            await conn.execute("SET LOCAL app.tenant_id = $1", str(tenant_id))
+            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
             for event in events:
                 await conn.execute("""
                     INSERT INTO vendor_monitoring_events

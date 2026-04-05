@@ -28,7 +28,7 @@ class CalendarBuilder:
         Clears existing unresolved events and regenerates them.
         """
         async with self._pool.acquire() as conn:
-            await conn.execute("SET LOCAL app.tenant_id = $1", str(tenant_id))
+            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
 
             active = await conn.fetch("""
                 SELECT tf.framework_id, tf.activated_at, tf.target_cert_date,
