@@ -7,7 +7,7 @@ interface CrosswalkMatrixProps {
   tenantId: string
 }
 
-interface TooltipState {
+type TooltipState = {
   x: number
   y: number
   text: string

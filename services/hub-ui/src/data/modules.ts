@@ -1,3 +1,5 @@
+import type { UserRole } from '../contexts/AuthContext';
+
 export interface Module {
   id: string;
   name: string;
@@ -11,7 +13,16 @@ export interface Module {
   pill: string;           // pill variant class
   category: 'core' | 'operations' | 'reporting' | 'field';
   workflow?: string;      // short workflow hint
+  allowedRoles: UserRole[]; // which roles can see this module
 }
+
+// Role hierarchy:
+//   super_admin — full platform access (all modules)
+//   admin       — all operational modules (no low-level integration config)
+//   end_user    — end-user tools only (evidence submission, AI assistant, trust portal, field work)
+const ALL:   UserRole[] = ['super_admin', 'admin', 'end_user'];
+const STAFF: UserRole[] = ['super_admin', 'admin'];
+const ADMIN: UserRole[] = ['super_admin'];
 
 export const MODULES: Module[] = [
   {
@@ -28,6 +39,7 @@ export const MODULES: Module[] = [
     pill: 'pill-indigo',
     category: 'core',
     workflow: 'Start here — define your control universe',
+    allowedRoles: STAFF,
   },
   {
     id: 'tprm',
@@ -43,6 +55,7 @@ export const MODULES: Module[] = [
     pill: 'pill-violet',
     category: 'core',
     workflow: 'Run vendor assessments alongside risk register',
+    allowedRoles: STAFF,
   },
   {
     id: 'trust-portal',
@@ -58,6 +71,7 @@ export const MODULES: Module[] = [
     pill: 'pill-cyan',
     category: 'reporting',
     workflow: 'Share audit results with external stakeholders',
+    allowedRoles: ALL,
   },
   {
     id: 'monitoring',
@@ -73,6 +87,7 @@ export const MODULES: Module[] = [
     pill: 'pill-green',
     category: 'operations',
     workflow: 'Feed findings into risk register automatically',
+    allowedRoles: STAFF,
   },
   {
     id: 'people',
@@ -88,6 +103,7 @@ export const MODULES: Module[] = [
     pill: 'pill-teal',
     category: 'core',
     workflow: 'Satisfy HR-related compliance requirements',
+    allowedRoles: STAFF,
   },
   {
     id: 'pbc',
@@ -103,6 +119,7 @@ export const MODULES: Module[] = [
     pill: 'pill-blue',
     category: 'operations',
     workflow: 'Collect evidence from clients during fieldwork',
+    allowedRoles: ALL,
   },
   {
     id: 'integration',
@@ -118,6 +135,7 @@ export const MODULES: Module[] = [
     pill: 'pill-amber',
     category: 'core',
     workflow: 'Wire up Jira/Slack before starting fieldwork',
+    allowedRoles: ADMIN,
   },
   {
     id: 'ai-agent',
@@ -133,6 +151,7 @@ export const MODULES: Module[] = [
     pill: 'pill-rose',
     category: 'operations',
     workflow: 'Use for narrative generation and Q&A during audits',
+    allowedRoles: ALL,
   },
   {
     id: 'risk',
@@ -148,6 +167,7 @@ export const MODULES: Module[] = [
     pill: 'pill-amber',
     category: 'core',
     workflow: 'Central risk register links to all other modules',
+    allowedRoles: STAFF,
   },
   {
     id: 'audit-planning',
@@ -163,6 +183,7 @@ export const MODULES: Module[] = [
     pill: 'pill-blue',
     category: 'operations',
     workflow: 'Plan audits against the risk register universe',
+    allowedRoles: STAFF,
   },
   {
     id: 'esg',
@@ -178,6 +199,7 @@ export const MODULES: Module[] = [
     pill: 'pill-green',
     category: 'reporting',
     workflow: 'Board-level reporting from risk and compliance data',
+    allowedRoles: STAFF,
   },
   {
     id: 'mobile',
@@ -193,6 +215,7 @@ export const MODULES: Module[] = [
     pill: 'pill-rose',
     category: 'field',
     workflow: 'Use during on-site inspections and walkthroughs',
+    allowedRoles: ALL,
   },
 ];
 

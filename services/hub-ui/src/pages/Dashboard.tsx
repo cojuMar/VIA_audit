@@ -1,38 +1,41 @@
 import { type ReactNode, useState, useEffect } from 'react';
-import { ExternalLink, BookOpen, ArrowRight, Shield, Activity, Users, FileText, Plug, Bot, BarChart2, Calendar, Leaf, Smartphone, Building2, Globe } from 'lucide-react';
+import { ExternalLink, BookOpen, ArrowRight, Shield, Activity, Users, FileText, Plug, Bot, BarChart2, Calendar, Leaf, Smartphone, Building2, Globe, Lock } from 'lucide-react';
 import { MODULES, WORKFLOW_STEPS, type Module } from '../data/modules';
-import type { UserRole } from '../contexts/AuthContext';
+import type { AuthUser } from '../contexts/AuthContext';
 
-/** Ping each module's /health endpoint and return how many responded OK */
-function useModuleHealth() {
-  const [online, setOnline] = useState<number | null>(null);
+/** Ping each module's /health endpoint and return per-module online status */
+function useModuleHealth(modules: Module[]) {
+  const [onlineSet, setOnlineSet] = useState<Set<string>>(new Set());
+  const [checked, setChecked] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    const checks = MODULES.map(async (m) => {
-      try {
-        const ctrl = new AbortController();
-        const timer = setTimeout(() => ctrl.abort(), 2000);
-        const res = await fetch(`http://localhost:${m.port}/health`, {
-          signal: ctrl.signal,
-          method: 'GET',
-        });
-        clearTimeout(timer);
-        return res.ok;
-      } catch {
-        return false;
+    Promise.all(
+      modules.map(async (m) => {
+        try {
+          const ctrl = new AbortController();
+          const timer = setTimeout(() => ctrl.abort(), 2000);
+          const res = await fetch(`http://localhost:${m.port}/health`, {
+            signal: ctrl.signal,
+            method: 'GET',
+          });
+          clearTimeout(timer);
+          return { id: m.id, ok: res.ok };
+        } catch {
+          return { id: m.id, ok: false };
+        }
+      })
+    ).then((results) => {
+      if (!cancelled) {
+        setOnlineSet(new Set(results.filter(r => r.ok).map(r => r.id)));
+        setChecked(true);
       }
     });
-    Promise.all(checks).then((results) => {
-      if (!cancelled) setOnline(results.filter(Boolean).length);
-    });
     return () => { cancelled = true; };
-  }, []);
+  }, []);  // run once on mount
 
-  return online;
+  return { onlineSet, checked };
 }
-
-const TENANT_ID = '00000000-0000-0000-0000-000000000001';
 
 const MODULE_ICONS: Record<string, ReactNode> = {
   framework:       <Shield className="h-5 w-5" />,
@@ -57,17 +60,23 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 interface Props {
-  role: UserRole;
+  user: AuthUser;
   onOpenTutorials: () => void;
 }
 
-export default function Dashboard({ onOpenTutorials }: Props) {
-  const onlineCount = useModuleHealth();
+export default function Dashboard({ user, onOpenTutorials }: Props) {
+  const tenantId = user.tenant_id;
+
+  // Only health-check modules the user can see
+  const visibleModules = MODULES.filter(m => m.allowedRoles.includes(user.role));
+  const { onlineSet, checked } = useModuleHealth(visibleModules);
+  const onlineCount = checked ? onlineSet.size : null;
+
   const grouped = {
-    core:       MODULES.filter(m => m.category === 'core'),
-    operations: MODULES.filter(m => m.category === 'operations'),
-    reporting:  MODULES.filter(m => m.category === 'reporting'),
-    field:      MODULES.filter(m => m.category === 'field'),
+    core:       visibleModules.filter(m => m.category === 'core'),
+    operations: visibleModules.filter(m => m.category === 'operations'),
+    reporting:  visibleModules.filter(m => m.category === 'reporting'),
+    field:      visibleModules.filter(m => m.category === 'field'),
   };
 
   return (
@@ -84,22 +93,24 @@ export default function Dashboard({ onOpenTutorials }: Props) {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div>
             <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--ink-primary)' }}>
-              Welcome to VIA
+              Welcome back, {user.full_name.split(' ')[0]}
             </h1>
             <p className="mt-2 max-w-xl text-sm leading-relaxed" style={{ color: 'var(--ink-secondary)' }}>
               Your enterprise tri-modal audit platform — combining risk management, continuous
               monitoring, compliance frameworks, and ESG reporting in one integrated system.
             </p>
             <div className="mt-4 flex flex-wrap gap-3">
-              <a
-                href={`http://localhost:5182?tenantId=${TENANT_ID}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-primary"
-              >
-                Open Risk Dashboard
-                <ArrowRight className="h-3.5 w-3.5" />
-              </a>
+              {visibleModules.some(m => m.id === 'risk') && (
+                <a
+                  href={`http://localhost:5182?tenantId=${tenantId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-primary"
+                >
+                  Open Risk Dashboard
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </a>
+              )}
               <button onClick={onOpenTutorials} className="btn-secondary">
                 <BookOpen className="h-3.5 w-3.5" />
                 View Tutorials
@@ -111,7 +122,7 @@ export default function Dashboard({ onOpenTutorials }: Props) {
               [
                 onlineCount === null
                   ? 'Checking modules…'
-                  : `${onlineCount} / ${MODULES.length} modules online`,
+                  : `${onlineCount} / ${visibleModules.length} modules online`,
                 onlineCount !== null && onlineCount > 0,
               ],
               ['PostgreSQL healthy', true],
@@ -135,106 +146,141 @@ export default function Dashboard({ onOpenTutorials }: Props) {
         </div>
       </div>
 
-      {/* Workflow */}
-      <section className="mb-10">
-        <p className="section-label">Recommended Workflow</p>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 overflow-x-auto pb-2">
-          {WORKFLOW_STEPS.map((step, i) => (
-            <div key={step.label} className="flex items-center gap-2 shrink-0">
-              <div className="flex flex-col items-center">
-                <div
-                  className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold"
-                  style={{
-                    backgroundColor: 'var(--brand-subtle)',
-                    border: '1px solid var(--brand)',
-                    color: 'var(--brand-text)',
-                  }}
-                >
-                  {i + 1}
+      {/* Workflow (only show for staff roles) */}
+      {(user.role === 'super_admin' || user.role === 'admin') && (
+        <section className="mb-10">
+          <p className="section-label">Recommended Workflow</p>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 overflow-x-auto pb-2">
+            {WORKFLOW_STEPS.map((step, i) => (
+              <div key={step.label} className="flex items-center gap-2 shrink-0">
+                <div className="flex flex-col items-center">
+                  <div
+                    className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold"
+                    style={{
+                      backgroundColor: 'var(--brand-subtle)',
+                      border: '1px solid var(--brand)',
+                      color: 'var(--brand-text)',
+                    }}
+                  >
+                    {i + 1}
+                  </div>
+                  <span className="mt-1.5 text-xs font-medium whitespace-nowrap" style={{ color: 'var(--ink-primary)' }}>
+                    {step.label}
+                  </span>
+                  <span className="text-[10px] whitespace-nowrap" style={{ color: 'var(--ink-muted)' }}>
+                    {step.desc}
+                  </span>
                 </div>
-                <span className="mt-1.5 text-xs font-medium whitespace-nowrap" style={{ color: 'var(--ink-primary)' }}>
-                  {step.label}
-                </span>
-                <span className="text-[10px] whitespace-nowrap" style={{ color: 'var(--ink-muted)' }}>
-                  {step.desc}
-                </span>
+                {i < WORKFLOW_STEPS.length - 1 && (
+                  <div className="hidden sm:flex items-center gap-1 mt-[-18px] mx-1">
+                    <div className="h-px w-10" style={{ background: 'linear-gradient(to right, var(--brand), transparent)' }} />
+                    <ArrowRight className="h-3 w-3 shrink-0" style={{ color: 'var(--brand)', opacity: 0.4 }} />
+                  </div>
+                )}
               </div>
-              {i < WORKFLOW_STEPS.length - 1 && (
-                <div className="hidden sm:flex items-center gap-1 mt-[-18px] mx-1">
-                  <div className="h-px w-10" style={{ background: 'linear-gradient(to right, var(--brand), transparent)' }} />
-                  <ArrowRight className="h-3 w-3 shrink-0" style={{ color: 'var(--brand)', opacity: 0.4 }} />
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      )}
 
-      {/* Module grid */}
+      {/* Module grid — filtered by role */}
       {(Object.entries(grouped) as [string, Module[]][]).map(([cat, mods]) =>
         mods.length === 0 ? null : (
           <section key={cat} className="mb-8">
             <p className="section-label">{CATEGORY_LABELS[cat]}</p>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {mods.map(mod => <ModuleCard key={mod.id} mod={mod} />)}
+              {mods.map(mod => (
+                <ModuleCard
+                  key={mod.id}
+                  mod={mod}
+                  tenantId={tenantId}
+                  isOnline={checked ? onlineSet.has(mod.id) : null}
+                />
+              ))}
             </div>
           </section>
         )
       )}
 
-      {/* Infrastructure */}
-      <section className="mt-10">
-        <p className="section-label">Infrastructure</p>
-        <div className="flex flex-wrap gap-3">
-          <InfraChip label="PostgreSQL"  detail="localhost:5432" href={null} />
-          <InfraChip label="Redis"       detail="localhost:6379" href={null} />
-          <InfraChip label="MinIO"       detail="localhost:9001" href="http://localhost:9001" />
-        </div>
-      </section>
-
-      {/* Quick reference */}
-      <section
-        className="mt-10 rounded-xl p-6"
-        style={{ border: '1px solid var(--line)', backgroundColor: 'var(--surface-raised)' }}
-      >
-        <p className="section-label">Quick Reference</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-          <div>
-            <h3 className="font-medium mb-2" style={{ color: 'var(--ink-primary)' }}>Tenant Scoping</h3>
-            <p className="text-xs leading-relaxed" style={{ color: 'var(--ink-secondary)' }}>
-              Append{' '}
-              <code
-                className="rounded px-1 py-0.5 text-xs"
-                style={{ backgroundColor: 'var(--surface-overlay)', color: 'var(--brand-text)' }}
-              >
-                ?tenantId=UUID
-              </code>
-              {' '}to any module URL. Demo tenant:
-            </p>
-            <code
-              className="mt-1.5 block text-[11px] rounded px-2 py-1.5"
-              style={{ backgroundColor: 'var(--surface-overlay)', color: 'var(--status-success)' }}
-            >
-              {TENANT_ID}
-            </code>
+      {/* Locked modules hint — show to end_users so they know more exists */}
+      {user.role === 'end_user' && (
+        <section className="mt-4 mb-8">
+          <div
+            className="flex items-center gap-3 rounded-xl px-5 py-4 text-sm"
+            style={{ border: '1px solid var(--line)', backgroundColor: 'var(--surface-raised)' }}
+          >
+            <Lock className="h-4 w-4 shrink-0" style={{ color: 'var(--ink-muted)' }} />
+            <span style={{ color: 'var(--ink-secondary)' }}>
+              Additional modules (Risk, Compliance Frameworks, Monitoring and more) are available to admin users.
+              Contact your administrator to request access.
+            </span>
           </div>
-          <div>
-            <h3 className="font-medium mb-2" style={{ color: 'var(--ink-primary)' }}>Useful Commands</h3>
-            <div className="space-y-1 font-mono text-[11px]">
-              <CodeLine cmd="docker compose ps"              desc="Check container status" />
-              <CodeLine cmd="docker compose logs -f hub-ui"  desc="Follow hub logs" />
-              <CodeLine cmd="docker compose restart hub-ui"  desc="Restart one service" />
-              <CodeLine cmd="stop.bat"                       desc="Shut everything down" />
+        </section>
+      )}
+
+      {/* Infrastructure — admin only */}
+      {(user.role === 'super_admin' || user.role === 'admin') && (
+        <section className="mt-10">
+          <p className="section-label">Infrastructure</p>
+          <div className="flex flex-wrap gap-3">
+            <InfraChip label="PostgreSQL"  detail="localhost:5432" href={null} />
+            <InfraChip label="Redis"       detail="localhost:6379" href={null} />
+            <InfraChip label="MinIO"       detail="localhost:9001" href="http://localhost:9001" />
+          </div>
+        </section>
+      )}
+
+      {/* Quick reference — admin only */}
+      {user.role === 'super_admin' && (
+        <section
+          className="mt-10 rounded-xl p-6"
+          style={{ border: '1px solid var(--line)', backgroundColor: 'var(--surface-raised)' }}
+        >
+          <p className="section-label">Quick Reference</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+            <div>
+              <h3 className="font-medium mb-2" style={{ color: 'var(--ink-primary)' }}>Tenant Scoping</h3>
+              <p className="text-xs leading-relaxed" style={{ color: 'var(--ink-secondary)' }}>
+                Append{' '}
+                <code
+                  className="rounded px-1 py-0.5 text-xs"
+                  style={{ backgroundColor: 'var(--surface-overlay)', color: 'var(--brand-text)' }}
+                >
+                  ?tenantId=UUID
+                </code>
+                {' '}to any module URL. Your tenant:
+              </p>
+              <code
+                className="mt-1.5 block text-[11px] rounded px-2 py-1.5"
+                style={{ backgroundColor: 'var(--surface-overlay)', color: 'var(--status-success)' }}
+              >
+                {tenantId}
+              </code>
+            </div>
+            <div>
+              <h3 className="font-medium mb-2" style={{ color: 'var(--ink-primary)' }}>Useful Commands</h3>
+              <div className="space-y-1 font-mono text-[11px]">
+                <CodeLine cmd="docker compose ps"              desc="Check container status" />
+                <CodeLine cmd="docker compose logs -f hub-ui"  desc="Follow hub logs" />
+                <CodeLine cmd="docker compose restart hub-ui"  desc="Restart one service" />
+                <CodeLine cmd="stop.bat"                       desc="Shut everything down" />
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
     </div>
   );
 }
 
-function ModuleCard({ mod }: { mod: Module }) {
-  const url = `http://localhost:${mod.port}?tenantId=${TENANT_ID}`;
+interface ModuleCardProps {
+  mod: Module;
+  tenantId: string;
+  isOnline: boolean | null;
+}
+
+function ModuleCard({ mod, tenantId, isOnline }: ModuleCardProps) {
+  const url = `http://localhost:${mod.port}?tenantId=${tenantId}`;
   return (
     <a
       href={url}
@@ -243,16 +289,19 @@ function ModuleCard({ mod }: { mod: Module }) {
       className="module-card group flex flex-col gap-3"
     >
       <div className="flex items-start justify-between">
-        <div
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-white shrink-0"
-          style={{ backgroundColor: mod.iconBg.replace('bg-', '') }}
-        >
-          {/* Use inline style for icon bg since it's dynamic */}
-          <span className={`${mod.iconBg} rounded-lg flex h-9 w-9 items-center justify-center text-white`}>
-            {MODULE_ICONS[mod.id]}
-          </span>
+        <span className={`${mod.iconBg} rounded-lg flex h-9 w-9 items-center justify-center text-white shrink-0`}>
+          {MODULE_ICONS[mod.id]}
+        </span>
+        <div className="flex items-center gap-2">
+          {isOnline !== null && (
+            <span
+              className="h-1.5 w-1.5 rounded-full"
+              style={{ backgroundColor: isOnline ? 'var(--status-success)' : 'var(--status-danger)' }}
+              title={isOnline ? 'Online' : 'Offline'}
+            />
+          )}
+          <ExternalLink className="h-3.5 w-3.5 transition-colors shrink-0" style={{ color: 'var(--ink-muted)' }} />
         </div>
-        <ExternalLink className="h-3.5 w-3.5 transition-colors shrink-0" style={{ color: 'var(--ink-muted)' }} />
       </div>
       <div>
         <div className="font-semibold text-sm leading-tight" style={{ color: 'var(--ink-primary)' }}>

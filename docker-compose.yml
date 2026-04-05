@@ -894,6 +894,16 @@ services:
       - aegis-internal
       - aegis-external
 
+  framework-ui:
+    build: ./services/framework-ui
+    ports:
+      - "5174:80"
+    depends_on:
+      - framework-service
+    networks:
+      - aegis-internal
+      - aegis-external
+
   tprm-ui:
     build: ./services/tprm-ui
     ports:

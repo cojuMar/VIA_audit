@@ -174,7 +174,7 @@ function AppInner() {
 
       <main>
         {page === 'dashboard' && (
-          <Dashboard role={user!.role} onOpenTutorials={() => setPage('tutorials')} />
+          <Dashboard user={user!} onOpenTutorials={() => setPage('tutorials')} />
         )}
         {page === 'tutorials' && <Tutorials role={user!.role} />}
       </main>
