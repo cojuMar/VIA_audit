@@ -144,32 +144,6 @@ services:
     networks:
       - aegis-internal
 
-  # ---------------------------------------------------------------------------
-  # Auth Service – issues and validates JWTs
-  # ---------------------------------------------------------------------------
-  auth-service:
-    build: ./services/auth-service
-    restart: unless-stopped
-    ports:
-      - "3001:3001"
-    environment:
-      NODE_ENV: development
-      DATABASE_URL: "postgresql://aegis_admin:aegis_dev_pw@pgbouncer:6432/aegis"
-      REDIS_URL: "redis://redis:6379"
-      VAULT_ADDR: "http://vault:8200"
-      VAULT_TOKEN: aegis-dev-root-token
-      JWT_ISSUER: "https://auth.aegis.local"
-      JWT_AUDIENCE: aegis-platform
-    volumes:
-      - ./services/auth-service:/app:cached
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - aegis-internal
-      - aegis-external
 
   # ---------------------------------------------------------------------------
   # PAM Broker – privileged-access management
