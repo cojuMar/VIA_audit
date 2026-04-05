@@ -524,7 +524,7 @@ async def get_escalation_summary(
             tenant_id,
         )
         open_row = await conn.fetchrow(
-            "SELECT COUNT(*) AS cnt FROM compliance_escalations WHERE tenant_id=$1 AND status='open'",
+            "SELECT COUNT(*) AS cnt FROM compliance_escalations WHERE tenant_id=$1 AND resolved=FALSE",
             tenant_id,
         )
     return {
@@ -538,6 +538,7 @@ async def get_escalation_summary(
 async def list_escalations(
     type: str | None = None,
     employee_id: str | None = None,
+    resolved: bool | None = None,
     pool=Depends(get_db),
     tenant_id: str = Depends(get_tenant_id),
 ):
@@ -554,10 +555,14 @@ async def list_escalations(
         conditions.append(f"employee_id=${idx}")
         params.append(employee_id)
         idx += 1
+    if resolved is not None:
+        conditions.append(f"resolved=${idx}")
+        params.append(resolved)
+        idx += 1
 
     query = (
         f"SELECT * FROM compliance_escalations WHERE {' AND '.join(conditions)} "
-        f"ORDER BY created_at DESC"
+        f"ORDER BY escalated_at DESC"
     )
     async with tenant_conn(pool, tenant_id) as conn:
         rows = await conn.fetch(query, *params)

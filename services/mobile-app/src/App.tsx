@@ -21,14 +21,14 @@ function getTenantId(): string {
   const params = new URLSearchParams(window.location.search);
   const fromUrl = params.get('tenantId');
   if (fromUrl) {
-    localStorage.setItem('aegis_tenant_id', fromUrl);
+    localStorage.setItem('via_tenant_id', fromUrl);
     return fromUrl;
   }
-  return localStorage.getItem('aegis_tenant_id') ?? 'default';
+  return localStorage.getItem('via_tenant_id') ?? 'default';
 }
 
 function getAuditorEmail(): string | null {
-  return localStorage.getItem('aegis_auditor_email');
+  return localStorage.getItem('via_auditor_email');
 }
 
 function EmailPrompt({ onSubmit }: { onSubmit: (email: string) => void }) {
@@ -51,7 +51,7 @@ function EmailPrompt({ onSubmit }: { onSubmit: (email: string) => void }) {
           <div className="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <ClipboardList size={40} className="text-white" />
           </div>
-          <h1 className="text-2xl font-bold">Aegis Field Auditor</h1>
+          <h1 className="text-2xl font-bold">VIA Field Auditor</h1>
           <p className="text-blue-200 mt-1 text-sm">Enter your email to get started</p>
         </div>
 
@@ -104,11 +104,11 @@ export default function App() {
 
   useEffect(() => {
     // Persist tenant ID
-    if (tenantId) localStorage.setItem('aegis_tenant_id', tenantId);
+    if (tenantId) localStorage.setItem('via_tenant_id', tenantId);
   }, [tenantId]);
 
   const handleEmailSubmit = (email: string) => {
-    localStorage.setItem('aegis_auditor_email', email);
+    localStorage.setItem('via_auditor_email', email);
     setAuditorEmail(email);
   };
 

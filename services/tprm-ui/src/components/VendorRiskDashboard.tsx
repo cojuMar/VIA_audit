@@ -234,7 +234,7 @@ export function VendorRiskDashboard({ tenantId, vendorId, onBack }: VendorRiskDa
     return <div className="flex items-center justify-center h-64 text-gray-400">Loading vendor...</div>
   }
 
-  const scoreHistoryData = riskHistory.map(r => ({
+  const scoreHistoryData = (riskHistory ?? []).map(r => ({
     date: new Date(r.recorded_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
     score: r.score,
   }))
@@ -380,11 +380,11 @@ export function VendorRiskDashboard({ tenantId, vendorId, onBack }: VendorRiskDa
                   </div>
                 )}
               </div>
-              {vendor.data_types_processed.length > 0 && (
+              {(vendor.data_types_processed ?? []).length > 0 && (
                 <div>
                   <p className="text-xs text-gray-500 mb-1">Data types processed</p>
                   <div className="flex flex-wrap gap-1">
-                    {vendor.data_types_processed.map(dt => (
+                    {(vendor.data_types_processed ?? []).map(dt => (
                       <span key={dt} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{dt}</span>
                     ))}
                   </div>
@@ -585,20 +585,20 @@ export function VendorRiskDashboard({ tenantId, vendorId, onBack }: VendorRiskDa
                           </span>
                         </div>
                         <p className="text-sm text-gray-700">{doc.ai_analysis.summary}</p>
-                        {doc.ai_analysis.certifications_found.length > 0 && (
+                        {(doc.ai_analysis.certifications_found ?? []).length > 0 && (
                           <div className="flex flex-wrap gap-1">
-                            {doc.ai_analysis.certifications_found.map(c => (
+                            {(doc.ai_analysis.certifications_found ?? []).map(c => (
                               <span key={c} className="text-xs bg-green-50 text-green-700 border border-green-200 px-2 py-0.5 rounded">
                                 <CheckCircle className="w-3 h-3 inline mr-1" />{c}
                               </span>
                             ))}
                           </div>
                         )}
-                        {doc.ai_analysis.gaps.length > 0 && (
+                        {(doc.ai_analysis.gaps ?? []).length > 0 && (
                           <div>
                             <p className="text-xs font-medium text-red-600 mb-1">Gaps identified</p>
                             <ul className="space-y-1">
-                              {doc.ai_analysis.gaps.map((gap, i) => (
+                              {(doc.ai_analysis.gaps ?? []).map((gap, i) => (
                                 <li key={i} className="text-xs text-gray-700 flex items-start gap-1.5">
                                   <AlertTriangle className="w-3 h-3 text-amber-500 shrink-0 mt-0.5" />
                                   {gap}

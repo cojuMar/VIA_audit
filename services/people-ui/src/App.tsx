@@ -31,10 +31,10 @@ function getTenantId(): string {
   const params = new URLSearchParams(window.location.search);
   const fromUrl = params.get('tenantId');
   if (fromUrl) {
-    localStorage.setItem('aegis_tenant_id', fromUrl);
+    localStorage.setItem('via_tenant_id', fromUrl);
     return fromUrl;
   }
-  return localStorage.getItem('aegis_tenant_id') ?? 'default';
+  return localStorage.getItem('via_tenant_id') ?? 'default';
 }
 
 function EmployeeSearch({
@@ -156,7 +156,7 @@ export default function App() {
             <div className="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center">
               <Shield size={14} className="text-white" />
             </div>
-            <span className="font-bold text-white text-sm whitespace-nowrap">Aegis People</span>
+            <span className="font-bold text-white text-sm whitespace-nowrap">VIA People</span>
           </div>
 
           {/* Tabs */}

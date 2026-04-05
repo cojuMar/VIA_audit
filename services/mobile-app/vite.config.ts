@@ -22,9 +22,9 @@ export default defineConfig({
         ]
       },
       manifest: {
-        name: 'Aegis Field Auditor',
-        short_name: 'Aegis Field',
-        description: 'Offline-capable field audit tool for Project Aegis',
+        name: 'VIA Field Auditor',
+        short_name: 'VIA Field',
+        description: 'Offline-capable field audit tool for VIA',
         theme_color: '#1e40af',
         background_color: '#ffffff',
         display: 'standalone',

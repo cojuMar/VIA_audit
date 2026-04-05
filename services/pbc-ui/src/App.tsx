@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import EngagementDashboard from './components/EngagementDashboard';
 import PBCRequestList from './components/PBCRequestList';
 import IssueRegister from './components/IssueRegister';
@@ -13,7 +14,7 @@ type AppView = 'engagements' | 'pbc' | 'issues' | 'workpapers' | 'export';
 
 function AppInner() {
   const params = new URLSearchParams(window.location.search);
-  const tenantId = params.get('tenantId') || localStorage.getItem('aegis_tenant_id') || '';
+  const tenantId = params.get('tenantId') || localStorage.getItem('via_tenant_id') || '';
 
   const [selectedEngagementId, setSelectedEngagementId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<AppView>('engagements');
@@ -106,7 +107,9 @@ function AppInner() {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AppInner />
+      <ErrorBoundary>
+        <AppInner />
+      </ErrorBoundary>
     </QueryClientProvider>
   );
 }

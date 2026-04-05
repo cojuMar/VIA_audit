@@ -465,7 +465,10 @@ export default function EngagementDashboard({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Audit Engagements</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Audit Engagements</h1>
+          <p className="text-sm text-gray-500 mt-0.5">Manage PBC requests, workpapers, and issue registers per engagement</p>
+        </div>
         <button className="btn-primary" onClick={() => setShowNew(true)}>
           <Plus className="w-4 h-4" />
           New Engagement

@@ -170,7 +170,7 @@ export default function SecurityChatbot({ slug, welcomeMessage }: Props) {
 
       {/* Watermark */}
       <div className="text-right px-4 pb-2">
-        <span className="text-[10px] text-gray-300">Powered by Aegis RAG Pipeline</span>
+        <span className="text-[10px] text-gray-300">Powered by VIA RAG Pipeline</span>
       </div>
     </div>
   );

@@ -2,7 +2,7 @@ import axios from 'axios';
 
 export function getTenantId(): string {
   const params = new URLSearchParams(window.location.search);
-  return params.get('tenantId') ?? localStorage.getItem('aegis_tenant_id') ?? '';
+  return params.get('tenantId') ?? localStorage.getItem('via_tenant_id') ?? '';
 }
 
 const api = axios.create({

@@ -32,32 +32,32 @@ export const getFindings = async (
     limit?: number;
   }
 ): Promise<MonitoringFinding[]> => {
-  const { data } = await client.get<MonitoringFinding[]>('/findings', {
+  const { data } = await client.get<{ findings: MonitoringFinding[]; count: number }>('/findings', {
     ...tenantHeaders(tenantId),
     params,
   });
-  return data;
+  return Array.isArray(data) ? data : (data?.findings ?? []);
 };
 
 export const getFindingsTrend = async (
   tenantId: string,
   days = 30
 ): Promise<TrendDataPoint[]> => {
-  const { data } = await client.get<TrendDataPoint[]>('/findings/trend', {
+  const { data } = await client.get<{ trend: TrendDataPoint[] } | TrendDataPoint[]>('/findings/trend', {
     ...tenantHeaders(tenantId),
     params: { days },
   });
-  return data;
+  return Array.isArray(data) ? data : ((data as { trend: TrendDataPoint[] })?.trend ?? []);
 };
 
 export const getRules = async (tenantId: string): Promise<MonitoringRule[]> => {
-  const { data } = await client.get<MonitoringRule[]>('/rules', tenantHeaders(tenantId));
-  return data;
+  const { data } = await client.get<{ rules: MonitoringRule[] } | MonitoringRule[]>('/rules', tenantHeaders(tenantId));
+  return Array.isArray(data) ? data : ((data as { rules: MonitoringRule[] })?.rules ?? []);
 };
 
 export const getTenantConfig = async (tenantId: string): Promise<TenantRuleConfig[]> => {
-  const { data } = await client.get<TenantRuleConfig[]>('/config', tenantHeaders(tenantId));
-  return data;
+  const { data } = await client.get<{ config: TenantRuleConfig[] } | TenantRuleConfig[]>('/config', tenantHeaders(tenantId));
+  return Array.isArray(data) ? data : ((data as { config: TenantRuleConfig[] })?.config ?? []);
 };
 
 export const updateRuleConfig = async (

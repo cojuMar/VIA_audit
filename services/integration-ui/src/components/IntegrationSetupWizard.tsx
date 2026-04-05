@@ -398,7 +398,7 @@ export default function IntegrationSetupWizard({ connector, tenantId, onSuccess,
           {step === 3 && (
             <div className="space-y-6">
               <p className="text-sm text-gray-400">
-                Configure field mappings for each selected data type. Source fields map to normalized target fields in Aegis.
+                Configure field mappings for each selected data type. Source fields map to normalized target fields in VIA.
               </p>
 
               {Array.from(selectedDataTypes).map((dt) => {

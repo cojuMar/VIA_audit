@@ -454,7 +454,10 @@ async def list_rules(pool: asyncpg.Pool = Depends(get_db)):
     async with pool.acquire() as conn:
         rows = await conn.fetch(
             """
-            SELECT id, rule_key, rule_name, description, category, is_active, created_at
+            SELECT id, rule_key,
+                   COALESCE(display_name, rule_name) AS display_name,
+                   COALESCE(severity_default, 'medium') AS severity_default,
+                   description, category, is_active, created_at
             FROM monitoring_rules
             ORDER BY category, rule_key
             """
@@ -481,13 +484,14 @@ async def get_config(
     async with tenant_conn(pool, tenant_id) as conn:
         rows = await conn.fetch(
             """
-            SELECT tmc.rule_key, tmc.is_enabled, tmc.schedule_interval,
-                   tmc.config_overrides, tmc.last_run_at,
-                   mr.rule_name, mr.description, mr.category
+            SELECT mr.rule_key, tmc.is_enabled, tmc.schedule_cron AS schedule_interval,
+                   tmc.config_overrides, tmc.last_run_at, tmc.next_run_at,
+                   COALESCE(mr.display_name, mr.rule_name) AS rule_name,
+                   mr.description, mr.category
             FROM tenant_monitoring_configs tmc
-            LEFT JOIN monitoring_rules mr ON mr.rule_key = tmc.rule_key
+            LEFT JOIN monitoring_rules mr ON mr.id = tmc.rule_id
             WHERE tmc.tenant_id = $1
-            ORDER BY mr.category, tmc.rule_key
+            ORDER BY mr.category, mr.rule_key
             """,
             tenant_id,
         )
@@ -502,10 +506,18 @@ async def update_config(
     tenant_id: str = Depends(get_tenant_id),
 ):
     async with tenant_conn(pool, tenant_id) as conn:
+        # Look up the rule_id from the rule_key
+        rule_row = await conn.fetchrow(
+            "SELECT id FROM monitoring_rules WHERE rule_key = $1", rule_key
+        )
+        if not rule_row:
+            raise HTTPException(404, f"Rule '{rule_key}' not found")
+        rule_id = rule_row["id"]
+
         existing = await conn.fetchrow(
-            "SELECT id FROM tenant_monitoring_configs WHERE tenant_id = $1 AND rule_key = $2",
+            "SELECT id FROM tenant_monitoring_configs WHERE tenant_id = $1 AND rule_id = $2",
             tenant_id,
-            rule_key,
+            rule_id,
         )
         if existing:
             # Build dynamic update — only set provided fields
@@ -517,7 +529,7 @@ async def update_config(
                 params.append(body.is_enabled)
                 idx += 1
             if body.schedule_interval is not None:
-                sets.append(f"schedule_interval = ${idx}")
+                sets.append(f"schedule_cron = ${idx}")
                 params.append(body.schedule_interval)
                 idx += 1
             if body.config_overrides is not None:
@@ -526,25 +538,24 @@ async def update_config(
                 idx += 1
             if not sets:
                 return {"message": "No changes"}
-            sets.append(f"updated_at = NOW()")
-            params += [tenant_id, rule_key]
+            params += [tenant_id, rule_id]
             await conn.execute(
                 f"UPDATE tenant_monitoring_configs SET {', '.join(sets)} "
-                f"WHERE tenant_id = ${idx} AND rule_key = ${idx + 1}",
+                f"WHERE tenant_id = ${idx} AND rule_id = ${idx + 1}",
                 *params,
             )
         else:
-            # Upsert
+            # Insert new config
             await conn.execute(
                 """
                 INSERT INTO tenant_monitoring_configs
-                    (tenant_id, rule_key, is_enabled, schedule_interval, config_overrides, created_at)
-                VALUES ($1,$2,$3,$4,$5,NOW())
+                    (tenant_id, rule_id, is_enabled, schedule_cron, config_overrides)
+                VALUES ($1,$2,$3,$4,$5)
                 """,
                 tenant_id,
-                rule_key,
+                rule_id,
                 body.is_enabled if body.is_enabled is not None else True,
-                body.schedule_interval or "daily",
+                body.schedule_interval or "0 2 * * *",
                 body.config_overrides or {},
             )
     return {"message": "Configuration updated", "rule_key": rule_key}

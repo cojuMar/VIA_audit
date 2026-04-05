@@ -3,7 +3,7 @@ import type { WhiteLabelConfig } from '../types'
 import { api } from '../api'
 
 const defaultTheme: WhiteLabelConfig = {
-  firm_name: 'Aegis Compliance',
+  firm_name: 'VIA Compliance',
   primary_color: '#1a56db',
   secondary_color: '#7e3af2',
   accent_color: '#0e9f6e',

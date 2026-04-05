@@ -123,7 +123,19 @@ export default function PeopleComplianceDashboard({ tenantId }: Props) {
     );
   }
 
-  const s = summary!;
+  if (!summary) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-gray-400 gap-3">
+        <AlertTriangle size={28} className="text-amber-400" />
+        <span>Compliance data unavailable — the people service may still be starting up.</span>
+        <button className="btn-secondary text-sm" onClick={() => refetch()}>
+          <RefreshCw size={14} /> Retry
+        </button>
+      </div>
+    );
+  }
+
+  const s = summary;
   const esc = escalations ?? [];
 
   // Department bar chart data

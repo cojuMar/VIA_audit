@@ -201,7 +201,7 @@ export default function ChatInterface({
             <div className="w-16 h-16 rounded-2xl bg-indigo-600 flex items-center justify-center mb-4 shadow-lg">
               <Bot className="w-9 h-9 text-white" />
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">Aegis AI Compliance Assistant</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">VIA AI Compliance Assistant</h2>
             <p className="text-gray-400 max-w-md mb-8 text-sm leading-relaxed">
               Ask me anything about your compliance posture, vendor risks, audit findings, or generate reports.
             </p>
@@ -405,7 +405,7 @@ export default function ChatInterface({
               autoResize();
             }}
             onKeyDown={handleKeyDown}
-            placeholder="Ask Aegis AI anything about your compliance..."
+            placeholder="Ask VIA AI anything about your compliance..."
             rows={1}
             className="flex-1 bg-transparent text-gray-100 placeholder-gray-500 text-sm resize-none outline-none leading-6 py-1"
             style={{ maxHeight: '152px' }}

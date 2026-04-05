@@ -184,7 +184,7 @@ export default function PublicPortal({ slug }: Props) {
 
       {/* Footer */}
       <footer className="border-t border-gray-200 bg-white py-4">
-        <p className="text-center text-xs text-gray-400">Powered by Aegis</p>
+        <p className="text-center text-xs text-gray-400">Powered by VIA</p>
       </footer>
     </div>
   );

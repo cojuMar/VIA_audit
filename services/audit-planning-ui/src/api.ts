@@ -2,7 +2,7 @@ import axios from 'axios';
 
 function getTenantId(): string {
   const params = new URLSearchParams(window.location.search);
-  return params.get('tenantId') || localStorage.getItem('aegis_tenant_id') || 'demo-tenant';
+  return params.get('tenantId') || localStorage.getItem('via_tenant_id') || 'demo-tenant';
 }
 
 const api = axios.create({ baseURL: '/api' });

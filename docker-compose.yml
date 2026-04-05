@@ -894,6 +894,16 @@ services:
       - aegis-internal
       - aegis-external
 
+  tprm-ui:
+    build: ./services/tprm-ui
+    ports:
+      - "5175:80"
+    depends_on:
+      - tprm-service
+    networks:
+      - aegis-internal
+      - aegis-external
+
   # ---------------------------------------------------------------------------
   # Integration Service – Sprint 14 Enterprise Integration Hub
   # Manages connector definitions, tenant integrations, sync scheduling,

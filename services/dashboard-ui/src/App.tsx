@@ -18,7 +18,7 @@ export default function App() {
             <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center">
               <span className="text-white font-bold text-sm">A</span>
             </div>
-            <span className="font-semibold text-gray-900 text-lg">Aegis Compliance</span>
+            <span className="font-semibold text-gray-900 text-lg">VIA Compliance</span>
           </div>
           <div className="flex items-center gap-4">
             <select

@@ -122,15 +122,15 @@ export const updateBackgroundCheckStatus = (
 
 // ── Compliance Scores ──────────────────────────────────────────────────────
 export const fetchOrgCompliance = (): Promise<OrgComplianceSummary> =>
-  http.get('/compliance/org').then((r) => r.data);
+  http.get('/compliance/summary').then((r) => r.data);
 
 export const fetchEmployeeCompliance = (
   employeeId: string,
 ): Promise<EmployeeComplianceScore> =>
-  http.get(`/compliance/employees/${employeeId}`).then((r) => r.data);
+  http.get(`/compliance/scores/${employeeId}`).then((r) => r.data);
 
 export const fetchAllEmployeeScores = (): Promise<EmployeeComplianceScore[]> =>
-  http.get('/compliance/employees').then((r) => r.data);
+  http.get('/compliance/scores').then((r) => r.data);
 
 // ── Escalations ────────────────────────────────────────────────────────────
 export const fetchEscalations = (params?: {

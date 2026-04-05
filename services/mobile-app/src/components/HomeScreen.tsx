@@ -123,7 +123,7 @@ export default function HomeScreen({
       >
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold">Aegis Field</h1>
+            <h1 className="text-xl font-bold">VIA Field</h1>
             <p className="text-blue-200 text-sm">{auditorEmail}</p>
           </div>
           <div className="flex items-center gap-2">

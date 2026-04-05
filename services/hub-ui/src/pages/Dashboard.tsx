@@ -1,7 +1,36 @@
-import { type ReactNode } from 'react';
+import { type ReactNode, useState, useEffect } from 'react';
 import { ExternalLink, BookOpen, ArrowRight, Shield, Activity, Users, FileText, Plug, Bot, BarChart2, Calendar, Leaf, Smartphone, Building2, Globe } from 'lucide-react';
 import { MODULES, WORKFLOW_STEPS, type Module } from '../data/modules';
 import type { UserRole } from '../contexts/AuthContext';
+
+/** Ping each module's /health endpoint and return how many responded OK */
+function useModuleHealth() {
+  const [online, setOnline] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const checks = MODULES.map(async (m) => {
+      try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 2000);
+        const res = await fetch(`http://localhost:${m.port}/health`, {
+          signal: ctrl.signal,
+          method: 'GET',
+        });
+        clearTimeout(timer);
+        return res.ok;
+      } catch {
+        return false;
+      }
+    });
+    Promise.all(checks).then((results) => {
+      if (!cancelled) setOnline(results.filter(Boolean).length);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  return online;
+}
 
 const TENANT_ID = '00000000-0000-0000-0000-000000000001';
 
@@ -33,6 +62,7 @@ interface Props {
 }
 
 export default function Dashboard({ onOpenTutorials }: Props) {
+  const onlineCount = useModuleHealth();
   const grouped = {
     core:       MODULES.filter(m => m.category === 'core'),
     operations: MODULES.filter(m => m.category === 'operations'),
@@ -77,17 +107,28 @@ export default function Dashboard({ onOpenTutorials }: Props) {
             </div>
           </div>
           <div className="flex flex-col gap-2 text-sm shrink-0">
-            {[
-              ['12 modules running', true],
+            {([
+              [
+                onlineCount === null
+                  ? 'Checking modules…'
+                  : `${onlineCount} / ${MODULES.length} modules online`,
+                onlineCount !== null && onlineCount > 0,
+              ],
               ['PostgreSQL healthy', true],
               ['Demo tenant seeded', true],
-            ].map(([label, ok]) => (
-              <div key={String(label)} className="flex items-center gap-2">
+            ] as [string, boolean][]).map(([label, ok]) => (
+              <div key={label} className="flex items-center gap-2">
                 <span
                   className="h-2 w-2 rounded-full"
-                  style={{ backgroundColor: ok ? 'var(--status-success)' : 'var(--status-danger)' }}
+                  style={{
+                    backgroundColor: onlineCount === null && label.startsWith('Checking')
+                      ? 'var(--ink-muted)'
+                      : ok
+                      ? 'var(--status-success)'
+                      : 'var(--status-danger)',
+                  }}
                 />
-                <span style={{ color: 'var(--ink-secondary)' }}>{String(label)}</span>
+                <span style={{ color: 'var(--ink-secondary)' }}>{label}</span>
               </div>
             ))}
           </div>

@@ -14,6 +14,8 @@ import {
   Shield,
   BookOpen,
   UserCheck,
+  Pencil,
+  X,
 } from 'lucide-react';
 import {
   fetchEmployee,
@@ -23,6 +25,7 @@ import {
   fetchBackgroundChecks,
   acknowledgePolicy,
   markAssignmentComplete,
+  updateEmployee,
   setTenant,
 } from '../api';
 import type {
@@ -95,6 +98,136 @@ const BG_STATUS_BADGE: Record<string, string> = {
   expired: 'bg-orange-900 text-orange-200',
   cancelled: 'bg-gray-800 text-gray-400',
 };
+
+function EditEmployeeModal({
+  employee,
+  onClose,
+  onSaved,
+}: {
+  employee: Employee;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const qc = useQueryClient();
+  const [formData, setFormData] = useState({
+    full_name: employee.full_name,
+    email: employee.email,
+    department: employee.department ?? '',
+    job_title: employee.job_title ?? '',
+    employment_status: employee.employment_status,
+  });
+  const [error, setError] = useState<string | null>(null);
+
+  const mutation = useMutation({
+    mutationFn: () =>
+      updateEmployee(employee.id, {
+        full_name: formData.full_name.trim(),
+        email: formData.email.trim(),
+        department: formData.department.trim() || null,
+        job_title: formData.job_title.trim() || null,
+        employment_status: formData.employment_status,
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['employee', employee.id] });
+      qc.invalidateQueries({ queryKey: ['employees'] });
+      onSaved();
+    },
+    onError: (err: Error) => {
+      setError(err.message ?? 'Failed to update employee');
+    },
+  });
+
+  const handleSubmit = () => {
+    if (!formData.full_name.trim()) { setError('Full name is required'); return; }
+    if (!formData.email.trim()) { setError('Email is required'); return; }
+    setError(null);
+    mutation.mutate();
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+      <div className="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-lg shadow-2xl overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700">
+          <h3 className="text-lg font-semibold text-white">Edit Employee</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-200">
+            <X size={18} />
+          </button>
+        </div>
+        <div className="px-6 py-5 space-y-4">
+          {error && (
+            <div className="rounded-lg bg-red-900/30 border border-red-700 px-4 py-3 text-sm text-red-300">
+              {error}
+            </div>
+          )}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="col-span-2">
+              <label className="label">Full Name <span className="text-red-400">*</span></label>
+              <input
+                className="input"
+                value={formData.full_name}
+                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+              />
+            </div>
+            <div className="col-span-2">
+              <label className="label">Email <span className="text-red-400">*</span></label>
+              <input
+                className="input"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="label">Department</label>
+              <input
+                className="input"
+                value={formData.department}
+                onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                placeholder="e.g. Engineering"
+              />
+            </div>
+            <div>
+              <label className="label">Job Title</label>
+              <input
+                className="input"
+                value={formData.job_title}
+                onChange={(e) => setFormData({ ...formData, job_title: e.target.value })}
+                placeholder="e.g. Senior Developer"
+              />
+            </div>
+            <div className="col-span-2">
+              <label className="label">Employment Status</label>
+              <select
+                className="input"
+                value={formData.employment_status}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    employment_status: e.target.value as Employee['employment_status'],
+                  })
+                }
+              >
+                <option value="active">Active</option>
+                <option value="on_leave">On Leave</option>
+                <option value="terminated">Terminated</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-700">
+          <button className="btn-secondary" onClick={onClose}>Cancel</button>
+          <button
+            className="btn-primary"
+            onClick={handleSubmit}
+            disabled={mutation.isPending}
+          >
+            {mutation.isPending ? 'Saving…' : 'Save Changes'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function AcknowledgeModal({
   policyId,
@@ -202,6 +335,7 @@ export default function EmployeeComplianceDashboard({ tenantId, employeeId, onBa
   setTenant(tenantId);
   const [ackModal, setAckModal] = useState<{ policyId: string; title: string } | null>(null);
   const [completeModal, setCompleteModal] = useState<{ assignmentId: string; courseTitle: string } | null>(null);
+  const [showEditEmployee, setShowEditEmployee] = useState(false);
 
   const { data: employee } = useQuery<Employee>({
     queryKey: ['employee', employeeId],
@@ -241,7 +375,7 @@ export default function EmployeeComplianceDashboard({ tenantId, employeeId, onBa
         <button className="btn-secondary mt-0.5" onClick={onBack}>
           <ArrowLeft size={14} /> Back
         </button>
-        <div>
+        <div className="flex-1">
           <div className="flex items-center gap-2">
             <User size={20} className="text-gray-400" />
             <h1 className="text-2xl font-bold text-white">
@@ -259,6 +393,14 @@ export default function EmployeeComplianceDashboard({ tenantId, employeeId, onBa
             {employee?.email && <span> · {employee.email}</span>}
           </div>
         </div>
+        {employee && (
+          <button
+            className="btn-secondary mt-0.5 flex items-center gap-1.5"
+            onClick={() => setShowEditEmployee(true)}
+          >
+            <Pencil size={13} /> Edit
+          </button>
+        )}
       </div>
 
       {/* Score Gauges */}
@@ -527,6 +669,15 @@ export default function EmployeeComplianceDashboard({ tenantId, employeeId, onBa
           </div>
         )}
       </div>
+
+      {/* Edit Employee Modal */}
+      {showEditEmployee && employee && (
+        <EditEmployeeModal
+          employee={employee}
+          onClose={() => setShowEditEmployee(false)}
+          onSaved={() => setShowEditEmployee(false)}
+        />
+      )}
 
       {/* Modals */}
       {ackModal && (

@@ -81,7 +81,7 @@ export function CrosswalkMatrix({ tenantId }: CrosswalkMatrixProps) {
       <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-sm text-indigo-800">
         <p className="font-medium mb-1">Test Once, Comply Many</p>
         <p className="text-indigo-600">
-          When you provide evidence for a control in Framework A, Aegis automatically credits the equivalent control in Framework B — no duplicate work required.
+          When you provide evidence for a control in Framework A, VIA automatically credits the equivalent control in Framework B — no duplicate work required.
         </p>
       </div>
 

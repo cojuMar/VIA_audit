@@ -20,11 +20,11 @@ function resolveTenantId(): string {
   const params = new URLSearchParams(window.location.search);
   const fromUrl = params.get('tenantId');
   if (fromUrl) {
-    localStorage.setItem('aegis_tenant_id', fromUrl);
+    localStorage.setItem('via_tenant_id', fromUrl);
     return fromUrl;
   }
   // 2. localStorage
-  const stored = localStorage.getItem('aegis_tenant_id');
+  const stored = localStorage.getItem('via_tenant_id');
   if (stored) return stored;
   // 3. Fallback default
   return 'default';
@@ -43,7 +43,7 @@ function AppInner() {
   // Propagate tenantId changes to query cache key without full reload
   useEffect(() => {
     if (tenantId !== 'default') {
-      localStorage.setItem('aegis_tenant_id', tenantId);
+      localStorage.setItem('via_tenant_id', tenantId);
     }
   }, [tenantId]);
 

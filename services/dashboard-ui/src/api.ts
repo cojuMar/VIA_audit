@@ -4,7 +4,7 @@ const BASE = '/api'
 
 function headers(): Record<string, string> {
   const token = sessionStorage.getItem('aegis_token') || 'dev-token'
-  const tenantId = sessionStorage.getItem('aegis_tenant_id') || ''
+  const tenantId = sessionStorage.getItem('via_tenant_id') || ''
   const userId = sessionStorage.getItem('aegis_user_id') || ''
   return {
     'Authorization': `Bearer ${token}`,

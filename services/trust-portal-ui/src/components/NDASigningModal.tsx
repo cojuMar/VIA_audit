@@ -65,7 +65,7 @@ export default function NDASigningModal({ slug, nda_version, onSuccess, onClose 
               By signing this NDA, you agree to keep all information obtained through this portal
               confidential and not to disclose it to any third party without prior written consent.
               This agreement covers all security documentation, compliance reports, audit results,
-              penetration test findings, and any other materials provided through the Aegis Trust Portal.
+              penetration test findings, and any other materials provided through the VIA Trust Portal.
             </p>
             <p className="mt-2">
               You agree to use the confidential information solely for the purpose of evaluating a

@@ -5,6 +5,8 @@ import RiskDashboard from './components/RiskDashboard';
 import RiskHeatmap from './components/RiskHeatmap';
 import AppetiteConfig from './components/AppetiteConfig';
 import TreatmentTracker from './components/TreatmentTracker';
+import { ToastProvider } from './components/Toaster';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { setTenantId, fetchAiNarrative, suggestTreatments, fetchRisks } from './api';
 
 const queryClient = new QueryClient({
@@ -175,10 +177,10 @@ function AppInner() {
     const params = new URLSearchParams(window.location.search);
     const fromUrl = params.get('tenantId');
     if (fromUrl) {
-      localStorage.setItem('aegis_tenant_id', fromUrl);
+      localStorage.setItem('via_tenant_id', fromUrl);
       return fromUrl;
     }
-    return localStorage.getItem('aegis_tenant_id') ?? 'default';
+    return localStorage.getItem('via_tenant_id') ?? 'default';
   });
 
   useEffect(() => {
@@ -194,7 +196,7 @@ function AppInner() {
             {/* Brand */}
             <div className="flex items-center gap-2">
               <Shield className="h-6 w-6 text-indigo-600" />
-              <span className="text-lg font-bold text-gray-900">Aegis</span>
+              <span className="text-lg font-bold text-gray-900">VIA</span>
               <span className="hidden text-sm text-gray-400 sm:block">Risk Management</span>
             </div>
 
@@ -239,7 +241,11 @@ function AppInner() {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AppInner />
+      <ErrorBoundary>
+        <ToastProvider>
+          <AppInner />
+        </ToastProvider>
+      </ErrorBoundary>
     </QueryClientProvider>
   );
 }

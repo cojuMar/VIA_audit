@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { LayoutDashboard, Globe, ClipboardList, Briefcase, Clock, Shield } from 'lucide-react';
 import PlanningDashboard from './components/PlanningDashboard';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import AuditUniverse from './components/AuditUniverse';
 import AuditPlanView from './components/AuditPlanView';
 import EngagementTracker from './components/EngagementTracker';
@@ -19,7 +20,7 @@ const queryClient = new QueryClient({
 
 function getTenantId(): string {
   const params = new URLSearchParams(window.location.search);
-  return params.get('tenantId') || localStorage.getItem('aegis_tenant_id') || 'demo-tenant';
+  return params.get('tenantId') || localStorage.getItem('via_tenant_id') || 'demo-tenant';
 }
 
 type Tab = 'dashboard' | 'universe' | 'plan' | 'engagements' | 'gantt' | 'time';
@@ -45,7 +46,7 @@ function AppContent() {
           <div className="flex items-center gap-2">
             <Shield className="w-7 h-7 text-indigo-300" />
             <div>
-              <div className="font-bold text-lg leading-tight">Aegis</div>
+              <div className="font-bold text-lg leading-tight">VIA</div>
               <div className="text-indigo-300 text-xs leading-tight">Audit Planning</div>
             </div>
           </div>
@@ -93,7 +94,9 @@ function AppContent() {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AppContent />
+      <ErrorBoundary>
+        <AppContent />
+      </ErrorBoundary>
     </QueryClientProvider>
   );
 }

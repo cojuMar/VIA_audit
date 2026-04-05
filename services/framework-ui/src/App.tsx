@@ -28,15 +28,15 @@ function getTenantId(): string {
   const params = new URLSearchParams(window.location.search)
   const fromUrl = params.get('tenantId')
   if (fromUrl) {
-    localStorage.setItem('aegis_tenant_id', fromUrl)
+    localStorage.setItem('via_tenant_id', fromUrl)
     return fromUrl
   }
   // Fall back to localStorage
-  const stored = localStorage.getItem('aegis_tenant_id')
+  const stored = localStorage.getItem('via_tenant_id')
   if (stored) return stored
   // Default demo tenant
   const demo = 'tenant-demo-001'
-  localStorage.setItem('aegis_tenant_id', demo)
+  localStorage.setItem('via_tenant_id', demo)
   return demo
 }
 
@@ -45,7 +45,7 @@ function AppInner() {
   const [tenantId] = useState<string>(getTenantId)
 
   useEffect(() => {
-    document.title = 'Aegis — Compliance Frameworks'
+    document.title = 'VIA — Compliance Frameworks'
   }, [])
 
   return (
@@ -57,7 +57,7 @@ function AppInner() {
             <Shield className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-base font-bold text-gray-900 leading-tight">Aegis Compliance Framework Engine</h1>
+            <h1 className="text-base font-bold text-gray-900 leading-tight">VIA Compliance Framework Engine</h1>
             <p className="text-xs text-gray-400">Tenant: {tenantId}</p>
           </div>
         </div>

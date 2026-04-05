@@ -12,6 +12,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import MonitoringDashboard from './components/MonitoringDashboard';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import FindingsTable from './components/FindingsTable';
 import PayrollAnalysis from './components/PayrollAnalysis';
 import InvoiceDuplicates from './components/InvoiceDuplicates';
@@ -45,10 +46,10 @@ function getTenantId(): string {
   const params = new URLSearchParams(window.location.search);
   const fromUrl = params.get('tenantId');
   if (fromUrl) {
-    localStorage.setItem('aegis_tenant_id', fromUrl);
+    localStorage.setItem('via_tenant_id', fromUrl);
     return fromUrl;
   }
-  return localStorage.getItem('aegis_tenant_id') ?? 'default';
+  return localStorage.getItem('via_tenant_id') ?? 'default';
 }
 
 function AppInner() {
@@ -58,13 +59,13 @@ function AppInner() {
   const [currentTenant, setCurrentTenant] = useState(tenantId);
 
   useEffect(() => {
-    document.title = `Aegis Monitoring — ${currentTenant}`;
+    document.title = `VIA Monitoring — ${currentTenant}`;
   }, [currentTenant]);
 
   const switchTenant = () => {
     const t = tenantInput.trim();
     if (t) {
-      localStorage.setItem('aegis_tenant_id', t);
+      localStorage.setItem('via_tenant_id', t);
       setCurrentTenant(t);
       queryClient.clear();
     }
@@ -79,7 +80,7 @@ function AppInner() {
             <Shield size={18} className="text-white" />
           </div>
           <div>
-            <span className="text-white font-bold tracking-tight">Project Aegis</span>
+            <span className="text-white font-bold tracking-tight">VIA</span>
             <span className="text-gray-500 text-sm ml-2">Continuous Monitoring</span>
           </div>
         </div>
@@ -164,7 +165,9 @@ function AppInner() {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AppInner />
+      <ErrorBoundary>
+        <AppInner />
+      </ErrorBoundary>
     </QueryClientProvider>
   );
 }

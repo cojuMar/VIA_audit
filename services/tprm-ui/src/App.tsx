@@ -4,6 +4,7 @@ import { Shield } from 'lucide-react'
 import { VendorCatalog } from './components/VendorCatalog'
 import { VendorRiskDashboard } from './components/VendorRiskDashboard'
 import { TPRMDashboard } from './components/TPRMDashboard'
+import { ErrorBoundary } from './components/ErrorBoundary'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -18,10 +19,10 @@ function getTenantId(): string {
   const params = new URLSearchParams(window.location.search)
   const fromUrl = params.get('tenantId') ?? params.get('tenant_id')
   if (fromUrl) {
-    localStorage.setItem('aegis_tenant_id', fromUrl)
+    localStorage.setItem('via_tenant_id', fromUrl)
     return fromUrl
   }
-  const fromStorage = localStorage.getItem('aegis_tenant_id')
+  const fromStorage = localStorage.getItem('via_tenant_id')
   if (fromStorage) return fromStorage
   // Default for dev / demo
   return 'tenant_demo'
@@ -63,7 +64,7 @@ function AppShell() {
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
           <Shield className="w-6 h-6 text-blue-600 shrink-0" />
           <h1 className="text-base font-bold text-gray-900 tracking-tight">
-            Aegis <span className="font-normal text-gray-400">—</span> Vendor Risk Management
+            VIA <span className="font-normal text-gray-400">—</span> Vendor Risk Management
           </h1>
           <div className="ml-auto flex items-center gap-3">
             <span className="text-xs text-gray-400 hidden sm:block">Tenant:</span>
@@ -113,7 +114,9 @@ function AppShell() {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AppShell />
+      <ErrorBoundary>
+        <AppShell />
+      </ErrorBoundary>
     </QueryClientProvider>
   )
 }

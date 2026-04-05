@@ -26,19 +26,26 @@ client.interceptors.request.use((config) => {
 
 // ── Risk Categories ───────────────────────────────────────────────────────────
 export async function fetchCategories(): Promise<RiskCategory[]> {
-  const { data } = await client.get('/risk-categories');
-  return data;
+  const { data } = await client.get('/categories');
+  const cats = Array.isArray(data) ? data : (data?.categories ?? []);
+  // Backend returns `name` field; map to `display_name` for UI compatibility
+  return cats.map((c: { id: string; category_key: string; name?: string; display_name?: string; sort_order?: number }) => ({
+    id: c.id,
+    category_key: c.category_key,
+    display_name: c.display_name ?? c.name ?? c.category_key,
+    sort_order: c.sort_order ?? 0,
+  }));
 }
 
 // ── Risk Register ─────────────────────────────────────────────────────────────
 export async function fetchRegisterSummary(): Promise<RiskRegister> {
-  const { data } = await client.get('/risks/summary');
+  const { data } = await client.get('/risks/register');
   return data;
 }
 
 export async function fetchRisks(params?: Record<string, string>): Promise<Risk[]> {
   const { data } = await client.get('/risks', { params });
-  return data;
+  return Array.isArray(data) ? data : (data?.risks ?? []);
 }
 
 export async function fetchRisk(id: string): Promise<Risk> {
@@ -62,21 +69,21 @@ export async function closeRisk(id: string): Promise<Risk> {
 }
 
 export async function importFromFindings(): Promise<{ imported: number }> {
-  const { data } = await client.post('/risks/import-from-findings');
+  const { data } = await client.post('/auto-import/from-findings');
   return data;
 }
 
 // ── Heatmap ───────────────────────────────────────────────────────────────────
 export async function fetchHeatmap(): Promise<HeatmapPoint[]> {
   const { data } = await client.get('/risks/heatmap');
-  return data;
+  return Array.isArray(data) ? data : (data?.risks ?? data?.heatmap ?? []);
 }
 
 // ── Treatments ────────────────────────────────────────────────────────────────
 export async function fetchTreatments(riskId?: string): Promise<RiskTreatment[]> {
   const params = riskId ? { risk_id: riskId } : undefined;
   const { data } = await client.get('/treatments', { params });
-  return data;
+  return Array.isArray(data) ? data : (data?.treatments ?? []);
 }
 
 export async function createTreatment(payload: Partial<RiskTreatment>): Promise<RiskTreatment> {
@@ -101,8 +108,8 @@ export async function suggestTreatments(
 
 // ── Indicators ────────────────────────────────────────────────────────────────
 export async function fetchIndicators(riskId: string): Promise<RiskIndicator[]> {
-  const { data } = await client.get(`/risks/${riskId}/indicators`);
-  return data;
+  const { data } = await client.get(`/indicators?risk_id=${riskId}`);
+  return Array.isArray(data) ? data : (data?.indicators ?? []);
 }
 
 export async function createIndicator(
@@ -123,18 +130,19 @@ export async function recordReading(
 
 // ── Appetite ──────────────────────────────────────────────────────────────────
 export async function fetchAppetites(): Promise<RiskAppetite[]> {
-  const { data } = await client.get('/risk-appetite');
-  return data;
+  const { data } = await client.get('/appetite');
+  return Array.isArray(data) ? data : (data?.appetite ?? []);
 }
 
 export async function upsertAppetite(payload: Partial<RiskAppetite>): Promise<RiskAppetite> {
-  const { data } = await client.put('/risk-appetite', payload);
+  const categoryKey = (payload as { category_key?: string }).category_key ?? payload.category_id;
+  const { data } = await client.post(`/appetite/${categoryKey}`, payload);
   return data;
 }
 
-// ── AI Narrative ──────────────────────────────────────────────────────────────
+// ── AI Narrative ───────────────────────���──────────────────────────────────���───
 export async function fetchAiNarrative(): Promise<{ narrative: string; generated_at: string }> {
-  const { data } = await client.post('/ai/risk-narrative');
+  const { data } = await client.post('/ai/narrative');
   return data;
 }
 
@@ -151,6 +159,10 @@ export async function fetchScoreHistory(
     notes: string | null;
   }>
 > {
-  const { data } = await client.get(`/risks/${riskId}/history`);
-  return data;
+  try {
+    const { data } = await client.get(`/risks/${riskId}/assessments`);
+    return Array.isArray(data) ? data : (data?.assessments ?? data?.history ?? []);
+  } catch {
+    return [];
+  }
 }

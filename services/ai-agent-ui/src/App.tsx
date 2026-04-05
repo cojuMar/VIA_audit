@@ -12,10 +12,10 @@ function getTenantId(): string {
   const params = new URLSearchParams(window.location.search);
   const fromUrl = params.get('tenantId');
   if (fromUrl) {
-    localStorage.setItem('aegis_tenant_id', fromUrl);
+    localStorage.setItem('via_tenant_id', fromUrl);
     return fromUrl;
   }
-  const fromStorage = localStorage.getItem('aegis_tenant_id');
+  const fromStorage = localStorage.getItem('via_tenant_id');
   if (fromStorage) return fromStorage;
   return 'default';
 }
@@ -64,7 +64,7 @@ export default function App() {
             <Bot className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-sm font-bold text-white leading-none">Aegis AI</h1>
+            <h1 className="text-sm font-bold text-white leading-none">VIA AI</h1>
             <p className="text-xs text-gray-400 leading-none mt-0.5">Compliance Assistant</p>
           </div>
         </div>
