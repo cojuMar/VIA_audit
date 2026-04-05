@@ -65,6 +65,8 @@ async def _seed_demo_users():
         ("user@via.com",    "user123",    "Audit Analyst",          "end_user"),
     ]
     async with pool.acquire() as conn:
+        # Set tenant context so RLS policy can evaluate correctly (session-level)
+        await conn.execute(f"SET app.tenant_id = '{DEMO_TENANT_ID}'")
         for email, password, full_name, role in demo_users:
             existing = await conn.fetchval(
                 "SELECT id FROM via_users WHERE email=$1 AND tenant_id=$2",
@@ -142,14 +144,17 @@ async def health():
 
 @app.post("/auth/login", response_model=TokenResponse)
 async def login(req: LoginRequest):
+    tenant_id = req.tenant_id or DEMO_TENANT_ID
     try:
         async with pool.acquire() as conn:
+            # Set tenant context so RLS policy evaluates correctly (session-level)
+            await conn.execute(f"SET app.tenant_id = '{tenant_id}'")
             row = await conn.fetchrow(
                 """SELECT id, email, password_hash, full_name, role, tenant_id
                    FROM via_users
                    WHERE email = $1 AND tenant_id = $2 AND is_active = true""",
                 req.email.lower().strip(),
-                req.tenant_id or DEMO_TENANT_ID,
+                tenant_id,
             )
     except asyncpg.UndefinedTableError:
         raise HTTPException(
