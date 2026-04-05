@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 import {
   LayoutDashboard,
@@ -36,6 +37,12 @@ function getTenantId(): string {
   }
   return localStorage.getItem('via_tenant_id') ?? 'default';
 }
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { retry: 1, staleTime: 30_000 },
+  },
+});
 
 function EmployeeSearch({
   tenantId,
@@ -123,15 +130,15 @@ function EmployeeSearch({
 }
 
 const NAV_TABS: Array<{ id: Tab; label: string; icon: React.ReactNode }> = [
-  { id: 'dashboard', label: 'Org Dashboard', icon: <LayoutDashboard size={16} /> },
-  { id: 'employees', label: 'Employee View', icon: <Users size={16} /> },
-  { id: 'policies', label: 'Policies', icon: <Shield size={16} /> },
-  { id: 'training', label: 'Training', icon: <BookOpen size={16} /> },
-  { id: 'background', label: 'Background Checks', icon: <UserCheck size={16} /> },
-  { id: 'escalations', label: 'Escalations', icon: <AlertOctagon size={16} /> },
+  { id: 'dashboard',   label: 'Org Dashboard',     icon: <LayoutDashboard size={15} /> },
+  { id: 'employees',   label: 'Employee View',      icon: <Users size={15} /> },
+  { id: 'policies',    label: 'Policies',           icon: <Shield size={15} /> },
+  { id: 'training',    label: 'Training',           icon: <BookOpen size={15} /> },
+  { id: 'background',  label: 'Background Checks',  icon: <UserCheck size={15} /> },
+  { id: 'escalations', label: 'Escalations',        icon: <AlertOctagon size={15} /> },
 ];
 
-export default function App() {
+function AppInner() {
   const [tenantId] = useState(getTenantId);
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
@@ -140,87 +147,84 @@ export default function App() {
     setTenant(tenantId);
   }, [tenantId]);
 
-  // If tab changes away from employees, reset employee selection
   const handleTabChange = (tab: Tab) => {
     setActiveTab(tab);
     if (tab !== 'employees') setSelectedEmployeeId(null);
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-950 overflow-hidden">
-      {/* Top Nav */}
-      <header className="flex-shrink-0 border-b border-gray-800 bg-gray-900">
-        <div className="flex items-center gap-1 px-4 py-2 overflow-x-auto">
-          {/* Logo / Brand */}
-          <div className="flex items-center gap-2 mr-6 flex-shrink-0">
-            <div className="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center">
-              <Shield size={14} className="text-white" />
-            </div>
-            <span className="font-bold text-white text-sm whitespace-nowrap">VIA People</span>
+    <div className="via-app">
+      <aside className="via-sidebar">
+        <div className="via-sidebar-logo">
+          <div className="via-logo-mark">V</div>
+          <div>
+            <div className="text-white text-sm font-bold leading-none">VIA</div>
+            <div className="text-slate-500 text-[10px] leading-none mt-0.5 uppercase tracking-wider">People</div>
           </div>
-
-          {/* Tabs */}
+        </div>
+        <nav className="via-sidebar-nav">
           {NAV_TABS.map((tab) => (
             <button
               key={tab.id}
               onClick={() => handleTabChange(tab.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-                activeTab === tab.id
-                  ? 'bg-indigo-600 text-white'
-                  : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800'
-              }`}
+              className={`via-nav-item ${activeTab === tab.id ? 'active' : ''}`}
             >
               {tab.icon}
-              {tab.label}
+              <span>{tab.label}</span>
             </button>
           ))}
-
-          {/* Tenant badge */}
-          <div className="ml-auto flex-shrink-0 text-xs text-gray-500 bg-gray-800 px-2 py-1 rounded">
-            Tenant: {tenantId}
-          </div>
+        </nav>
+        <div className="via-sidebar-footer">
+          <div className="text-xs truncate font-mono" style={{ color: '#334155' }}>{tenantId}</div>
         </div>
-      </header>
+      </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-auto">
-        {activeTab === 'dashboard' && (
-          <PeopleComplianceDashboard tenantId={tenantId} />
-        )}
-
-        {activeTab === 'employees' && (
-          selectedEmployeeId ? (
-            <EmployeeComplianceDashboard
-              tenantId={tenantId}
-              employeeId={selectedEmployeeId}
-              onBack={() => setSelectedEmployeeId(null)}
-            />
-          ) : (
-            <EmployeeSearch
-              tenantId={tenantId}
-              onSelect={(id) => setSelectedEmployeeId(id)}
-            />
-          )
-        )}
-
-        {activeTab === 'policies' && (
-          <div className="h-full flex flex-col overflow-hidden" style={{ height: 'calc(100vh - 48px)' }}>
+      <div className="via-main">
+        <header className="via-topbar">
+          <h1 className="text-sm font-bold" style={{ color: '#F1F5F9' }}>
+            {NAV_TABS.find(t => t.id === activeTab)?.label}
+          </h1>
+        </header>
+        <main className="via-content">
+          {activeTab === 'dashboard' && (
+            <PeopleComplianceDashboard tenantId={tenantId} />
+          )}
+          {activeTab === 'employees' && (
+            selectedEmployeeId ? (
+              <EmployeeComplianceDashboard
+                tenantId={tenantId}
+                employeeId={selectedEmployeeId}
+                onBack={() => setSelectedEmployeeId(null)}
+              />
+            ) : (
+              <EmployeeSearch
+                tenantId={tenantId}
+                onSelect={(id) => setSelectedEmployeeId(id)}
+              />
+            )
+          )}
+          {activeTab === 'policies' && (
             <PoliciesManager tenantId={tenantId} />
-          </div>
-        )}
-
-        {activeTab === 'training' && (
-          <TrainingTracker tenantId={tenantId} />
-        )}
-
-        {activeTab === 'background' && (
-          <BackgroundChecks tenantId={tenantId} />
-        )}
-
-        {activeTab === 'escalations' && (
-          <EscalationLog tenantId={tenantId} />
-        )}
-      </main>
+          )}
+          {activeTab === 'training' && (
+            <TrainingTracker tenantId={tenantId} />
+          )}
+          {activeTab === 'background' && (
+            <BackgroundChecks tenantId={tenantId} />
+          )}
+          {activeTab === 'escalations' && (
+            <EscalationLog tenantId={tenantId} />
+          )}
+        </main>
+      </div>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppInner />
+    </QueryClientProvider>
   );
 }

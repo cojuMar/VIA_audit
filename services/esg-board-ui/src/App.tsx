@@ -23,13 +23,13 @@ const queryClient = new QueryClient({
 
 type Tab = 'esg' | 'targets' | 'governance' | 'packages' | 'agenda' | 'frameworks';
 
-const TABS: { id: Tab; label: string; Icon: React.ComponentType<{ className?: string }> }[] = [
-  { id: 'esg', label: 'ESG Dashboard', Icon: BarChart2 },
-  { id: 'targets', label: 'Targets & Progress', Icon: Target },
-  { id: 'governance', label: 'Board Governance', Icon: Users },
-  { id: 'packages', label: 'Board Packages', Icon: FileText },
-  { id: 'agenda', label: 'Agenda Builder', Icon: ClipboardList },
-  { id: 'frameworks', label: 'Frameworks', Icon: Globe },
+const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
+  { id: 'esg',        label: 'ESG Dashboard',     icon: <BarChart2 size={15} /> },
+  { id: 'targets',    label: 'Targets & Progress', icon: <Target size={15} /> },
+  { id: 'governance', label: 'Board Governance',   icon: <Users size={15} /> },
+  { id: 'packages',   label: 'Board Packages',     icon: <FileText size={15} /> },
+  { id: 'agenda',     label: 'Agenda Builder',     icon: <ClipboardList size={15} /> },
+  { id: 'frameworks', label: 'Frameworks',         icon: <Globe size={15} /> },
 ];
 
 function categoryColor(category: string) {
@@ -96,62 +96,52 @@ function AppInner() {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'esg': return <ESGDashboard tenantId={tenantId} />;
-      case 'targets': return <ESGTargets tenantId={tenantId} />;
+      case 'esg':        return <ESGDashboard tenantId={tenantId} />;
+      case 'targets':    return <ESGTargets tenantId={tenantId} />;
       case 'governance': return <BoardGovernance tenantId={tenantId} />;
-      case 'packages': return <BoardPackages tenantId={tenantId} />;
-      case 'agenda': return <AgendaBuilder tenantId={tenantId} />;
+      case 'packages':   return <BoardPackages tenantId={tenantId} />;
+      case 'agenda':     return <AgendaBuilder tenantId={tenantId} />;
       case 'frameworks': return <FrameworksView />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Top Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-              <Leaf className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-base font-bold text-gray-900">VIA</h1>
-              <p className="text-xs text-gray-500">ESG &amp; Board Management</p>
-            </div>
+    <div className="via-app">
+      <aside className="via-sidebar">
+        <div className="via-sidebar-logo">
+          <div className="via-logo-mark">V</div>
+          <div>
+            <div className="text-white text-sm font-bold leading-none">VIA</div>
+            <div className="text-slate-500 text-[10px] leading-none mt-0.5 uppercase tracking-wider">ESG &amp; Board</div>
           </div>
-          {tenantId && (
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-400">Tenant:</span>
-              <span className="text-xs font-mono bg-gray-100 text-gray-700 px-2 py-0.5 rounded">{tenantId}</span>
-            </div>
-          )}
         </div>
-      </header>
-
-      {/* Tab Navigation */}
-      <nav className="bg-white border-b border-gray-200 px-6">
-        <div className="flex gap-0 overflow-x-auto">
-          {TABS.map(({ id, label, Icon }) => (
+        <nav className="via-sidebar-nav">
+          {TABS.map((tab) => (
             <button
-              key={id}
-              onClick={() => setActiveTab(id)}
-              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                activeTab === id
-                  ? 'border-indigo-600 text-indigo-700'
-                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
-              }`}
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`via-nav-item ${activeTab === tab.id ? 'active' : ''}`}
             >
-              <Icon className="w-4 h-4" />
-              {label}
+              {tab.icon}
+              <span>{tab.label}</span>
             </button>
           ))}
+        </nav>
+        <div className="via-sidebar-footer">
+          <div className="text-xs text-slate-600 truncate font-mono">{tenantId}</div>
         </div>
-      </nav>
+      </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-auto">
-        {renderContent()}
-      </main>
+      <div className="via-main">
+        <header className="via-topbar">
+          <h1 className="text-base font-bold text-slate-900">
+            {TABS.find(t => t.id === activeTab)?.label}
+          </h1>
+        </header>
+        <main className="via-content">
+          {renderContent()}
+        </main>
+      </div>
     </div>
   );
 }

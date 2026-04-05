@@ -30,8 +30,8 @@ const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: 'universe', label: 'Audit Universe', icon: <Globe className="w-4 h-4" /> },
   { id: 'plan', label: 'Annual Plan', icon: <ClipboardList className="w-4 h-4" /> },
   { id: 'engagements', label: 'Engagements', icon: <Briefcase className="w-4 h-4" /> },
-  { id: 'gantt', label: 'Gantt', icon: <Clock className="w-4 h-4" /> },
-  { id: 'time', label: 'Time', icon: <Clock className="w-4 h-4" /> },
+  { id: 'gantt', label: 'Gantt Chart', icon: <Clock className="w-4 h-4" /> },
+  { id: 'time', label: 'Time Tracking', icon: <Clock className="w-4 h-4" /> },
 ];
 
 function AppContent() {
@@ -39,54 +39,44 @@ function AppContent() {
   const tenantId = useMemo(() => getTenantId(), []);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header */}
-      <header className="bg-indigo-900 text-white shadow-lg">
-        <div className="max-w-screen-2xl mx-auto px-4 py-3 flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <Shield className="w-7 h-7 text-indigo-300" />
-            <div>
-              <div className="font-bold text-lg leading-tight">VIA</div>
-              <div className="text-indigo-300 text-xs leading-tight">Audit Planning</div>
-            </div>
-          </div>
-          <div className="ml-auto text-xs text-indigo-400 font-mono">
-            tenant: {tenantId}
+    <div className="via-app">
+      <aside className="via-sidebar">
+        <div className="via-sidebar-logo">
+          <div className="via-logo-mark">V</div>
+          <div>
+            <div className="text-white text-sm font-bold leading-none">VIA</div>
+            <div className="text-slate-500 text-[10px] leading-none mt-0.5 uppercase tracking-wider">Audit Planning</div>
           </div>
         </div>
-      </header>
-
-      {/* Tab nav */}
-      <nav className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
-        <div className="max-w-screen-2xl mx-auto px-4">
-          <div className="flex gap-1 overflow-x-auto">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-                  activeTab === tab.id
-                    ? 'border-indigo-600 text-indigo-700'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                {tab.icon}
-                {tab.label}
-              </button>
-            ))}
-          </div>
+        <nav className="via-sidebar-nav">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`via-nav-item ${activeTab === tab.id ? 'active' : ''}`}
+            >
+              {tab.icon}
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </nav>
+        <div className="via-sidebar-footer">
+          <div className="text-xs text-slate-600 truncate font-mono">{tenantId}</div>
         </div>
-      </nav>
-
-      {/* Content */}
-      <main className="flex-1 max-w-screen-2xl mx-auto w-full px-4 py-6">
-        {activeTab === 'dashboard' && <PlanningDashboard tenantId={tenantId} />}
-        {activeTab === 'universe' && <AuditUniverse tenantId={tenantId} />}
-        {activeTab === 'plan' && <AuditPlanView tenantId={tenantId} />}
-        {activeTab === 'engagements' && <EngagementTracker tenantId={tenantId} />}
-        {activeTab === 'gantt' && <GanttChart tenantId={tenantId} />}
-        {activeTab === 'time' && <TimeTracker tenantId={tenantId} />}
-      </main>
+      </aside>
+      <div className="via-main">
+        <header className="via-topbar">
+          <h1 className="text-base font-bold text-slate-900">{tabs.find(t => t.id === activeTab)?.label}</h1>
+        </header>
+        <main className="via-content">
+          {activeTab === 'dashboard' && <PlanningDashboard tenantId={tenantId} />}
+          {activeTab === 'universe' && <AuditUniverse tenantId={tenantId} />}
+          {activeTab === 'plan' && <AuditPlanView tenantId={tenantId} />}
+          {activeTab === 'engagements' && <EngagementTracker tenantId={tenantId} />}
+          {activeTab === 'gantt' && <GanttChart tenantId={tenantId} />}
+          {activeTab === 'time' && <TimeTracker tenantId={tenantId} />}
+        </main>
+      </div>
     </div>
   );
 }

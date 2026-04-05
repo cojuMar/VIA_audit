@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { Shield } from 'lucide-react'
+import { Shield, Building2 } from 'lucide-react'
 import { VendorCatalog } from './components/VendorCatalog'
 import { VendorRiskDashboard } from './components/VendorRiskDashboard'
 import { TPRMDashboard } from './components/TPRMDashboard'
@@ -28,9 +28,12 @@ function getTenantId(): string {
   return 'tenant_demo'
 }
 
+type Tab = 'overview' | 'catalog'
+
 function AppShell() {
   const [tenantId] = useState<string>(getTenantId)
   const [selectedVendorId, setSelectedVendorId] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<Tab>('overview')
 
   // Support browser back button
   useEffect(() => {
@@ -57,56 +60,78 @@ function AppShell() {
     window.history.pushState({}, '', url.toString())
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
-        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
-          <Shield className="w-6 h-6 text-blue-600 shrink-0" />
-          <h1 className="text-base font-bold text-gray-900 tracking-tight">
-            VIA <span className="font-normal text-gray-400">—</span> Vendor Risk Management
-          </h1>
-          <div className="ml-auto flex items-center gap-3">
-            <span className="text-xs text-gray-400 hidden sm:block">Tenant:</span>
-            <span className="text-xs font-mono bg-gray-100 px-2 py-0.5 rounded text-gray-600">{tenantId}</span>
-          </div>
-        </div>
-      </header>
+  const tabs = [
+    { id: 'overview' as Tab, label: 'Portfolio Overview', icon: <Shield className="w-4 h-4" /> },
+    { id: 'catalog' as Tab, label: 'Vendor Catalog', icon: <Building2 className="w-4 h-4" /> },
+  ]
 
-      <main className="max-w-screen-xl mx-auto px-4 sm:px-6 py-6">
-        {selectedVendorId ? (
-          /* ── Vendor Detail View ── */
-          <VendorRiskDashboard
-            tenantId={tenantId}
-            vendorId={selectedVendorId}
-            onBack={handleBack}
-          />
-        ) : (
-          /* ── Portfolio View: Dashboard + Catalog side by side on desktop ── */
-          <div className="space-y-8">
-            {/* Portfolio dashboard */}
-            <TPRMDashboard
-              tenantId={tenantId}
-              onVendorSelect={handleVendorSelect}
-            />
-
-            {/* Divider */}
-            <div className="border-t border-gray-200" />
-
-            {/* Vendor catalog */}
+  if (selectedVendorId) {
+    return (
+      <div className="via-app">
+        <aside className="via-sidebar">
+          <div className="via-sidebar-logo">
+            <div className="via-logo-mark">V</div>
             <div>
-              <div className="mb-4">
-                <h2 className="text-lg font-semibold text-gray-900">Vendor Catalog</h2>
-                <p className="text-sm text-gray-500">All third-party vendors and their risk profiles</p>
-              </div>
-              <VendorCatalog
-                tenantId={tenantId}
-                onVendorSelect={handleVendorSelect}
-              />
+              <div className="text-white text-sm font-bold leading-none">VIA</div>
+              <div className="text-slate-500 text-[10px] leading-none mt-0.5 uppercase tracking-wider">Vendor Risk</div>
             </div>
           </div>
-        )}
-      </main>
+          <nav className="via-sidebar-nav">
+            {tabs.map(t => (
+              <button key={t.id} onClick={() => { handleBack(); setActiveTab(t.id); }} className="via-nav-item">
+                {t.icon}<span>{t.label}</span>
+              </button>
+            ))}
+          </nav>
+          <div className="via-sidebar-footer">
+            <div className="text-xs text-slate-600 truncate font-mono">{tenantId}</div>
+          </div>
+        </aside>
+        <div className="via-main">
+          <header className="via-topbar">
+            <div className="flex items-center gap-2">
+              <button onClick={handleBack} className="via-btn-secondary via-btn-sm">← Back</button>
+              <h1 className="text-base font-bold text-slate-900">Vendor Details</h1>
+            </div>
+          </header>
+          <main className="via-content">
+            <VendorRiskDashboard tenantId={tenantId} vendorId={selectedVendorId} onBack={handleBack} />
+          </main>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="via-app">
+      <aside className="via-sidebar">
+        <div className="via-sidebar-logo">
+          <div className="via-logo-mark">V</div>
+          <div>
+            <div className="text-white text-sm font-bold leading-none">VIA</div>
+            <div className="text-slate-500 text-[10px] leading-none mt-0.5 uppercase tracking-wider">Vendor Risk</div>
+          </div>
+        </div>
+        <nav className="via-sidebar-nav">
+          {tabs.map(t => (
+            <button key={t.id} onClick={() => setActiveTab(t.id)} className={`via-nav-item ${activeTab === t.id ? 'active' : ''}`}>
+              {t.icon}<span>{t.label}</span>
+            </button>
+          ))}
+        </nav>
+        <div className="via-sidebar-footer">
+          <div className="text-xs text-slate-600 truncate font-mono">{tenantId}</div>
+        </div>
+      </aside>
+      <div className="via-main">
+        <header className="via-topbar">
+          <h1 className="text-base font-bold text-slate-900">{tabs.find(t => t.id === activeTab)?.label}</h1>
+        </header>
+        <main className="via-content">
+          {activeTab === 'overview' && <TPRMDashboard tenantId={tenantId} onVendorSelect={handleVendorSelect} />}
+          {activeTab === 'catalog' && <VendorCatalog tenantId={tenantId} onVendorSelect={handleVendorSelect} />}
+        </main>
+      </div>
     </div>
   )
 }

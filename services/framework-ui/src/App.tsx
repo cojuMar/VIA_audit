@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { Shield } from 'lucide-react'
+import { Shield, BarChart2, AlertTriangle, GitMerge, Calendar } from 'lucide-react'
 import { FrameworkPicker } from './components/FrameworkPicker'
 import { ComplianceScoreCard } from './components/ComplianceScoreCard'
 import { GapAssessmentReport } from './components/GapAssessmentReport'
@@ -15,12 +15,12 @@ const queryClient = new QueryClient({
 
 type Tab = 'library' | 'scores' | 'gaps' | 'crosswalk' | 'calendar'
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'library', label: 'Framework Library' },
-  { id: 'scores', label: 'Compliance Scores' },
-  { id: 'gaps', label: 'Gap Analysis' },
-  { id: 'crosswalk', label: 'Crosswalk' },
-  { id: 'calendar', label: 'Calendar' },
+const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
+  { id: 'library', label: 'Framework Library', icon: <Shield className="w-4 h-4" /> },
+  { id: 'scores', label: 'Compliance Scores', icon: <BarChart2 className="w-4 h-4" /> },
+  { id: 'gaps', label: 'Gap Analysis', icon: <AlertTriangle className="w-4 h-4" /> },
+  { id: 'crosswalk', label: 'Crosswalk Matrix', icon: <GitMerge className="w-4 h-4" /> },
+  { id: 'calendar', label: 'Compliance Calendar', icon: <Calendar className="w-4 h-4" /> },
 ]
 
 function getTenantId(): string {
@@ -49,57 +49,38 @@ function AppInner() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-screen-xl mx-auto px-6 py-4 flex items-center gap-3">
-          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-blue-600">
-            <Shield className="w-5 h-5 text-white" />
-          </div>
+    <div className="via-app">
+      <aside className="via-sidebar">
+        <div className="via-sidebar-logo">
+          <div className="via-logo-mark">V</div>
           <div>
-            <h1 className="text-base font-bold text-gray-900 leading-tight">VIA Compliance Framework Engine</h1>
-            <p className="text-xs text-gray-400">Tenant: {tenantId}</p>
+            <div className="text-white text-sm font-bold leading-none">VIA</div>
+            <div className="text-slate-500 text-[10px] leading-none mt-0.5 uppercase tracking-wider">Frameworks</div>
           </div>
         </div>
-
-        {/* Tab navigation */}
-        <div className="max-w-screen-xl mx-auto px-6">
-          <nav className="flex gap-0.5 -mb-px">
-            {TABS.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </nav>
+        <nav className="via-sidebar-nav">
+          {TABS.map(tab => (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`via-nav-item ${activeTab === tab.id ? 'active' : ''}`}>
+              {tab.icon}<span>{tab.label}</span>
+            </button>
+          ))}
+        </nav>
+        <div className="via-sidebar-footer">
+          <div className="text-xs text-slate-600 truncate font-mono">{tenantId}</div>
         </div>
-      </header>
-
-      {/* Main content */}
-      <main className="max-w-screen-xl mx-auto px-6 py-8">
-        {activeTab === 'library' && (
-          <FrameworkPicker tenantId={tenantId} />
-        )}
-        {activeTab === 'scores' && (
-          <ComplianceScoreCard tenantId={tenantId} />
-        )}
-        {activeTab === 'gaps' && (
-          <GapAssessmentReport tenantId={tenantId} />
-        )}
-        {activeTab === 'crosswalk' && (
-          <CrosswalkMatrix tenantId={tenantId} />
-        )}
-        {activeTab === 'calendar' && (
-          <ComplianceCalendar tenantId={tenantId} />
-        )}
-      </main>
+      </aside>
+      <div className="via-main">
+        <header className="via-topbar">
+          <h1 className="text-base font-bold text-slate-900">{TABS.find(t => t.id === activeTab)?.label}</h1>
+        </header>
+        <main className="via-content">
+          {activeTab === 'library' && <FrameworkPicker tenantId={tenantId} />}
+          {activeTab === 'scores' && <ComplianceScoreCard tenantId={tenantId} />}
+          {activeTab === 'gaps' && <GapAssessmentReport tenantId={tenantId} />}
+          {activeTab === 'crosswalk' && <CrosswalkMatrix tenantId={tenantId} />}
+          {activeTab === 'calendar' && <ComplianceCalendar tenantId={tenantId} />}
+        </main>
+      </div>
     </div>
   )
 }

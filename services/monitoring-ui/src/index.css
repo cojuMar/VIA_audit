@@ -1,16 +1,187 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;1,14..32,400&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ══════════════════════════════════════════════════════════
+   VIA DESIGN SYSTEM v2  —  Monitoring Module (Premium Dark)
+══════════════════════════════════════════════════════════ */
+
+:root {
+  --via-blue:         #3B82F6;
+  --via-blue-dark:    #2563EB;
+  --via-blue-ring:    rgba(59,130,246,0.22);
+  --via-amber:        #F59E0B;
+  --via-amber-dark:   #D97706;
+  --via-page:         #0C1222;
+  --via-surface:      #111827;
+  --via-surface-2:    #1A2537;
+  --via-surface-3:    #243045;
+  --via-border:       #1E2D45;
+  --via-border-2:     #2D3F5C;
+  --via-text-1:       #F1F5F9;
+  --via-text-2:       #94A3B8;
+  --via-text-3:       #64748B;
+  --via-text-4:       #475569;
+  --via-pass:         #34D399;
+  --via-pass-bg:      rgba(52,211,153,0.1);
+  --via-pass-border:  rgba(52,211,153,0.25);
+  --via-fail:         #F87171;
+  --via-fail-bg:      rgba(248,113,113,0.1);
+  --via-fail-border:  rgba(248,113,113,0.25);
+  --via-warn:         #FBBF24;
+  --via-warn-bg:      rgba(251,191,36,0.1);
+  --via-warn-border:  rgba(251,191,36,0.25);
+  --via-info:         #60A5FA;
+  --via-info-bg:      rgba(96,165,250,0.1);
+  --via-info-border:  rgba(96,165,250,0.25);
+  --via-neutral:      #94A3B8;
+  --via-neutral-bg:   rgba(148,163,184,0.1);
+  --via-neutral-border:rgba(148,163,184,0.2);
+  --via-shadow-sm:    0 1px 3px rgba(0,0,0,0.3);
+  --via-shadow-card:  0 1px 4px rgba(0,0,0,0.4);
+  --via-shadow-hover: 0 4px 16px rgba(59,130,246,0.15), 0 2px 6px rgba(0,0,0,0.3);
+  --via-shadow-blue:  0 0 0 3px rgba(59,130,246,0.22);
+}
+
 @layer base {
-  body {
-    @apply bg-gray-950 text-gray-100 antialiased;
+  *, *::before, *::after { box-sizing: border-box; }
+  html {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'cv11', 'ss01'; height: 100%;
   }
+  body { background: var(--via-page); color: var(--via-text-1); height: 100%; line-height: 1.5; }
+  #root { height: 100%; }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--via-border-2); border-radius: 99px; }
+  ::selection { background: rgba(59,130,246,0.2); color: #93C5FD; }
+}
+
+@layer components {
+  /* ── Layout ──────────────────────────────────────────── */
+  .via-app { display: flex; height: 100vh; overflow: hidden; }
+  .via-sidebar {
+    width: 220px; flex-shrink: 0; background: var(--via-surface);
+    border-right: 1px solid var(--via-border); display: flex;
+    flex-direction: column; height: 100%; overflow: hidden;
+  }
+  .via-sidebar-logo {
+    height: 56px; display: flex; align-items: center;
+    padding: 0 16px; border-bottom: 1px solid var(--via-border); flex-shrink: 0; gap: 10px;
+  }
+  .via-logo-mark {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: var(--via-blue); display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; color: white; flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.4);
+  }
+  .via-sidebar-nav { flex: 1; overflow-y: auto; padding: 10px 8px; display: flex; flex-direction: column; gap: 1px; }
+  .via-nav-item {
+    display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 6px;
+    font-size: 13px; font-weight: 500; color: var(--via-text-2);
+    cursor: pointer; transition: all 0.12s ease; border: none;
+    background: transparent; width: 100%; text-align: left; border-left: 2px solid transparent;
+  }
+  .via-nav-item svg { width: 15px; height: 15px; color: var(--via-text-3); flex-shrink: 0; }
+  .via-nav-item:hover { background: rgba(255,255,255,0.04); color: var(--via-text-1); }
+  .via-nav-item:hover svg { color: var(--via-text-2); }
+  .via-nav-item.active { background: rgba(59,130,246,0.15); color: #fff; border-left-color: var(--via-blue); }
+  .via-nav-item.active svg { color: var(--via-blue); }
+  .via-sidebar-footer { padding: 12px 14px; border-top: 1px solid var(--via-border); flex-shrink: 0; }
+  .via-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .via-topbar {
+    height: 56px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; background: var(--via-surface); border-bottom: 1px solid var(--via-border); flex-shrink: 0;
+  }
+  .via-content { flex: 1; overflow-y: auto; padding: 24px; }
+
+  /* ── Cards ───────────────────────────────────────────── */
+  .via-card {
+    background: var(--via-surface); border: 1px solid var(--via-border);
+    border-radius: 12px; box-shadow: var(--via-shadow-card); overflow: hidden;
+  }
+  .via-card-p { padding: 20px; }
+  .via-card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px; border-bottom: 1px solid var(--via-border);
+  }
+  .via-kpi {
+    background: var(--via-surface); border: 1px solid var(--via-border);
+    border-radius: 12px; box-shadow: var(--via-shadow-card);
+    padding: 18px 20px; display: flex; flex-direction: column; gap: 6px;
+  }
+  .via-kpi-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--via-text-3); display: flex; align-items: center; gap: 6px; }
+  .via-kpi-value { font-size: 30px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; color: var(--via-text-1); }
+
+  /* ── Buttons ─────────────────────────────────────────── */
+  .via-btn {
+    display: inline-flex; align-items: center; gap: 7px; padding: 7px 14px;
+    border-radius: 7px; font-size: 13px; font-weight: 500; cursor: pointer;
+    transition: all 0.12s ease; border: none; outline: none; white-space: nowrap; font-family: inherit;
+  }
+  .via-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .via-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .via-btn-primary { @apply via-btn; background: var(--via-blue); color: #fff; }
+  .via-btn-primary:hover:not(:disabled) { background: #2563EB; }
+  .via-btn-secondary { @apply via-btn; background: var(--via-surface-2); color: var(--via-text-2); border: 1px solid var(--via-border-2); }
+  .via-btn-secondary:hover:not(:disabled) { background: var(--via-surface-3); color: var(--via-text-1); }
+  .via-btn-danger { @apply via-btn; background: rgba(248,113,113,0.15); color: #FCA5A5; border: 1px solid rgba(248,113,113,0.25); }
+  .via-btn-danger:hover:not(:disabled) { background: rgba(248,113,113,0.25); }
+  .via-btn-sm { padding: 5px 10px; font-size: 12px; border-radius: 6px; }
+
+  /* ── Badges ──────────────────────────────────────────── */
+  .via-badge {
+    display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px;
+    border-radius: 9999px; font-size: 11.5px; font-weight: 500; border: 1px solid transparent; white-space: nowrap;
+  }
+  .via-badge-pass    { background: var(--via-pass-bg);    color: var(--via-pass);    border-color: var(--via-pass-border); }
+  .via-badge-fail    { background: var(--via-fail-bg);    color: var(--via-fail);    border-color: var(--via-fail-border); }
+  .via-badge-warn    { background: var(--via-warn-bg);    color: var(--via-warn);    border-color: var(--via-warn-border); }
+  .via-badge-info    { background: var(--via-info-bg);    color: var(--via-info);    border-color: var(--via-info-border); }
+  .via-badge-neutral { background: var(--via-neutral-bg); color: var(--via-neutral); border-color: var(--via-neutral-border); }
+
+  /* Score / Severity */
+  .score-badge { display: inline-flex; align-items: center; justify-content: center; padding: 2px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 700; border: 1px solid; font-variant-numeric: tabular-nums; min-width: 34px; }
+  .score-critical { background: var(--via-fail-bg); color: var(--via-fail); border-color: var(--via-fail-border); }
+  .score-high     { background: rgba(251,146,60,0.1); color: #FB923C; border-color: rgba(251,146,60,0.25); }
+  .score-medium   { background: var(--via-warn-bg); color: var(--via-warn); border-color: var(--via-warn-border); }
+  .score-low      { background: var(--via-pass-bg); color: var(--via-pass); border-color: var(--via-pass-border); }
+  .status-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 9999px; font-size: 11.5px; font-weight: 500; border: 1px solid transparent; }
+
+  /* ── Forms ───────────────────────────────────────────── */
+  .via-input {
+    width: 100%; background: var(--via-surface-2); border: 1.5px solid var(--via-border-2);
+    border-radius: 7px; padding: 7px 12px; font-size: 13px; color: var(--via-text-1);
+    outline: none; transition: border-color 0.12s, box-shadow 0.12s; font-family: inherit;
+  }
+  .via-input::placeholder { color: var(--via-text-4); }
+  .via-input:focus { border-color: var(--via-blue); box-shadow: var(--via-shadow-blue); }
+  .via-label { display: block; font-size: 12px; font-weight: 600; color: var(--via-text-2); margin-bottom: 4px; }
+
+  /* ── Tables ──────────────────────────────────────────── */
+  .via-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .via-table thead { background: var(--via-surface-2); border-bottom: 1px solid var(--via-border); }
+  .via-table th { padding: 10px 14px; text-align: left; font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--via-text-3); }
+  .via-table td { padding: 11px 14px; color: var(--via-text-1); border-bottom: 1px solid var(--via-border); vertical-align: middle; }
+  .via-table tbody tr:last-child td { border-bottom: none; }
+  .via-table tbody tr { transition: background 0.08s; }
+  .via-table tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+  /* ── Compat ──────────────────────────────────────────── */
+  .card { background: var(--via-surface); border: 1px solid var(--via-border); border-radius: 10px; padding: 16px; }
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 9999px; font-size: 11.5px; font-weight: 500; }
+  .btn-primary   { @apply via-btn-primary; }
+  .btn-secondary { @apply via-btn-secondary; }
+
+  /* ── Toast ───────────────────────────────────────────── */
+  @keyframes slide-in { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  .animate-slide-in { animation: slide-in 0.2s ease-out; }
 }
 
 @layer utilities {
-  .scrollbar-thin {
-    scrollbar-width: thin;
-    scrollbar-color: theme('colors.gray.700') transparent;
-  }
+  .font-tabular { font-variant-numeric: tabular-nums; }
+  .scrollbar-thin { scrollbar-width: thin; scrollbar-color: var(--via-border-2) transparent; }
 }

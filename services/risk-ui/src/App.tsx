@@ -188,52 +188,53 @@ function AppInner() {
   }, [tenantId]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Top Nav */}
-      <header className="border-b border-gray-200 bg-white shadow-sm">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-14 items-center justify-between">
-            {/* Brand */}
-            <div className="flex items-center gap-2">
-              <Shield className="h-6 w-6 text-indigo-600" />
-              <span className="text-lg font-bold text-gray-900">VIA</span>
-              <span className="hidden text-sm text-gray-400 sm:block">Risk Management</span>
-            </div>
-
-            {/* Nav */}
-            <nav className="flex items-center gap-1">
-              {NAV_ITEMS.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-                    activeTab === item.id
-                      ? 'bg-indigo-50 text-indigo-700'
-                      : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
-                  }`}
-                >
-                  {item.icon}
-                  <span className="hidden sm:inline">{item.label}</span>
-                </button>
-              ))}
-            </nav>
-
-            {/* Tenant chip */}
-            <div className="hidden items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600 lg:flex">
-              Tenant: <span className="font-semibold">{tenantId}</span>
-            </div>
+    <div className="via-app">
+      {/* ── Sidebar ───────────────────────────────────── */}
+      <aside className="via-sidebar">
+        <div className="via-sidebar-logo">
+          <div className="via-logo-mark">V</div>
+          <div>
+            <div className="text-white text-sm font-bold leading-none">VIA</div>
+            <div className="text-slate-500 text-[10px] leading-none mt-0.5 uppercase tracking-wider">Risk Management</div>
           </div>
         </div>
-      </header>
 
-      {/* Main content */}
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        {activeTab === 'dashboard' && <RiskDashboard tenantId={tenantId} />}
-        {activeTab === 'heatmap' && <RiskHeatmap tenantId={tenantId} />}
-        {activeTab === 'appetite' && <AppetiteConfig tenantId={tenantId} />}
-        {activeTab === 'treatments' && <TreatmentTracker tenantId={tenantId} />}
-        {activeTab === 'ai' && <AiInsights tenantId={tenantId} />}
-      </main>
+        <nav className="via-sidebar-nav">
+          {NAV_ITEMS.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`via-nav-item ${activeTab === item.id ? 'active' : ''}`}
+            >
+              {item.icon}
+              <span>{item.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        <div className="via-sidebar-footer">
+          <div className="text-xs text-slate-600 truncate font-mono">{tenantId}</div>
+        </div>
+      </aside>
+
+      {/* ── Main ──────────────────────────────────────── */}
+      <div className="via-main">
+        {/* Top bar */}
+        <header className="via-topbar">
+          <div>
+            <h1 className="text-base font-bold text-slate-900">{NAV_ITEMS.find(n => n.id === activeTab)?.label ?? 'Risk Register'}</h1>
+          </div>
+        </header>
+
+        {/* Content */}
+        <main className="via-content">
+          {activeTab === 'dashboard' && <RiskDashboard tenantId={tenantId} />}
+          {activeTab === 'heatmap' && <RiskHeatmap tenantId={tenantId} />}
+          {activeTab === 'appetite' && <AppetiteConfig tenantId={tenantId} />}
+          {activeTab === 'treatments' && <TreatmentTracker tenantId={tenantId} />}
+          {activeTab === 'ai' && <AiInsights tenantId={tenantId} />}
+        </main>
+      </div>
     </div>
   );
 }
