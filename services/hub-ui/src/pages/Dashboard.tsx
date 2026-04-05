@@ -3,7 +3,7 @@ import { ExternalLink, BookOpen, ArrowRight, Shield, Activity, Users, FileText, 
 import { MODULES, WORKFLOW_STEPS, type Module } from '../data/modules';
 import type { AuthUser } from '../contexts/AuthContext';
 
-/** Ping each module's /health endpoint and return per-module online status */
+/** Ping each module's root path and return per-module online status */
 function useModuleHealth(modules: Module[]) {
   const [onlineSet, setOnlineSet] = useState<Set<string>>(new Set());
   const [checked, setChecked] = useState(false);
@@ -15,12 +15,14 @@ function useModuleHealth(modules: Module[]) {
         try {
           const ctrl = new AbortController();
           const timer = setTimeout(() => ctrl.abort(), 2000);
-          const res = await fetch(`http://localhost:${m.port}/health`, {
+          const res = await fetch(`http://localhost:${m.port}/`, {
             signal: ctrl.signal,
             method: 'GET',
+            mode: 'no-cors',   // avoids CORS block; opaque response = server is up
           });
           clearTimeout(timer);
-          return { id: m.id, ok: res.ok };
+          // opaque response (no-cors) means server responded — treat as online
+          return { id: m.id, ok: res.type === 'opaque' || res.ok };
         } catch {
           return { id: m.id, ok: false };
         }

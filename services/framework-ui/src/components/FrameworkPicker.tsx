@@ -46,15 +46,19 @@ export function FrameworkPicker({ tenantId, onFrameworkToggled }: FrameworkPicke
 
   const queryClient = useQueryClient()
 
-  const { data: allFrameworks = [], isLoading: loadingAll } = useQuery({
+  const { data: _allFrameworksRaw = [], isLoading: loadingAll } = useQuery({
     queryKey: ['frameworks'],
     queryFn: () => api.getFrameworks(),
   })
+  // Guard against API returning a non-array (e.g. error object from a 400 response)
+  const allFrameworks: ComplianceFramework[] = Array.isArray(_allFrameworksRaw) ? _allFrameworksRaw : []
 
-  const { data: tenantFrameworks = [], isLoading: loadingTenant } = useQuery({
+  const { data: _tenantFrameworksRaw = [], isLoading: loadingTenant } = useQuery({
     queryKey: ['tenant-frameworks', tenantId],
     queryFn: () => api.getTenantFrameworks(tenantId),
   })
+  // Guard against API returning a non-array
+  const tenantFrameworks: ComplianceFramework[] = Array.isArray(_tenantFrameworksRaw) ? _tenantFrameworksRaw : []
 
   const { data: expandedFramework } = useQuery({
     queryKey: ['framework-detail', expandedSlug],
@@ -171,7 +175,7 @@ export function FrameworkPicker({ tenantId, onFrameworkToggled }: FrameworkPicke
                     {CATEGORY_ICONS[fw.category]}
                     {fw.category}
                   </span>
-                  {fw.metadata.cost_tier && (
+                  {fw.metadata?.cost_tier && (
                     <span className={`text-xs px-2 py-0.5 rounded border font-medium ${COST_TIER_COLORS[fw.metadata.cost_tier]}`}>
                       {fw.metadata.cost_tier} cost
                     </span>
@@ -202,10 +206,10 @@ export function FrameworkPicker({ tenantId, onFrameworkToggled }: FrameworkPicke
                         ))}
                       </div>
                     )}
-                    {fw.metadata.geographic_scope && (
+                    {fw.metadata?.geographic_scope && (
                       <p className="text-xs text-gray-500">Scope: {fw.metadata.geographic_scope}</p>
                     )}
-                    {fw.metadata.renewal_period_days && (
+                    {fw.metadata?.renewal_period_days && (
                       <p className="text-xs text-gray-500">Renewal: every {fw.metadata.renewal_period_days} days</p>
                     )}
                   </div>

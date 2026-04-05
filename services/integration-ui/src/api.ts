@@ -24,7 +24,7 @@ function client(tenantId: string) {
 // Connectors
 export async function listConnectors(tenantId: string): Promise<ConnectorDefinition[]> {
   const { data } = await client(tenantId).get('/connectors');
-  return data;
+  return Array.isArray(data) ? data : (data?.connectors ?? []);
 }
 
 export async function getConnector(tenantId: string, connectorId: string): Promise<ConnectorDefinition> {
@@ -35,7 +35,7 @@ export async function getConnector(tenantId: string, connectorId: string): Promi
 // Integrations
 export async function listIntegrations(tenantId: string): Promise<TenantIntegration[]> {
   const { data } = await client(tenantId).get('/integrations');
-  return data;
+  return Array.isArray(data) ? data : (data?.integrations ?? []);
 }
 
 export async function getIntegration(tenantId: string, integrationId: string): Promise<TenantIntegration> {

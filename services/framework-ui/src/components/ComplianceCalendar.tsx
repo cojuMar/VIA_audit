@@ -50,10 +50,12 @@ export function ComplianceCalendar({ tenantId }: ComplianceCalendarProps) {
 
   const queryClient = useQueryClient()
 
-  const { data: events = [], isLoading } = useQuery({
+  const { data: _eventsRaw = [], isLoading } = useQuery({
     queryKey: ['calendar', tenantId],
     queryFn: () => api.getCalendar(tenantId),
   })
+  // Guard against API returning a non-array (e.g. error object from a 400 response)
+  const events: CalendarEvent[] = Array.isArray(_eventsRaw) ? _eventsRaw : []
 
   async function handleRebuildCalendar() {
     setRebuilding(true)

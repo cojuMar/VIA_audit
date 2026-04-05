@@ -2,11 +2,83 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "via-hub",
-      "runtimeExecutable": "docker",
-      "runtimeArgs": ["compose", "logs", "-f", "hub-ui"],
-      "port": 5173,
-      "autoPort": false
+      "name": "via-hub-test",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["vite", "--config", "vite.config.test.ts", "--port", "5190"],
+      "port": 5190,
+      "cwd": "services/hub-ui"
+    },
+    {
+      "name": "framework-ui",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["proxy-server.js", "5274", "5174"],
+      "port": 5274
+    },
+    {
+      "name": "tprm-ui",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["proxy-server.js", "5275", "5175"],
+      "port": 5275
+    },
+    {
+      "name": "trust-portal-ui",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["proxy-server.js", "5276", "5176"],
+      "port": 5276
+    },
+    {
+      "name": "monitoring-ui",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["proxy-server.js", "5277", "5177"],
+      "port": 5277
+    },
+    {
+      "name": "people-ui",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["proxy-server.js", "5278", "5178"],
+      "port": 5278
+    },
+    {
+      "name": "pbc-ui",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["proxy-server.js", "5279", "5179"],
+      "port": 5279
+    },
+    {
+      "name": "integration-ui",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["proxy-server.js", "5280", "5180"],
+      "port": 5280
+    },
+    {
+      "name": "ai-agent-ui",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["proxy-server.js", "5281", "5181"],
+      "port": 5281
+    },
+    {
+      "name": "risk-ui",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["proxy-server.js", "5282", "5182"],
+      "port": 5282
+    },
+    {
+      "name": "audit-planning-ui",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["proxy-server.js", "5283", "5183"],
+      "port": 5283
+    },
+    {
+      "name": "esg-board-ui",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["proxy-server.js", "5284", "5184"],
+      "port": 5284
+    },
+    {
+      "name": "mobile-app",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["proxy-server.js", "5285", "5185"],
+      "port": 5285
     }
   ]
 }

@@ -60,10 +60,12 @@ export function GapAssessmentReport({ tenantId }: GapAssessmentReportProps) {
 
   const queryClient = useQueryClient()
 
-  const { data: gaps = [], isLoading } = useQuery({
+  const { data: _gapsRaw = [], isLoading } = useQuery({
     queryKey: ['gaps', tenantId],
     queryFn: () => api.getGaps(tenantId),
   })
+  // Guard against API returning a non-array (e.g. error object from a 400 response)
+  const gaps: GapItem[] = Array.isArray(_gapsRaw) ? _gapsRaw : []
 
   const runAnalysisMutation = useMutation({
     mutationFn: async () => {
@@ -76,7 +78,7 @@ export function GapAssessmentReport({ tenantId }: GapAssessmentReportProps) {
       return api.getGaps(tenantId)
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(['gaps', tenantId], data)
+      queryClient.setQueryData(['gaps', tenantId], Array.isArray(data) ? data : [])
       setRunningAnalysis(false)
     },
     onError: () => setRunningAnalysis(false),

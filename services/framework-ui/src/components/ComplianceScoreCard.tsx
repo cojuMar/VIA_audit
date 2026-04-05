@@ -50,10 +50,12 @@ export function ComplianceScoreCard({ tenantId }: ComplianceScoreCardProps) {
   const [refreshing, setRefreshing] = useState(false)
   const queryClient = useQueryClient()
 
-  const { data: scores = [], isLoading } = useQuery({
+  const { data: _scoresRaw = [], isLoading } = useQuery({
     queryKey: ['scores', tenantId],
     queryFn: () => api.getScores(tenantId),
   })
+  // Guard against API returning a non-array (e.g. error object from a 400 response)
+  const scores: ComplianceScore[] = Array.isArray(_scoresRaw) ? _scoresRaw : []
 
   const refreshMutation = useMutation({
     mutationFn: () => {
