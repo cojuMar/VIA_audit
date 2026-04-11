@@ -1,19 +1,25 @@
 import { useState, type FormEvent } from 'react';
-import { Eye, EyeOff, Shield, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, ArrowRight, Shield, Lock, BarChart2, FileText } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { useTheme, type Theme } from '../contexts/ThemeContext';
-
-const THEME_LABELS: Record<Theme, string> = { dark: 'Dark', neutral: 'Neutral', light: 'Light' };
+import { useTheme } from '../contexts/ThemeContext';
+import ThemeSelector from '../components/ThemeSelector';
 
 const DEMO_ACCOUNTS = [
-  { email: 'admin@via.com',   password: 'admin123',   role: 'Super Admin',  color: 'text-rose-400' },
-  { email: 'auditor@via.com', password: 'auditor123', role: 'Admin',        color: 'text-amber-400' },
-  { email: 'user@via.com',    password: 'user123',    role: 'End User',     color: 'text-sky-400' },
+  { email: 'admin@via.com',   password: 'admin123',   role: 'Super Admin', badge: 'pill-indigo' },
+  { email: 'auditor@via.com', password: 'auditor123', role: 'Admin',       badge: 'pill-warning' },
+  { email: 'user@via.com',    password: 'user123',    role: 'End User',    badge: 'pill-neutral' },
+];
+
+const FEATURE_PILLS = [
+  { icon: <Shield  className="h-3.5 w-3.5" />, label: 'SOC 2 · ISO 27001 · NIST'   },
+  { icon: <BarChart2 className="h-3.5 w-3.5" />, label: 'Real-time Risk Intelligence' },
+  { icon: <FileText className="h-3.5 w-3.5" />, label: 'Automated Workpapers'        },
+  { icon: <Lock className="h-3.5 w-3.5" />,    label: 'WCAG AA · GDPR Ready'        },
 ];
 
 export default function Login() {
   const { login, isLoading, error } = useAuth();
-  const { theme, setTheme }         = useTheme();
+  const { isLight } = useTheme();
 
   const [email,      setEmail]      = useState('');
   const [password,   setPassword]   = useState('');
@@ -26,7 +32,7 @@ export default function Login() {
     if (!email || !password) { setLocalError('Email and password are required.'); return; }
     try {
       await login(email.trim(), password);
-    } catch { /* error already set in context */ }
+    } catch { /* error set in context */ }
   }
 
   function fillDemo(acc: typeof DEMO_ACCOUNTS[0]) {
@@ -38,76 +44,186 @@ export default function Login() {
   const displayError = localError || error;
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4"
-      style={{ backgroundColor: 'var(--surface-base)' }}
-    >
-      {/* Theme switcher — top right */}
-      <div className="absolute top-4 right-4 flex items-center gap-1">
-        {(['dark', 'neutral', 'light'] as Theme[]).map(t => (
-          <button
-            key={t}
-            onClick={() => setTheme(t)}
-            className="px-2.5 py-1 rounded text-xs font-medium transition-all"
-            style={{
-              backgroundColor: theme === t ? 'var(--brand)' : 'var(--surface-overlay)',
-              color: theme === t ? '#fff' : 'var(--ink-secondary)',
-              border: `1px solid ${theme === t ? 'var(--brand)' : 'var(--line-focus)'}`,
-            }}
-          >
-            {THEME_LABELS[t]}
-          </button>
-        ))}
+    <div className="min-h-screen flex" style={{ backgroundColor: 'var(--surface-base)' }}>
+
+      {/* ── Left brand panel (desktop only) ────────────────────────────────── */}
+      <div
+        className="hidden lg:flex lg:flex-col lg:w-[55%] relative overflow-hidden"
+        style={{
+          background: isLight
+            ? 'var(--gradient-hero)'
+            : 'radial-gradient(ellipse at 30% 40%, rgba(99,102,241,0.25) 0%, transparent 55%), radial-gradient(ellipse at 70% 70%, rgba(6,182,212,0.15) 0%, transparent 45%), #0A0F1E',
+          borderRight: '1px solid var(--line-focus)',
+        }}
+      >
+        {/* Animated orbs — only on dark */}
+        {!isLight && (
+          <>
+            <div className="orb-1" />
+            <div className="orb-2" />
+            <div className="orb-3" />
+          </>
+        )}
+
+        {/* Content */}
+        <div className="relative z-10 flex flex-col justify-between h-full p-12">
+
+          {/* Logo */}
+          <div className="flex items-center gap-3">
+            <span
+              className="flex h-10 w-10 items-center justify-center rounded-xl text-lg font-black text-white select-none"
+              style={{
+                background: isLight ? 'rgba(255,255,255,0.25)' : 'var(--brand)',
+                boxShadow: isLight ? 'none' : 'var(--shadow-btn)',
+                backdropFilter: isLight ? 'blur(8px)' : 'none',
+              }}
+            >
+              V
+            </span>
+            <div>
+              <span
+                className="block text-lg font-bold tracking-tight"
+                style={{ color: '#ffffff' }}
+              >
+                VIA
+              </span>
+              <span className="block text-[10px] uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.65)' }}>
+                Very Intelligent Auditing
+              </span>
+            </div>
+          </div>
+
+          {/* Center hero text */}
+          <div className="max-w-sm">
+            <p
+              className="text-xs font-bold uppercase tracking-widest mb-4"
+              style={{ color: 'rgba(255,255,255,0.55)', letterSpacing: '0.15em' }}
+            >
+              Enterprise Audit Intelligence
+            </p>
+            <h1
+              className="text-4xl font-bold leading-tight mb-4"
+              style={{ color: '#ffffff', textShadow: isLight ? 'none' : '0 2px 20px rgba(0,0,0,0.3)' }}
+            >
+              Tri-Modal Audit Platform
+            </h1>
+            <p
+              className="text-base leading-relaxed mb-8"
+              style={{ color: 'rgba(255,255,255,0.72)' }}
+            >
+              Continuous monitoring, intelligent risk management, and automated
+              compliance — unified in one enterprise-grade platform.
+            </p>
+
+            {/* Feature pills */}
+            <div className="flex flex-wrap gap-2">
+              {FEATURE_PILLS.map(f => (
+                <span
+                  key={f.label}
+                  className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium"
+                  style={{
+                    background: 'rgba(255,255,255,0.15)',
+                    color: '#ffffff',
+                    backdropFilter: 'blur(8px)',
+                    border: '1px solid rgba(255,255,255,0.20)',
+                  }}
+                >
+                  {f.icon}
+                  {f.label}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Bottom credentials */}
+          <div className="flex items-center gap-2">
+            <span
+              className="text-xs"
+              style={{ color: 'rgba(255,255,255,0.45)' }}
+            >
+              VIA Platform · Tri-Modal Audit Intelligence
+            </span>
+          </div>
+        </div>
       </div>
 
-      <div className="w-full max-w-md">
+      {/* ── Right login panel ───────────────────────────────────────────────── */}
+      <div
+        className="flex-1 flex flex-col items-center justify-center p-6 md:p-10 relative"
+        style={{ backgroundColor: 'var(--surface-base)' }}
+      >
+        {/* Theme selector */}
+        <div className="absolute top-4 right-4">
+          <ThemeSelector />
+        </div>
 
-        {/* Logo / Brand */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4"
-               style={{ backgroundColor: 'var(--brand)', boxShadow: '0 8px 24px var(--brand-subtle)' }}>
-            <span className="text-2xl font-black text-white tracking-tighter">V</span>
+        {/* Mobile logo (only shows when left panel is hidden) */}
+        <div className="lg:hidden flex items-center gap-2.5 mb-10">
+          <span
+            className="flex h-9 w-9 items-center justify-center rounded-xl text-base font-black text-white select-none"
+            style={{ background: 'var(--brand)', boxShadow: 'var(--shadow-btn)' }}
+          >
+            V
+          </span>
+          <div>
+            <span className="block text-base font-bold tracking-tight" style={{ color: 'var(--ink-primary)' }}>VIA</span>
+            <span className="block text-[10px] uppercase tracking-widest" style={{ color: 'var(--ink-muted)' }}>Very Intelligent Auditing</span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight" style={{ color: 'var(--ink-primary)' }}>
-            VIA
-          </h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--ink-muted)' }}>
-            Very Intelligent Auditing
-          </p>
         </div>
 
         {/* Login card */}
         <div
-          className="rounded-2xl p-8"
+          className="w-full max-w-[400px]"
           style={{
-            backgroundColor: 'var(--surface-raised)',
-            border: '1px solid var(--line-focus)',
-            boxShadow: 'var(--shadow-card-lg)',
+            background: isLight ? 'var(--surface-raised)' : 'rgba(255,255,255,0.04)',
+            backdropFilter: isLight ? 'none' : 'blur(24px) saturate(200%)',
+            border: isLight ? '1px solid var(--line)' : '1px solid rgba(255,255,255,0.10)',
+            borderRadius: '20px',
+            boxShadow: isLight
+              ? 'var(--shadow-card-lg)'
+              : '0 8px 48px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08)',
+            padding: '36px',
           }}
         >
-          <h2 className="text-lg font-semibold mb-6" style={{ color: 'var(--ink-primary)' }}>
-            Sign in to your account
-          </h2>
+          {/* Card header */}
+          <div className="mb-6">
+            <p className="section-label mb-1">Workspace Access</p>
+            <h2 className="text-xl font-semibold" style={{ color: 'var(--ink-primary)' }}>
+              Welcome back
+            </h2>
+            <p className="text-sm mt-1" style={{ color: 'var(--ink-secondary)' }}>
+              Sign in to continue to your workspace
+            </p>
+          </div>
+
+          {/* Subtle divider */}
+          <div className="mb-6" style={{ height: '1px', backgroundColor: 'var(--line-focus)' }} />
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--ink-secondary)' }}>
-                Email address
+              <label
+                className="block mb-1.5 text-[11px] font-bold uppercase tracking-widest"
+                style={{ color: 'var(--ink-muted)' }}
+              >
+                Work Email
               </label>
               <input
                 type="email"
                 autoComplete="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder="you@company.com"
                 className="via-input"
               />
             </div>
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--ink-secondary)' }}>
+              <label
+                className="block mb-1.5 text-[11px] font-bold uppercase tracking-widest"
+                style={{ color: 'var(--ink-muted)' }}
+              >
                 Password
               </label>
               <div className="relative">
@@ -122,19 +238,24 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => setShowPw(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
                   style={{ color: 'var(--ink-muted)' }}
+                  tabIndex={-1}
                 >
                   {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>
 
-            {/* Error */}
+            {/* Error message */}
             {displayError && (
               <div
                 className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm"
-                style={{ backgroundColor: 'rgba(239,68,68,0.1)', color: 'var(--status-danger)' }}
+                style={{
+                  background: 'var(--badge-error-bg)',
+                  color: 'var(--badge-error-text)',
+                  border: '1px solid var(--badge-error-bg)',
+                }}
               >
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 {displayError}
@@ -146,6 +267,7 @@ export default function Login() {
               type="submit"
               disabled={isLoading}
               className="btn-primary w-full mt-2"
+              style={{ height: '44px', fontSize: '15px' }}
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">
@@ -155,44 +277,62 @@ export default function Login() {
                   </svg>
                   Signing in…
                 </span>
-              ) : 'Sign in'}
+              ) : (
+                <>
+                  Sign In
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="flex items-center gap-3 my-6">
-            <div className="flex-1 h-px" style={{ backgroundColor: 'var(--line-focus)' }} />
-            <span className="text-xs" style={{ color: 'var(--ink-muted)' }}>Demo accounts</span>
-            <div className="flex-1 h-px" style={{ backgroundColor: 'var(--line-focus)' }} />
-          </div>
-
           {/* Demo accounts */}
-          <div className="space-y-2">
-            {DEMO_ACCOUNTS.map(acc => (
-              <button
-                key={acc.email}
-                onClick={() => fillDemo(acc)}
-                className="w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors"
-                style={{
-                  backgroundColor: 'var(--surface-overlay)',
-                  border: '1px solid var(--line)',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--line-focus)')}
-                onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--line)')}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Shield className="h-3.5 w-3.5" style={{ color: 'var(--ink-muted)' }} />
-                  <span style={{ color: 'var(--ink-secondary)' }}>{acc.email}</span>
-                </div>
-                <span className={`text-xs font-medium ${acc.color}`}>{acc.role}</span>
-              </button>
-            ))}
-          </div>
-        </div>
+          <div className="mt-6">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex-1 h-px" style={{ backgroundColor: 'var(--line-focus)' }} />
+              <span className="text-xs font-medium" style={{ color: 'var(--ink-muted)' }}>
+                Demo accounts
+              </span>
+              <div className="flex-1 h-px" style={{ backgroundColor: 'var(--line-focus)' }} />
+            </div>
 
-        <p className="text-center text-xs mt-6" style={{ color: 'var(--ink-muted)' }}>
-          VIA Platform · Tri-Modal Audit Intelligence
-        </p>
+            <div className="space-y-1.5">
+              {DEMO_ACCOUNTS.map(acc => (
+                <button
+                  key={acc.email}
+                  onClick={() => fillDemo(acc)}
+                  className="w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-all"
+                  style={{
+                    backgroundColor: 'var(--surface-overlay)',
+                    border: '1px solid var(--line)',
+                    color: 'var(--ink-secondary)',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.borderColor = 'var(--brand)';
+                    e.currentTarget.style.backgroundColor = 'var(--brand-subtle)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = 'var(--line)';
+                    e.currentTarget.style.backgroundColor = 'var(--surface-overlay)';
+                  }}
+                >
+                  <span className="text-xs font-mono" style={{ color: 'var(--ink-secondary)' }}>
+                    {acc.email}
+                  </span>
+                  <span className={`pill ${acc.badge}`}>
+                    {acc.role}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Footer */}
+          <p className="text-center text-[11px] mt-6" style={{ color: 'var(--ink-muted)' }}>
+            Don't have access?{' '}
+            <span style={{ color: 'var(--brand-text)', cursor: 'default' }}>Contact your IT administrator</span>
+          </p>
+        </div>
       </div>
     </div>
   );

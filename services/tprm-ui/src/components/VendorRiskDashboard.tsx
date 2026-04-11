@@ -166,7 +166,7 @@ export function VendorRiskDashboard({ tenantId, vendorId, onBack }: VendorRiskDa
 
   const { data: templates = [] } = useQuery({
     queryKey: ['questionnaire-templates'],
-    queryFn: () => api.getQuestionnaireTemplates(),
+    queryFn: () => api.getQuestionnaireTemplates(tenantId),
     enabled: activeTab === 'questionnaires',
   })
 

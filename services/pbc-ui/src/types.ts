@@ -6,13 +6,20 @@ export type WorkpaperStatus = 'draft' | 'in_review' | 'reviewed' | 'final' | 'su
 
 export interface AuditEngagement {
   id: string;
-  engagement_name: string;
-  engagement_type: string;
-  fiscal_year: number | null;
-  period_start: string | null;
-  period_end: string | null;
+  // PBC-native fields (created via pbc-service)
+  engagement_name?: string;
+  engagement_type?: string;
+  fiscal_year?: number | null;
+  period_start?: string | null;
+  period_end?: string | null;
+  // Audit-planning fields (shared audit_engagements table)
+  title?: string;
+  audit_type?: string;
+  planned_start_date?: string | null;
+  planned_end_date?: string | null;
+  engagement_code?: string | null;
   lead_auditor: string | null;
-  status: EngagementStatus;
+  status: string;
   description: string | null;
   created_at: string;
 }

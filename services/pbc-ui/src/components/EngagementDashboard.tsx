@@ -32,7 +32,8 @@ function statusColor(s: EngagementStatus) {
   return map[s] ?? 'bg-gray-100 text-gray-600';
 }
 
-function typeColor(t: string) {
+function typeColor(t: string | null | undefined) {
+  if (!t) return 'bg-gray-100 text-gray-700';
   const map: Record<string, string> = {
     internal: 'bg-indigo-100 text-indigo-800',
     external: 'bg-teal-100 text-teal-800',
@@ -185,21 +186,26 @@ function NewEngagementModal({ tenantId, onClose }: NewEngagementModalProps) {
 // ── Engagement Card ───────────────────────────────────────────────────────────
 
 function EngagementCard({ eng, onClick }: { eng: AuditEngagement; onClick: () => void }) {
+  const name = eng.engagement_name ?? eng.title ?? 'Untitled';
+  const type = eng.engagement_type ?? eng.audit_type;
+  const periodStart = eng.period_start ?? eng.planned_start_date ?? null;
+  const periodEnd = eng.period_end ?? eng.planned_end_date ?? null;
+  const fiscalYear = eng.fiscal_year ?? null;
   return (
     <div
       className="card p-4 cursor-pointer hover:shadow-md transition-shadow space-y-3"
       onClick={onClick}
     >
       <div className="flex items-start justify-between gap-2">
-        <h3 className="font-semibold text-gray-900 leading-tight">{eng.engagement_name}</h3>
+        <h3 className="font-semibold text-gray-900 leading-tight">{name}</h3>
         <div className="flex gap-1 flex-shrink-0">
-          <span className={`badge ${typeColor(eng.engagement_type)}`}>{eng.engagement_type}</span>
-          <span className={`badge ${statusColor(eng.status)}`}>{eng.status}</span>
+          {type && <span className={`badge ${typeColor(type)}`}>{type}</span>}
+          <span className={`badge ${statusColor(eng.status as EngagementStatus)}`}>{eng.status}</span>
         </div>
       </div>
       <div className="flex items-center gap-1 text-xs text-gray-500">
         <Calendar className="w-3 h-3" />
-        {formatPeriod(eng.period_start, eng.period_end, eng.fiscal_year)}
+        {formatPeriod(periodStart, periodEnd, fiscalYear)}
       </div>
       {eng.lead_auditor && (
         <div className="flex items-center gap-1 text-xs text-gray-500">
@@ -261,7 +267,13 @@ function EngagementDetailView({ tenantId, engagement, onBack, onNavigate }: Deta
     queryFn: () => getEngagementDashboard(tenantId, engagement.id),
   });
 
-  const days = daysUntil(engagement.period_end);
+  const engName = engagement.engagement_name ?? engagement.title ?? 'Untitled';
+  const periodStart = engagement.period_start ?? engagement.planned_start_date ?? null;
+  const periodEnd = engagement.period_end ?? engagement.planned_end_date ?? null;
+  const fiscalYear = engagement.fiscal_year ?? null;
+  const stepperStatus = (STEPS.includes(engagement.status as EngagementStatus) ? engagement.status : 'planning') as EngagementStatus;
+
+  const days = daysUntil(periodEnd);
   const pbc = dash?.pbc_summary;
   const issues = dash?.issue_summary;
   const wps = dash?.workpaper_summary;
@@ -284,12 +296,12 @@ function EngagementDetailView({ tenantId, engagement, onBack, onNavigate }: Deta
           Back
         </button>
         <div className="flex-1">
-          <h1 className="text-xl font-bold text-gray-900">{engagement.engagement_name}</h1>
+          <h1 className="text-xl font-bold text-gray-900">{engName}</h1>
           <p className="text-sm text-gray-500">
-            {formatPeriod(engagement.period_start, engagement.period_end, engagement.fiscal_year)}
+            {formatPeriod(periodStart, periodEnd, fiscalYear)}
           </p>
         </div>
-        <StatusStepper status={engagement.status} />
+        <StatusStepper status={stepperStatus} />
       </div>
 
       {/* Summary cards */}
@@ -316,7 +328,7 @@ function EngagementDetailView({ tenantId, engagement, onBack, onNavigate }: Deta
           {
             label: 'Days to Period End',
             value: days !== null ? (days < 0 ? 'Ended' : `${days}d`) : '—',
-            sub: engagement.period_end ?? '',
+            sub: periodEnd ?? '',
             color: days !== null && days < 14 ? 'text-red-600' : 'text-gray-700',
           },
         ].map((c) => (

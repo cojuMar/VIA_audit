@@ -519,7 +519,7 @@ function EditorView({ tenantId, wp: initialWp, onBack, engagementId }: EditorVie
   const { data: wp } = useQuery<Workpaper>({
     queryKey: ['workpaper', tenantId, initialWp.id],
     queryFn: () => getWorkpaper(tenantId, initialWp.id),
-    initialData: initialWp,
+    placeholderData: initialWp,
   });
 
   const { data: templates = [] } = useQuery<WorkpaperTemplate[]>({

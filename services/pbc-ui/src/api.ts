@@ -58,7 +58,7 @@ export async function getEngagementDashboard(tenantId: string, id: string): Prom
 // ── PBC Lists ─────────────────────────────────────────────────────────────────
 
 export async function listPBCLists(tenantId: string, engagementId: string): Promise<PBCRequestList[]> {
-  const res = await http.get(`/engagements/${engagementId}/pbc-lists`, tenantHeaders(tenantId));
+  const res = await http.get(`/pbc/lists?engagement_id=${engagementId}`, tenantHeaders(tenantId));
   return res.data;
 }
 
@@ -69,15 +69,16 @@ export interface PBCListCreate {
 }
 
 export async function createPBCList(tenantId: string, engagementId: string, data: PBCListCreate): Promise<PBCRequestList> {
-  const res = await http.post(`/engagements/${engagementId}/pbc-lists`, data, tenantHeaders(tenantId));
+  const res = await http.post(`/pbc/lists`, { ...data, engagement_id: engagementId }, tenantHeaders(tenantId));
   return res.data;
 }
 
 // ── PBC Requests ──────────────────────────────────────────────────────────────
 
 export async function listPBCRequests(tenantId: string, listId: string): Promise<PBCRequest[]> {
-  const res = await http.get(`/pbc-lists/${listId}/requests`, tenantHeaders(tenantId));
-  return res.data;
+  const res = await http.get(`/pbc/lists/${listId}`, tenantHeaders(tenantId));
+  // Backend returns { ...list, requests: [...] }
+  return res.data.requests ?? [];
 }
 
 export interface PBCRequestCreate {
@@ -91,17 +92,23 @@ export interface PBCRequestCreate {
 }
 
 export async function createPBCRequest(tenantId: string, listId: string, data: PBCRequestCreate): Promise<PBCRequest> {
-  const res = await http.post(`/pbc-lists/${listId}/requests`, data, tenantHeaders(tenantId));
+  const res = await http.post(`/pbc/lists/${listId}/requests`, { ...data, list_id: listId }, tenantHeaders(tenantId));
   return res.data;
 }
 
 export async function bulkCreatePBCRequests(tenantId: string, listId: string, requests: PBCRequestCreate[]): Promise<PBCRequest[]> {
-  const res = await http.post(`/pbc-lists/${listId}/requests/bulk`, { requests }, tenantHeaders(tenantId));
+  const payload = requests.map((r) => ({ ...r, list_id: listId }));
+  const res = await http.post(`/pbc/lists/${listId}/requests/bulk`, payload, tenantHeaders(tenantId));
   return res.data;
 }
 
 export async function updatePBCRequestStatus(tenantId: string, requestId: string, status: string): Promise<PBCRequest> {
-  const res = await http.patch(`/pbc-requests/${requestId}/status`, { status }, tenantHeaders(tenantId));
+  if (status === 'not_applicable') {
+    const res = await http.post(`/pbc/requests/${requestId}/na`, {}, tenantHeaders(tenantId));
+    return res.data;
+  }
+  // No generic status PATCH on backend; return a no-op for other statuses
+  const res = await http.get(`/pbc/requests/${requestId}/history`, tenantHeaders(tenantId));
   return res.data;
 }
 
@@ -116,26 +123,30 @@ export interface FulfillmentCreate {
 
 export async function fulfillPBCRequest(tenantId: string, requestId: string, data: FulfillmentCreate): Promise<PBCFulfillment> {
   const formData = new FormData();
-  formData.append('submitted_by', data.submitted_by);
-  if (data.response_text) formData.append('response_text', data.response_text);
-  if (data.submission_notes) formData.append('submission_notes', data.submission_notes);
+  const jsonPayload = JSON.stringify({
+    request_id: requestId,
+    submitted_by: data.submitted_by,
+    response_text: data.response_text ?? null,
+    submission_notes: data.submission_notes ?? null,
+  });
+  formData.append('data', jsonPayload);
   if (data.file) formData.append('file', data.file);
 
-  const res = await http.post(`/pbc-requests/${requestId}/fulfill`, formData, {
+  const res = await http.post(`/pbc/requests/${requestId}/fulfill`, formData, {
     headers: { 'x-tenant-id': tenantId, 'Content-Type': 'multipart/form-data' },
   });
   return res.data;
 }
 
 export async function exportPBCList(tenantId: string, listId: string): Promise<unknown> {
-  const res = await http.get(`/pbc-lists/${listId}/export`, tenantHeaders(tenantId));
+  const res = await http.get(`/export/pbc/${listId}`, tenantHeaders(tenantId));
   return res.data;
 }
 
 // ── Issues ────────────────────────────────────────────────────────────────────
 
 export async function listIssues(tenantId: string, engagementId: string): Promise<AuditIssue[]> {
-  const res = await http.get(`/engagements/${engagementId}/issues`, tenantHeaders(tenantId));
+  const res = await http.get(`/issues?engagement_id=${engagementId}`, tenantHeaders(tenantId));
   return res.data;
 }
 
@@ -157,7 +168,7 @@ export interface IssueCreate {
 }
 
 export async function createIssue(tenantId: string, engagementId: string, data: IssueCreate): Promise<AuditIssue> {
-  const res = await http.post(`/engagements/${engagementId}/issues`, data, tenantHeaders(tenantId));
+  const res = await http.post(`/issues`, { ...data, engagement_id: engagementId }, tenantHeaders(tenantId));
   return res.data;
 }
 
@@ -170,35 +181,32 @@ export interface IssueResponseCreate {
 }
 
 export async function addIssueResponse(tenantId: string, issueId: string, data: IssueResponseCreate): Promise<IssueResponse> {
-  const formData = new FormData();
-  formData.append('response_type', data.response_type);
-  formData.append('response_text', data.response_text);
-  formData.append('submitted_by', data.submitted_by);
-  if (data.new_status) formData.append('new_status', data.new_status);
-  if (data.file) formData.append('file', data.file);
-
-  const res = await http.post(`/issues/${issueId}/responses`, formData, {
-    headers: { 'x-tenant-id': tenantId, 'Content-Type': 'multipart/form-data' },
-  });
+  const res = await http.post(`/issues/${issueId}/respond`, {
+    issue_id: issueId,
+    response_type: data.response_type,
+    response_text: data.response_text,
+    submitted_by: data.submitted_by,
+    new_status: data.new_status ?? null,
+  }, tenantHeaders(tenantId));
   return res.data;
 }
 
 export async function exportIssueRegister(tenantId: string, engagementId: string): Promise<unknown> {
-  const res = await http.get(`/engagements/${engagementId}/issues/export`, tenantHeaders(tenantId));
+  const res = await http.get(`/export/issues/${engagementId}`, tenantHeaders(tenantId));
   return res.data;
 }
 
 // ── Workpaper Templates ───────────────────────────────────────────────────────
 
 export async function listTemplates(tenantId: string): Promise<WorkpaperTemplate[]> {
-  const res = await http.get('/workpaper-templates', tenantHeaders(tenantId));
+  const res = await http.get('/workpapers/templates', tenantHeaders(tenantId));
   return res.data;
 }
 
 // ── Workpapers ────────────────────────────────────────────────────────────────
 
 export async function listWorkpapers(tenantId: string, engagementId: string): Promise<Workpaper[]> {
-  const res = await http.get(`/engagements/${engagementId}/workpapers`, tenantHeaders(tenantId));
+  const res = await http.get(`/workpapers?engagement_id=${engagementId}`, tenantHeaders(tenantId));
   return res.data;
 }
 
@@ -217,12 +225,21 @@ export interface WorkpaperCreate {
 }
 
 export async function createWorkpaper(tenantId: string, engagementId: string, data: WorkpaperCreate): Promise<Workpaper> {
-  const res = await http.post(`/engagements/${engagementId}/workpapers`, data, tenantHeaders(tenantId));
+  const res = await http.post(`/workpapers`, { ...data, engagement_id: engagementId }, tenantHeaders(tenantId));
   return res.data;
 }
 
 export async function updateWorkpaperStatus(tenantId: string, wpId: string, status: string): Promise<Workpaper> {
-  const res = await http.patch(`/workpapers/${wpId}/status`, { status }, tenantHeaders(tenantId));
+  if (status === 'in_review') {
+    const res = await http.post(`/workpapers/${wpId}/submit-review`, {}, tenantHeaders(tenantId));
+    return res.data;
+  }
+  if (status === 'final') {
+    const res = await http.post(`/workpapers/${wpId}/finalize`, {}, tenantHeaders(tenantId));
+    return res.data;
+  }
+  // fallback: fetch current state
+  const res = await http.get(`/workpapers/${wpId}`, tenantHeaders(tenantId));
   return res.data;
 }
 
@@ -237,13 +254,13 @@ export async function updateWorkpaperSection(
 }
 
 export async function exportWorkpaper(tenantId: string, wpId: string): Promise<unknown> {
-  const res = await http.get(`/workpapers/${wpId}/export`, tenantHeaders(tenantId));
+  const res = await http.get(`/export/workpaper/${wpId}`, tenantHeaders(tenantId));
   return res.data;
 }
 
 // ── AI Summary ────────────────────────────────────────────────────────────────
 
 export async function generateAISummary(tenantId: string, engagementId: string): Promise<{ summary: string }> {
-  const res = await http.post(`/engagements/${engagementId}/ai-summary`, {}, tenantHeaders(tenantId));
+  const res = await http.post(`/export/ai-summary/${engagementId}`, {}, tenantHeaders(tenantId));
   return res.data;
 }

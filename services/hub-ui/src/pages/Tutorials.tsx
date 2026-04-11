@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, ChevronDown, ChevronRight, Clock, BarChart2, Tag, Lock, BookOpen, CheckCircle } from 'lucide-react';
+import { Search, ChevronDown, ChevronRight, Clock, BarChart2, Tag, Lock, BookOpen, CheckCircle, Trophy, Zap } from 'lucide-react';
 import { TUTORIALS, type Role, type Tutorial } from '../data/tutorials';
 import type { UserRole } from '../contexts/AuthContext';
 
@@ -19,13 +19,42 @@ const DIFF_STYLE: Record<string, { bg: string; color: string }> = {
   Advanced:     { bg: 'rgba(239,68,68,0.12)',  color: 'var(--status-danger)'  },
 };
 
+/** Category → colour for tag pills */
+const CATEGORY_TAG_STYLE: Record<string, { bg: string; color: string }> = {
+  'Getting Started':     { bg: 'rgba(99,102,241,0.14)',  color: 'var(--brand-text)'      },
+  'Risk Management':     { bg: 'rgba(239,68,68,0.12)',   color: 'var(--status-danger)'   },
+  'Compliance':          { bg: 'rgba(6,182,212,0.12)',   color: '#67e8f9'                 },
+  'Field Work':          { bg: 'rgba(16,185,129,0.12)',  color: 'var(--status-success)'  },
+  'Monitoring':          { bg: 'rgba(59,130,246,0.12)',  color: 'var(--status-info)'     },
+  'Reporting':           { bg: 'rgba(245,158,11,0.12)',  color: 'var(--status-warning)'  },
+  'Administration':      { bg: 'rgba(139,92,246,0.12)',  color: '#c4b5fd'                 },
+  'Vendor Risk':         { bg: 'rgba(249,115,22,0.12)',  color: '#fdba74'                 },
+  'AI Tools':            { bg: 'rgba(236,72,153,0.12)',  color: '#f9a8d4'                 },
+  'Audit Planning':      { bg: 'rgba(20,184,166,0.12)',  color: '#5eead4'                 },
+  'Sharing & Reporting': { bg: 'rgba(245,158,11,0.12)',  color: 'var(--status-warning)'  },
+  'System Administration':{ bg: 'rgba(239,68,68,0.12)', color: 'var(--status-danger)'   },
+};
+const FALLBACK_TAG_STYLE = { bg: 'var(--surface-overlay)', color: 'var(--ink-secondary)' };
+
+function tagStyle(category: string) {
+  return CATEGORY_TAG_STYLE[category] ?? FALLBACK_TAG_STYLE;
+}
+
 interface Props { role: UserRole; }
 
 export default function Tutorials({ role }: Props) {
   const [search,        setSearch]        = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [expandedId,    setExpandedId]    = useState<string | null>(null);
-  const [completedIds,  setCompletedIds]  = useState<Set<string>>(new Set());
+  const storageKey = `via-tutorial-progress-${role}`;
+  const [completedIds,  setCompletedIds]  = useState<Set<string>>(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      return saved ? new Set<string>(JSON.parse(saved)) : new Set<string>();
+    } catch {
+      return new Set<string>();
+    }
+  });
 
   const accessible = useMemo(
     () => TUTORIALS.filter(t => t.roles.includes(role as Role)),
@@ -59,6 +88,7 @@ export default function Tutorials({ role }: Props) {
     setCompletedIds(prev => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
+      try { localStorage.setItem(storageKey, JSON.stringify([...next])); } catch {}
       return next;
     });
   }
@@ -82,24 +112,76 @@ export default function Tutorials({ role }: Props) {
       </div>
 
       {/* Progress */}
-      <div className="mb-8 rounded-xl p-5" style={{ border: '1px solid var(--line)', backgroundColor: 'var(--surface-raised)' }}>
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <BookOpen className="h-4 w-4" style={{ color: 'var(--brand)' }} />
-            <span className="text-sm font-medium" style={{ color: 'var(--ink-primary)' }}>Your Progress</span>
+      <div
+        className="mb-8 rounded-xl p-5"
+        style={{
+          border: '1px solid var(--line-focus)',
+          backgroundColor: 'var(--surface-raised)',
+          background: `linear-gradient(135deg, var(--brand-subtle) 0%, var(--surface-raised) 100%)`,
+        }}
+      >
+        <div className="flex items-start justify-between gap-4 mb-3">
+          <div className="flex items-center gap-2.5">
+            {progress === 100
+              ? <Trophy className="h-5 w-5" style={{ color: 'var(--status-warning)' }} />
+              : progress > 0
+              ? <Zap    className="h-5 w-5" style={{ color: 'var(--brand)' }} />
+              : <BookOpen className="h-5 w-5" style={{ color: 'var(--brand)' }} />
+            }
+            <div>
+              <p className="text-sm font-semibold" style={{ color: 'var(--ink-primary)' }}>
+                {progress === 100 ? 'All tutorials complete!' : 'Your Progress'}
+              </p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--ink-muted)' }}>
+                {completedIds.size} of {accessible.length} completed
+                {locked.length > 0 && ` · ${locked.length} locked`}
+              </p>
+            </div>
           </div>
-          <span className="text-sm font-semibold" style={{ color: 'var(--brand-text)' }}>{progress}%</span>
-        </div>
-        <div className="h-2 w-full rounded-full overflow-hidden" style={{ backgroundColor: 'var(--surface-overlay)' }}>
+          {/* Percentage badge */}
           <div
-            className="h-full rounded-full transition-all duration-500"
-            style={{ width: `${progress}%`, background: 'linear-gradient(to right, var(--brand), var(--brand-hover))' }}
+            className="flex items-center justify-center rounded-xl px-3 py-1.5 shrink-0"
+            style={{
+              backgroundColor: 'var(--brand-subtle)',
+              border: '1px solid var(--brand)',
+            }}
+          >
+            <span className="text-lg font-bold tabular-nums" style={{ color: 'var(--brand-text)' }}>
+              {progress}%
+            </span>
+          </div>
+        </div>
+
+        {/* Bar */}
+        <div className="h-3 w-full rounded-full overflow-hidden" style={{ backgroundColor: 'var(--surface-overlay)' }}>
+          <div
+            className="h-full rounded-full transition-all duration-700"
+            style={{
+              width: `${Math.max(progress, progress > 0 ? 3 : 0)}%`,
+              background: progress === 100
+                ? 'linear-gradient(to right, var(--status-warning), var(--status-success))'
+                : 'linear-gradient(to right, var(--brand), var(--brand-hover))',
+              boxShadow: progress > 0 ? '0 0 8px var(--brand-subtle)' : 'none',
+            }}
           />
         </div>
-        <p className="mt-2 text-xs" style={{ color: 'var(--ink-muted)' }}>
-          {completedIds.size} of {accessible.length} completed
-          {locked.length > 0 && ` · ${locked.length} tutorial${locked.length > 1 ? 's' : ''} require a higher role`}
-        </p>
+
+        {/* Motivational message */}
+        {progress === 0 && (
+          <p className="mt-2 text-xs" style={{ color: 'var(--ink-muted)' }}>
+            Start any tutorial below to track your learning journey.
+          </p>
+        )}
+        {progress > 0 && progress < 100 && (
+          <p className="mt-2 text-xs" style={{ color: 'var(--ink-muted)' }}>
+            {accessible.length - completedIds.size} tutorial{accessible.length - completedIds.size !== 1 ? 's' : ''} remaining — keep going!
+          </p>
+        )}
+        {progress === 100 && (
+          <p className="mt-2 text-xs font-medium" style={{ color: 'var(--status-success)' }}>
+            You've mastered all tutorials available for your role.
+          </p>
+        )}
       </div>
 
       {/* Search + filters */}
@@ -218,9 +300,18 @@ function TutorialCard({
               <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {tutorial.duration}</span>
               <span className="flex items-center gap-1"><BarChart2 className="h-3 w-3" /> {tutorial.steps.length} steps</span>
               <span className="flex items-center gap-1"><Tag className="h-3 w-3" /> {tutorial.category}</span>
-              {tutorial.tags.slice(0, 3).map(tag => (
-                <span key={tag} className="rounded px-1.5 py-0.5" style={{ backgroundColor: 'var(--surface-base)' }}>{tag}</span>
-              ))}
+              {tutorial.tags.slice(0, 3).map(tag => {
+                const ts = tagStyle(tutorial.category);
+                return (
+                  <span
+                    key={tag}
+                    className="rounded px-1.5 py-0.5"
+                    style={{ backgroundColor: ts.bg, color: ts.color }}
+                  >
+                    {tag}
+                  </span>
+                );
+              })}
             </div>
           </div>
 
@@ -318,7 +409,9 @@ function TutorialCard({
 }
 
 function LockedCard({ tutorial }: { tutorial: Tutorial }) {
-  const requiredRole = tutorial.roles[0] as Role;
+  // roles array is ordered highest→lowest privilege (super_admin, admin, end_user)
+  // last element is the minimum required role for this tutorial
+  const requiredRole = tutorial.roles[tutorial.roles.length - 1] as Role;
   const badge = ROLE_BADGE_STYLE[requiredRole] ?? ROLE_BADGE_STYLE.end_user;
   return (
     <div className="flex items-center gap-3 rounded-xl px-5 py-4 opacity-50"

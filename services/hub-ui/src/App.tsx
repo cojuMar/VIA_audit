@@ -15,9 +15,9 @@ const ROLE_LABELS: Record<UserRole, string> = {
   end_user: 'End User',
 };
 const ROLE_COLORS: Record<UserRole, string> = {
-  super_admin: 'var(--status-danger)',
-  admin: 'var(--status-warning)',
-  end_user: 'var(--status-info)',
+  super_admin: 'var(--brand)',        // brand colour — not danger/error red
+  admin:       'var(--brand-hover)',
+  end_user:    'var(--status-info)',
 };
 
 function AppInner() {
@@ -99,7 +99,7 @@ function AppInner() {
                 >
                   {user!.full_name.charAt(0).toUpperCase()}
                 </div>
-                <div className="hidden md:flex flex-col items-start leading-none">
+                <div className="hidden lg:flex flex-col items-start leading-none">
                   <span className="text-xs font-medium" style={{ color: 'var(--ink-primary)' }}>
                     {user!.full_name}
                   </span>
