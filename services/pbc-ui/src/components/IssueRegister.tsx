@@ -1,23 +1,13 @@
 import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  ArrowLeft,
-  Plus,
-  MessageSquare,
-  Wrench,
-  StickyNote,
-  ArrowRight,
-  Paperclip,
-  Upload,
-  X,
+  ArrowLeft, Plus, MessageSquare, Wrench, StickyNote, ArrowRight,
+  Paperclip, Upload, X, LayoutList, LayoutGrid, GripVertical,
+  AlertTriangle, Calendar, User,
 } from 'lucide-react';
 import {
-  listIssues,
-  getIssue,
-  createIssue,
-  addIssueResponse,
-  type IssueCreate,
-  type IssueResponseCreate,
+  listIssues, getIssue, createIssue, addIssueResponse, updateIssueStatus,
+  type IssueCreate, type IssueResponseCreate,
 } from '../api';
 import type { AuditIssue, IssueStatus, IssueSeverity } from '../types';
 
@@ -45,6 +35,17 @@ function severityBadge(s: IssueSeverity) {
   return map[s] ?? 'bg-gray-100 text-gray-600';
 }
 
+function severityBorder(s: IssueSeverity) {
+  const map: Record<IssueSeverity, string> = {
+    critical: 'border-l-red-500',
+    high: 'border-l-orange-400',
+    medium: 'border-l-yellow-400',
+    low: 'border-l-blue-400',
+    informational: 'border-l-gray-300',
+  };
+  return map[s] ?? 'border-l-gray-300';
+}
+
 function statusBadge(s: IssueStatus) {
   const map: Record<IssueStatus, string> = {
     open: 'bg-red-100 text-red-700',
@@ -57,8 +58,8 @@ function statusBadge(s: IssueStatus) {
   return map[s] ?? 'bg-gray-100 text-gray-600';
 }
 
-function statusLabel(s: IssueStatus) {
-  const map: Record<IssueStatus, string> = {
+function statusLabel(s: IssueStatus | string) {
+  const map: Record<string, string> = {
     open: 'Open',
     management_response_pending: 'Mgmt Response',
     in_remediation: 'In Remediation',
@@ -90,10 +91,327 @@ function ResponseIcon({ type }: { type: string }) {
   return <Icon className="w-4 h-4 text-gray-500" />;
 }
 
-type FilterStatus = 'all' | 'open' | 'in_remediation' | 'resolved' | 'closed';
-type FilterSeverity = 'all' | IssueSeverity;
+// ── Kanban column config ──────────────────────────────────────────────────────
+
+interface ColumnDef {
+  status: IssueStatus;
+  label: string;
+  headerColor: string;
+  headerText: string;
+  dropBg: string;
+  dropBorder: string;
+  countBg: string;
+  countText: string;
+}
+
+const COLUMNS: ColumnDef[] = [
+  {
+    status: 'open',
+    label: 'Open',
+    headerColor: 'bg-red-500',
+    headerText: 'text-white',
+    dropBg: 'bg-red-50',
+    dropBorder: 'border-red-400',
+    countBg: 'bg-red-100',
+    countText: 'text-red-700',
+  },
+  {
+    status: 'management_response_pending',
+    label: 'Mgmt Response',
+    headerColor: 'bg-amber-500',
+    headerText: 'text-white',
+    dropBg: 'bg-amber-50',
+    dropBorder: 'border-amber-400',
+    countBg: 'bg-amber-100',
+    countText: 'text-amber-700',
+  },
+  {
+    status: 'in_remediation',
+    label: 'In Remediation',
+    headerColor: 'bg-blue-500',
+    headerText: 'text-white',
+    dropBg: 'bg-blue-50',
+    dropBorder: 'border-blue-400',
+    countBg: 'bg-blue-100',
+    countText: 'text-blue-700',
+  },
+  {
+    status: 'resolved',
+    label: 'Resolved',
+    headerColor: 'bg-green-500',
+    headerText: 'text-white',
+    dropBg: 'bg-green-50',
+    dropBorder: 'border-green-400',
+    countBg: 'bg-green-100',
+    countText: 'text-green-700',
+  },
+  {
+    status: 'closed',
+    label: 'Closed',
+    headerColor: 'bg-gray-400',
+    headerText: 'text-white',
+    dropBg: 'bg-gray-50',
+    dropBorder: 'border-gray-400',
+    countBg: 'bg-gray-100',
+    countText: 'text-gray-600',
+  },
+  {
+    status: 'risk_accepted',
+    label: 'Risk Accepted',
+    headerColor: 'bg-purple-500',
+    headerText: 'text-white',
+    dropBg: 'bg-purple-50',
+    dropBorder: 'border-purple-400',
+    countBg: 'bg-purple-100',
+    countText: 'text-purple-700',
+  },
+];
+
+// ── Kanban card ───────────────────────────────────────────────────────────────
+
+interface KanbanCardProps {
+  issue: AuditIssue;
+  onDragStart: (id: string) => void;
+  onClick: (id: string) => void;
+  isDragging: boolean;
+}
+
+function KanbanCard({ issue, onDragStart, onClick, isDragging }: KanbanCardProps) {
+  const isOverdue =
+    issue.target_remediation_date &&
+    new Date(issue.target_remediation_date) < new Date() &&
+    !['resolved', 'closed', 'risk_accepted'].includes(issue.status);
+
+  return (
+    <div
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.effectAllowed = 'move';
+        onDragStart(issue.id);
+      }}
+      onClick={() => onClick(issue.id)}
+      className={`
+        group relative bg-white rounded-lg border border-gray-200 border-l-4 ${severityBorder(issue.severity)}
+        p-3 cursor-grab active:cursor-grabbing select-none
+        shadow-[var(--via-shadow-xs)] hover:shadow-[var(--via-shadow-hover)]
+        transition-all duration-150
+        ${isDragging ? 'opacity-40 scale-95' : 'opacity-100'}
+      `}
+    >
+      {/* Drag handle hint */}
+      <GripVertical className="absolute right-2 top-2 w-3.5 h-3.5 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+
+      {/* Issue number + severity */}
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${severityDot(issue.severity)}`} />
+        <span className="text-[10px] font-semibold text-gray-400 tracking-wide">
+          #{issue.issue_number}
+        </span>
+        <span className={`badge text-[10px] py-0 ${severityBadge(issue.severity)}`}>
+          {issue.severity}
+        </span>
+      </div>
+
+      {/* Title */}
+      <p className="text-sm font-semibold text-gray-800 leading-snug line-clamp-2 pr-4">
+        {issue.title}
+      </p>
+
+      {/* Finding type */}
+      <p className="text-[11px] text-gray-400 mt-0.5">
+        {issue.finding_type.replace(/_/g, ' ')}
+      </p>
+
+      {/* Footer */}
+      <div className="mt-2.5 flex items-center gap-2 flex-wrap">
+        {issue.management_owner && (
+          <span className="flex items-center gap-1 text-[10px] text-gray-500">
+            <User className="w-3 h-3" />
+            {issue.management_owner}
+          </span>
+        )}
+        {issue.target_remediation_date && (
+          <span className={`flex items-center gap-1 text-[10px] ${isOverdue ? 'text-red-600 font-semibold' : 'text-gray-500'}`}>
+            {isOverdue && <AlertTriangle className="w-3 h-3" />}
+            {!isOverdue && <Calendar className="w-3 h-3" />}
+            {new Date(issue.target_remediation_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+          </span>
+        )}
+        {issue.framework_references?.length > 0 && (
+          <span className="text-[10px] text-indigo-500 font-mono">
+            {issue.framework_references[0]}
+            {issue.framework_references.length > 1 && ` +${issue.framework_references.length - 1}`}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Kanban column ─────────────────────────────────────────────────────────────
+
+interface KanbanColumnProps {
+  col: ColumnDef;
+  issues: AuditIssue[];
+  draggedId: string | null;
+  dropTarget: string | null;
+  onDragStart: (id: string) => void;
+  onDragOver: (status: IssueStatus) => void;
+  onDragLeave: () => void;
+  onDrop: (status: IssueStatus) => void;
+  onCardClick: (id: string) => void;
+}
+
+function KanbanColumn({
+  col, issues, draggedId, dropTarget,
+  onDragStart, onDragOver, onDragLeave, onDrop, onCardClick,
+}: KanbanColumnProps) {
+  const isDropTarget = dropTarget === col.status;
+
+  return (
+    <div className="flex flex-col flex-shrink-0 w-64">
+      {/* Column header */}
+      <div className={`flex items-center justify-between px-3 py-2 rounded-t-lg ${col.headerColor}`}>
+        <span className={`text-xs font-bold tracking-wide ${col.headerText}`}>
+          {col.label}
+        </span>
+        <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full ${col.countBg} ${col.countText}`}>
+          {issues.length}
+        </span>
+      </div>
+
+      {/* Drop zone */}
+      <div
+        onDragOver={(e) => { e.preventDefault(); onDragOver(col.status); }}
+        onDragLeave={onDragLeave}
+        onDrop={(e) => { e.preventDefault(); onDrop(col.status); }}
+        className={`
+          flex-1 rounded-b-lg border-2 p-2 space-y-2 overflow-y-auto transition-colors duration-100
+          min-h-[120px]
+          ${isDropTarget
+            ? `${col.dropBg} ${col.dropBorder} border-dashed`
+            : 'bg-gray-50 border-gray-200'}
+        `}
+      >
+        {issues.map((issue) => (
+          <KanbanCard
+            key={issue.id}
+            issue={issue}
+            onDragStart={onDragStart}
+            onClick={onCardClick}
+            isDragging={draggedId === issue.id}
+          />
+        ))}
+
+        {issues.length === 0 && (
+          <div className={`
+            flex items-center justify-center h-16 rounded text-xs text-gray-400
+            ${isDropTarget ? 'border-2 border-dashed border-current' : ''}
+          `}>
+            {isDropTarget ? 'Drop here' : 'No issues'}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Kanban board ──────────────────────────────────────────────────────────────
+
+interface KanbanBoardProps {
+  tenantId: string;
+  engagementId: string;
+  issues: AuditIssue[];
+  filterSev: FilterSeverity;
+  onSelectIssue: (id: string) => void;
+}
+
+function KanbanBoard({ tenantId, engagementId, issues, filterSev, onSelectIssue }: KanbanBoardProps) {
+  const qc = useQueryClient();
+  const draggedIdRef = useRef<string | null>(null);
+  const [dropTarget, setDropTarget] = useState<IssueStatus | null>(null);
+
+  const moveMut = useMutation({
+    mutationFn: ({ issueId, status }: { issueId: string; status: IssueStatus }) =>
+      updateIssueStatus(tenantId, issueId, status),
+    onMutate: async ({ issueId, status }) => {
+      await qc.cancelQueries({ queryKey: ['issues', tenantId, engagementId] });
+      const prev = qc.getQueryData<AuditIssue[]>(['issues', tenantId, engagementId]);
+      qc.setQueryData<AuditIssue[]>(['issues', tenantId, engagementId], (old) =>
+        (old ?? []).map((i) => (i.id === issueId ? { ...i, status } : i))
+      );
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev) qc.setQueryData(['issues', tenantId, engagementId], ctx.prev);
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ['issues', tenantId, engagementId] });
+    },
+  });
+
+  function handleDragStart(id: string) {
+    draggedIdRef.current = id;
+  }
+
+  function handleDrop(targetStatus: IssueStatus) {
+    const id = draggedIdRef.current;
+    if (!id) return;
+
+    const issue = issues.find((i) => i.id === id);
+    if (!issue || issue.status === targetStatus) {
+      draggedIdRef.current = null;
+      setDropTarget(null);
+      return;
+    }
+
+    moveMut.mutate({ issueId: id, status: targetStatus });
+    draggedIdRef.current = null;
+    setDropTarget(null);
+  }
+
+  function handleDragLeave() {
+    // Small delay prevents flicker when moving between child elements
+    setTimeout(() => setDropTarget(null), 50);
+  }
+
+  const filtered = filterSev === 'all'
+    ? issues
+    : issues.filter((i) => i.severity === filterSev);
+
+  const byStatus = COLUMNS.reduce<Record<string, AuditIssue[]>>((acc, col) => {
+    acc[col.status] = filtered.filter((i) => i.status === col.status);
+    return acc;
+  }, {});
+
+  return (
+    <div
+      className="flex gap-3 overflow-x-auto pb-3"
+      style={{ height: 'calc(100vh - 230px)', alignItems: 'flex-start' }}
+      onDragEnd={() => { draggedIdRef.current = null; setDropTarget(null); }}
+    >
+      {COLUMNS.map((col) => (
+        <KanbanColumn
+          key={col.status}
+          col={col}
+          issues={byStatus[col.status] ?? []}
+          draggedId={draggedIdRef.current}
+          dropTarget={dropTarget}
+          onDragStart={handleDragStart}
+          onDragOver={(s) => setDropTarget(s)}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          onCardClick={onSelectIssue}
+        />
+      ))}
+    </div>
+  );
+}
 
 // ── New Issue Modal ───────────────────────────────────────────────────────────
+
+type FilterStatus = 'all' | 'open' | 'in_remediation' | 'resolved' | 'closed';
+type FilterSeverity = 'all' | IssueSeverity;
 
 interface NewIssueModalProps {
   tenantId: string;
@@ -218,7 +536,7 @@ function NewIssueModal({ tenantId, engagementId, onClose, onDone }: NewIssueModa
   );
 }
 
-// ── Issue Detail ──────────────────────────────────────────────────────────────
+// ── Issue Detail slide-over ───────────────────────────────────────────────────
 
 interface IssueDetailProps {
   tenantId: string;
@@ -255,63 +573,50 @@ function IssueDetail({ tenantId, issueId, onClose }: IssueDetailProps) {
 
   return (
     <div className="space-y-5 p-1">
-      {/* Header */}
-      <div className="space-y-2">
-        <div className="flex items-start gap-2">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-lg font-bold text-gray-800">#{issue.issue_number} {issue.title}</span>
-              <span className={`badge ${severityBadge(issue.severity)}`}>{issue.severity}</span>
-              <span className="badge bg-gray-100 text-gray-700">{issue.finding_type.replace(/_/g, ' ')}</span>
-              <span className={`badge ${statusBadge(issue.status)}`}>{statusLabel(issue.status)}</span>
-            </div>
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-lg font-bold text-gray-800">#{issue.issue_number} {issue.title}</span>
+          </div>
+          <div className="flex items-center gap-1.5 flex-wrap mt-1.5">
+            <span className={`badge ${severityBadge(issue.severity)}`}>{issue.severity}</span>
+            <span className="badge bg-gray-100 text-gray-700">{issue.finding_type.replace(/_/g, ' ')}</span>
+            <span className={`badge ${statusBadge(issue.status)}`}>{statusLabel(issue.status)}</span>
           </div>
         </div>
+        <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0">
+          <X className="w-4 h-4" />
+        </button>
+      </div>
 
-        {/* Metadata grid */}
-        <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
-          {issue.control_reference && (
-            <>
-              <span className="text-gray-500">Control Ref</span>
-              <span className="font-mono text-gray-700">{issue.control_reference}</span>
-            </>
-          )}
-          {issue.management_owner && (
-            <>
-              <span className="text-gray-500">Owner</span>
-              <span className="text-gray-700">{issue.management_owner}</span>
-            </>
-          )}
-          {issue.target_remediation_date && (
-            <>
-              <span className="text-gray-500">Target Date</span>
-              <span className="text-gray-700">{new Date(issue.target_remediation_date).toLocaleDateString()}</span>
-            </>
-          )}
-          {issue.actual_remediation_date && (
-            <>
-              <span className="text-gray-500">Actual Date</span>
-              <span className="text-gray-700">{new Date(issue.actual_remediation_date).toLocaleDateString()}</span>
-            </>
-          )}
-        </div>
-
-        {issue.framework_references?.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {issue.framework_references.map((r) => (
-              <span key={r} className="badge bg-indigo-100 text-indigo-700">{r}</span>
-            ))}
-          </div>
+      <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
+        {issue.control_reference && (
+          <><span className="text-gray-500">Control Ref</span><span className="font-mono text-gray-700">{issue.control_reference}</span></>
+        )}
+        {issue.management_owner && (
+          <><span className="text-gray-500">Owner</span><span className="text-gray-700">{issue.management_owner}</span></>
+        )}
+        {issue.target_remediation_date && (
+          <><span className="text-gray-500">Target Date</span><span className="text-gray-700">{new Date(issue.target_remediation_date).toLocaleDateString()}</span></>
+        )}
+        {issue.actual_remediation_date && (
+          <><span className="text-gray-500">Actual Date</span><span className="text-gray-700">{new Date(issue.actual_remediation_date).toLocaleDateString()}</span></>
         )}
       </div>
 
-      {/* Description */}
+      {issue.framework_references?.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {issue.framework_references.map((r) => (
+            <span key={r} className="badge bg-indigo-100 text-indigo-700">{r}</span>
+          ))}
+        </div>
+      )}
+
       <div>
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Description</p>
         <p className="text-sm text-gray-700 whitespace-pre-wrap">{issue.description}</p>
       </div>
 
-      {/* Root Cause */}
       {issue.root_cause && (
         <div>
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Root Cause</p>
@@ -319,7 +624,6 @@ function IssueDetail({ tenantId, issueId, onClose }: IssueDetailProps) {
         </div>
       )}
 
-      {/* Response timeline */}
       {issue.responses && issue.responses.length > 0 && (
         <div>
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Response Timeline</p>
@@ -337,7 +641,7 @@ function IssueDetail({ tenantId, issueId, onClose }: IssueDetailProps) {
                     <span className="text-xs text-gray-500">{resp.response_type.replace(/_/g, ' ')}</span>
                     {resp.new_status && (
                       <span className={`badge ${statusBadge(resp.new_status as IssueStatus)}`}>
-                        → {statusLabel(resp.new_status as IssueStatus)}
+                        → {statusLabel(resp.new_status)}
                       </span>
                     )}
                   </div>
@@ -355,7 +659,6 @@ function IssueDetail({ tenantId, issueId, onClose }: IssueDetailProps) {
         </div>
       )}
 
-      {/* Add Response form */}
       <div className="border-t border-gray-200 pt-4 space-y-3">
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Add Response</p>
         <div className="grid grid-cols-2 gap-3">
@@ -429,6 +732,8 @@ function IssueDetail({ tenantId, issueId, onClose }: IssueDetailProps) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 
+type ViewMode = 'list' | 'board';
+
 interface Props {
   tenantId: string;
   engagementId: string;
@@ -453,108 +758,169 @@ const FILTER_SEV: { key: FilterSeverity; label: string }[] = [
 
 export default function IssueRegister({ tenantId, engagementId, onBack }: Props) {
   const qc = useQueryClient();
+  const [view,         setView]         = useState<ViewMode>('board');
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
-  const [filterSev, setFilterSev] = useState<FilterSeverity>('all');
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [showNew, setShowNew] = useState(false);
+  const [filterSev,    setFilterSev]    = useState<FilterSeverity>('all');
+  const [selectedId,   setSelectedId]   = useState<string | null>(null);
+  const [showNew,      setShowNew]      = useState(false);
 
   const { data: issues = [], isLoading } = useQuery<AuditIssue[]>({
     queryKey: ['issues', tenantId, engagementId],
     queryFn: () => listIssues(tenantId, engagementId),
   });
 
-  const filtered = issues.filter((i) => {
+  const listFiltered = issues.filter((i) => {
     if (filterStatus !== 'all' && i.status !== filterStatus) return false;
-    if (filterSev !== 'all' && i.severity !== filterSev) return false;
+    if (filterSev    !== 'all' && i.severity !== filterSev)  return false;
     return true;
   });
 
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
         <button className="btn-secondary" onClick={onBack}>
           <ArrowLeft className="w-4 h-4" />
           Back
         </button>
         <h1 className="text-xl font-bold text-gray-900 flex-1">Issue Register</h1>
+
+        {/* View toggle */}
+        <div className="flex items-center rounded-lg border border-gray-200 overflow-hidden">
+          <button
+            onClick={() => setView('list')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${
+              view === 'list'
+                ? 'bg-blue-600 text-white'
+                : 'bg-white text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            <LayoutList className="w-3.5 h-3.5" />
+            List
+          </button>
+          <button
+            onClick={() => setView('board')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${
+              view === 'board'
+                ? 'bg-blue-600 text-white'
+                : 'bg-white text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            <LayoutGrid className="w-3.5 h-3.5" />
+            Board
+          </button>
+        </div>
+
+        <button className="btn-primary" onClick={() => setShowNew(true)}>
+          <Plus className="w-4 h-4" />
+          New Issue
+        </button>
       </div>
 
-      <div className="flex gap-4 h-[calc(100vh-220px)]">
-        {/* Left panel */}
-        <div className="w-1/3 flex flex-col gap-3">
-          {/* Filter chips */}
-          <div className="space-y-2">
-            <div className="flex flex-wrap gap-1">
-              {FILTER_STATUS.map((f) => (
-                <button
-                  key={f.key}
-                  className={`badge cursor-pointer ${filterStatus === f.key ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                  onClick={() => setFilterStatus(f.key)}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
-            <div className="flex flex-wrap gap-1">
-              {FILTER_SEV.map((f) => (
-                <button
-                  key={f.key}
-                  className={`badge cursor-pointer ${filterSev === f.key ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                  onClick={() => setFilterSev(f.key)}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
-          </div>
+      {/* Severity filter (shown in both views) */}
+      <div className="flex flex-wrap gap-1">
+        {FILTER_SEV.map((f) => (
+          <button
+            key={f.key}
+            className={`badge cursor-pointer ${filterSev === f.key ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+            onClick={() => setFilterSev(f.key)}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
 
-          {/* Issue list */}
-          <div className="flex-1 overflow-y-auto card divide-y divide-gray-100">
-            {isLoading && <p className="p-4 text-sm text-gray-400">Loading…</p>}
-            {!isLoading && filtered.length === 0 && (
-              <p className="p-4 text-sm text-gray-400">No issues match filters.</p>
-            )}
-            {filtered.map((issue) => (
+      {isLoading && (
+        <div className="flex items-center justify-center py-12 text-gray-400">
+          <p className="text-sm">Loading issues…</p>
+        </div>
+      )}
+
+      {!isLoading && view === 'board' && (
+        <KanbanBoard
+          tenantId={tenantId}
+          engagementId={engagementId}
+          issues={issues}
+          filterSev={filterSev}
+          onSelectIssue={setSelectedId}
+        />
+      )}
+
+      {!isLoading && view === 'list' && (
+        <>
+          {/* Status filter — only in list view */}
+          <div className="flex flex-wrap gap-1">
+            {FILTER_STATUS.map((f) => (
               <button
-                key={issue.id}
-                className={`w-full text-left px-3 py-2.5 hover:bg-gray-50 transition-colors ${selectedId === issue.id ? 'bg-blue-50' : ''}`}
-                onClick={() => setSelectedId(issue.id)}
+                key={f.key}
+                className={`badge cursor-pointer ${filterStatus === f.key ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                onClick={() => setFilterStatus(f.key)}
               >
-                <div className="flex items-center gap-2">
-                  <span className={`w-2 h-2 rounded-full flex-shrink-0 ${severityDot(issue.severity)}`} />
-                  <span className="text-sm font-medium text-gray-800 truncate">
-                    #{issue.issue_number} {issue.title}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1 mt-0.5 pl-4">
-                  <span className={`badge ${statusBadge(issue.status)}`}>{statusLabel(issue.status)}</span>
-                </div>
+                {f.label}
               </button>
             ))}
           </div>
 
-          <button className="btn-primary w-full" onClick={() => setShowNew(true)}>
-            <Plus className="w-4 h-4" />
-            New Issue
-          </button>
-        </div>
+          <div className="flex gap-4 h-[calc(100vh-280px)]">
+            {/* Issue list */}
+            <div className="w-1/3 flex flex-col gap-3">
+              <div className="flex-1 overflow-y-auto card divide-y divide-gray-100">
+                {listFiltered.length === 0 && (
+                  <p className="p-4 text-sm text-gray-400">No issues match filters.</p>
+                )}
+                {listFiltered.map((issue) => (
+                  <button
+                    key={issue.id}
+                    className={`w-full text-left px-3 py-2.5 hover:bg-gray-50 transition-colors ${selectedId === issue.id ? 'bg-blue-50' : ''}`}
+                    onClick={() => setSelectedId(issue.id)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${severityDot(issue.severity)}`} />
+                      <span className="text-sm font-medium text-gray-800 truncate">
+                        #{issue.issue_number} {issue.title}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1 mt-0.5 pl-4">
+                      <span className={`badge ${statusBadge(issue.status)}`}>{statusLabel(issue.status)}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
 
-        {/* Right panel */}
-        <div className="flex-1 card overflow-y-auto p-5">
-          {selectedId ? (
+            {/* Detail panel */}
+            <div className="flex-1 card overflow-y-auto p-5">
+              {selectedId ? (
+                <IssueDetail
+                  tenantId={tenantId}
+                  issueId={selectedId}
+                  onClose={() => setSelectedId(null)}
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-400">
+                  <p>Select an issue to view details</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Issue detail slide-over (board view) */}
+      {view === 'board' && selectedId && (
+        <div className="fixed inset-0 z-40 flex justify-end" onClick={() => setSelectedId(null)}>
+          <div
+            className="w-full max-w-lg h-full bg-white shadow-2xl overflow-y-auto p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
             <IssueDetail
               tenantId={tenantId}
               issueId={selectedId}
               onClose={() => setSelectedId(null)}
             />
-          ) : (
-            <div className="flex items-center justify-center h-full text-gray-400">
-              <p>Select an issue to view details</p>
-            </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
       {showNew && (
         <NewIssueModal

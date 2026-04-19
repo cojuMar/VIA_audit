@@ -180,6 +180,20 @@ export interface IssueResponseCreate {
   file?: File | null;
 }
 
+export async function updateIssueStatus(
+  tenantId: string,
+  issueId: string,
+  status: string,
+  changedBy = 'kanban_board',
+): Promise<AuditIssue> {
+  const res = await http.patch(
+    `/issues/${issueId}/status`,
+    { status, changed_by: changedBy },
+    tenantHeaders(tenantId),
+  );
+  return res.data;
+}
+
 export async function addIssueResponse(tenantId: string, issueId: string, data: IssueResponseCreate): Promise<IssueResponse> {
   const res = await http.post(`/issues/${issueId}/respond`, {
     issue_id: issueId,

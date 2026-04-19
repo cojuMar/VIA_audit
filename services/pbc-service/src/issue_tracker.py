@@ -341,6 +341,75 @@ class IssueTracker:
         return [dict(r) for r in rows]
 
     # ------------------------------------------------------------------
+    # Direct status update (for Kanban drag-and-drop)
+    # Creates an immutable audit-trail response automatically.
+    # Never deletes — status is updated, prior states visible in responses.
+    # ------------------------------------------------------------------
+
+    VALID_STATUSES = frozenset([
+        "open", "management_response_pending", "in_remediation",
+        "resolved", "closed", "risk_accepted",
+    ])
+
+    async def update_status(
+        self,
+        pool: asyncpg.Pool,
+        tenant_id: str,
+        issue_id: str,
+        new_status: str,
+        changed_by: str = "system",
+    ) -> dict:
+        if new_status not in self.VALID_STATUSES:
+            raise ValueError(f"Invalid status: {new_status}")
+
+        async with tenant_conn(pool, tenant_id) as conn:
+            # Verify issue exists
+            existing = await conn.fetchrow(
+                "SELECT id, status FROM audit_issues WHERE id = $1 AND tenant_id = $2",
+                issue_id, tenant_id,
+            )
+            if existing is None:
+                raise ValueError(f"Issue {issue_id} not found")
+
+            old_status = existing["status"]
+
+            # Immutable audit-trail record
+            await conn.execute(
+                """INSERT INTO issue_responses
+                   (id, tenant_id, issue_id, response_type, response_text,
+                    submitted_by, new_status, responded_at)
+                   VALUES ($1, $2, $3, 'status_change', $4, $5, $6, NOW())""",
+                str(uuid.uuid4()),
+                tenant_id,
+                issue_id,
+                f"Status changed from {old_status} to {new_status}",
+                changed_by,
+                new_status,
+            )
+
+            # Update the issue record
+            if new_status == "resolved":
+                row = await conn.fetchrow(
+                    """UPDATE audit_issues
+                       SET status = $3,
+                           actual_remediation_date = CURRENT_DATE,
+                           updated_at = NOW()
+                       WHERE id = $1 AND tenant_id = $2
+                       RETURNING *""",
+                    issue_id, tenant_id, new_status,
+                )
+            else:
+                row = await conn.fetchrow(
+                    """UPDATE audit_issues
+                       SET status = $3, updated_at = NOW()
+                       WHERE id = $1 AND tenant_id = $2
+                       RETURNING *""",
+                    issue_id, tenant_id, new_status,
+                )
+
+        return dict(row)
+
+    # ------------------------------------------------------------------
     # List issues (filtered)
     # ------------------------------------------------------------------
 

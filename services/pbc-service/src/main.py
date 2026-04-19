@@ -356,6 +356,24 @@ async def create_issue(
     return await _issue_tracker.create_issue(pool, tenant_id, data)
 
 
+@app.patch("/issues/{issue_id}/status", tags=["issues"])
+async def update_issue_status(
+    issue_id: str,
+    body: dict,
+    pool: Annotated[asyncpg.Pool, Depends(get_db)],
+    tenant_id: Annotated[str, Depends(get_tenant_id)],
+) -> dict:
+    """Direct status update for Kanban drag-and-drop. Writes an immutable audit-trail response."""
+    new_status = body.get("status")
+    changed_by = body.get("changed_by", "kanban_board")
+    if not new_status:
+        raise HTTPException(status_code=422, detail="'status' field is required")
+    try:
+        return await _issue_tracker.update_status(pool, tenant_id, issue_id, new_status, changed_by)
+    except ValueError as e:
+        raise HTTPException(status_code=404 if "not found" in str(e) else 422, detail=str(e))
+
+
 @app.get("/issues/metrics/{engagement_id}", tags=["issues"])
 async def get_issue_metrics(
     engagement_id: str,
