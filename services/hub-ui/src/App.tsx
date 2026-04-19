@@ -3,6 +3,7 @@ import { LogOut, ChevronDown, User } from 'lucide-react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider, useAuth, type UserRole } from './contexts/AuthContext';
 import ThemeSelector from './components/ThemeSelector';
+import NotificationBell from './components/NotificationBell';
 import Dashboard from './pages/Dashboard';
 import Tutorials from './pages/Tutorials';
 import Login from './pages/Login';
@@ -81,6 +82,7 @@ function AppInner() {
           {/* Right controls */}
           <div className="flex items-center gap-3 shrink-0">
             <ThemeSelector />
+            <NotificationBell user={user!} />
 
             {/* User menu */}
             <div className="relative">
