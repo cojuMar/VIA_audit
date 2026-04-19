@@ -363,7 +363,7 @@ async def list_notifications(
                 rows = await conn.fetch(
                     """SELECT id, type, title, body, entity_type, entity_id, severity, read, created_at
                        FROM notifications
-                       WHERE tenant_id=$1 AND user_id=$2 AND read=false
+                       WHERE tenant_id=$1 AND user_id=$2 AND read=false AND deleted=false
                        ORDER BY created_at DESC LIMIT $3""",
                     tenant_id, user_id, limit,
                 )
@@ -371,7 +371,7 @@ async def list_notifications(
                 rows = await conn.fetch(
                     """SELECT id, type, title, body, entity_type, entity_id, severity, read, created_at
                        FROM notifications
-                       WHERE tenant_id=$1 AND user_id=$2
+                       WHERE tenant_id=$1 AND user_id=$2 AND deleted=false
                        ORDER BY created_at DESC LIMIT $3""",
                     tenant_id, user_id, limit,
                 )
@@ -389,7 +389,7 @@ async def unread_count(
         async with pool.acquire() as conn:
             await conn.execute(f"SET app.tenant_id = '{tenant_id}'")
             count = await conn.fetchval(
-                "SELECT COUNT(*) FROM notifications WHERE tenant_id=$1 AND user_id=$2 AND read=false",
+                "SELECT COUNT(*) FROM notifications WHERE tenant_id=$1 AND user_id=$2 AND read=false AND deleted=false",
                 tenant_id, user_id,
             )
             return {"count": int(count or 0)}
@@ -406,7 +406,7 @@ async def mark_all_read(
         async with pool.acquire() as conn:
             await conn.execute(f"SET app.tenant_id = '{tenant_id}'")
             await conn.execute(
-                "UPDATE notifications SET read=true WHERE tenant_id=$1 AND user_id=$2 AND read=false",
+                "UPDATE notifications SET read=true WHERE tenant_id=$1 AND user_id=$2 AND read=false AND deleted=false",
                 tenant_id, user_id,
             )
         return {"ok": True}
@@ -423,7 +423,25 @@ async def mark_read(
         async with pool.acquire() as conn:
             await conn.execute(f"SET app.tenant_id = '{tenant_id}'")
             await conn.execute(
-                "UPDATE notifications SET read=true WHERE id=$1 AND tenant_id=$2",
+                "UPDATE notifications SET read=true WHERE id=$1 AND tenant_id=$2 AND deleted=false",
+                notification_id, tenant_id,
+            )
+        return {"ok": True}
+    except asyncpg.UndefinedTableError:
+        return {"ok": True}
+
+
+@app.delete("/auth/notifications/{notification_id}")
+async def delete_notification(
+    notification_id: str,
+    tenant_id: str = Query(default=DEMO_TENANT_ID),
+):
+    """Soft-delete: flags deleted=true, never removes the row."""
+    try:
+        async with pool.acquire() as conn:
+            await conn.execute(f"SET app.tenant_id = '{tenant_id}'")
+            await conn.execute(
+                "UPDATE notifications SET deleted=true, deleted_at=NOW() WHERE id=$1 AND tenant_id=$2",
                 notification_id, tenant_id,
             )
         return {"ok": True}
