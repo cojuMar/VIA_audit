@@ -7,7 +7,7 @@ version: "3.9"
 networks:
   aegis-internal:
     driver: bridge
-    internal: true
+    # internal: true   # temporarily disabled for QA testing — re-enable before prod
   aegis-external:
     driver: bridge
 
@@ -1270,6 +1270,7 @@ services:
       - "5173:80"
     depends_on:
       - auth-service
+      - dashboard-service
     networks:
       - aegis-internal
       - aegis-external

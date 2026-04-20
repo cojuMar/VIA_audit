@@ -5,6 +5,7 @@ import {
   Paperclip, Upload, X, LayoutList, LayoutGrid, GripVertical,
   AlertTriangle, Calendar, User,
 } from 'lucide-react';
+import DataTable, { type ColDef } from './DataTable';
 import {
   listIssues, getIssue, createIssue, addIssueResponse, updateIssueStatus,
   type IssueCreate, type IssueResponseCreate,
@@ -756,6 +757,89 @@ const FILTER_SEV: { key: FilterSeverity; label: string }[] = [
   { key: 'low', label: 'Low' },
 ];
 
+// ── Issue list-view column definitions ────────────────────────────────────────
+
+const SEV_ORDER: Record<IssueSeverity, number> = {
+  critical: 0, high: 1, medium: 2, low: 3, informational: 4,
+};
+
+const ISSUE_COLS: ColDef<AuditIssue>[] = [
+  {
+    key: 'number',
+    header: '#',
+    width: '52px',
+    render: (i) => <span className="text-gray-500 tabular-nums text-xs">#{i.issue_number}</span>,
+    sortFn: (a, b) => (a.issue_number ?? 0) - (b.issue_number ?? 0),
+  },
+  {
+    key: 'severity',
+    header: 'Sev',
+    width: '80px',
+    render: (i) => (
+      <span className={`badge ${severityBadge(i.severity)}`}>
+        {i.severity.charAt(0).toUpperCase() + i.severity.slice(1)}
+      </span>
+    ),
+    sortFn: (a, b) => (SEV_ORDER[a.severity] ?? 9) - (SEV_ORDER[b.severity] ?? 9),
+  },
+  {
+    key: 'title',
+    header: 'Title',
+    render: (i) => (
+      <div>
+        <p className="font-medium text-gray-800 truncate max-w-xs">{i.title}</p>
+        <p className="text-xs text-gray-400 mt-0.5">{i.finding_type.replace(/_/g, ' ')}</p>
+      </div>
+    ),
+    sortFn: (a, b) => a.title.localeCompare(b.title),
+  },
+  {
+    key: 'status',
+    header: 'Status',
+    width: '140px',
+    render: (i) => (
+      <span className={`badge ${statusBadge(i.status)}`}>{statusLabel(i.status)}</span>
+    ),
+    sortFn: (a, b) => a.status.localeCompare(b.status),
+  },
+  {
+    key: 'owner',
+    header: 'Owner',
+    width: '140px',
+    render: (i) => (
+      <span className="text-xs text-gray-500 flex items-center gap-1">
+        {i.management_owner ? (
+          <><User className="w-3 h-3 flex-shrink-0" />{i.management_owner}</>
+        ) : '—'}
+      </span>
+    ),
+    sortFn: (a, b) => (a.management_owner ?? '').localeCompare(b.management_owner ?? ''),
+  },
+  {
+    key: 'target_date',
+    header: 'Target Date',
+    width: '120px',
+    render: (i) => {
+      if (!i.target_remediation_date) return <span className="text-xs text-gray-400">—</span>;
+      const overdue =
+        new Date(i.target_remediation_date) < new Date() &&
+        !['resolved', 'closed', 'risk_accepted'].includes(i.status);
+      return (
+        <span className={`text-xs flex items-center gap-1 ${overdue ? 'text-red-600 font-semibold' : 'text-gray-500'}`}>
+          <Calendar className="w-3 h-3 flex-shrink-0" />
+          {new Date(i.target_remediation_date).toLocaleDateString()}
+          {overdue && <AlertTriangle className="w-3 h-3" />}
+        </span>
+      );
+    },
+    sortFn: (a, b) => {
+      const da = a.target_remediation_date ? new Date(a.target_remediation_date).getTime() : Infinity;
+      const db = b.target_remediation_date ? new Date(b.target_remediation_date).getTime() : Infinity;
+      return da - db;
+    },
+  },
+];
+
 export default function IssueRegister({ tenantId, engagementId, onBack }: Props) {
   const qc = useQueryClient();
   const [view,         setView]         = useState<ViewMode>('board');
@@ -861,48 +945,41 @@ export default function IssueRegister({ tenantId, engagementId, onBack }: Props)
             ))}
           </div>
 
-          <div className="flex gap-4 h-[calc(100vh-280px)]">
-            {/* Issue list */}
-            <div className="w-1/3 flex flex-col gap-3">
-              <div className="flex-1 overflow-y-auto card divide-y divide-gray-100">
-                {listFiltered.length === 0 && (
-                  <p className="p-4 text-sm text-gray-400">No issues match filters.</p>
-                )}
-                {listFiltered.map((issue) => (
-                  <button
-                    key={issue.id}
-                    className={`w-full text-left px-3 py-2.5 hover:bg-gray-50 transition-colors ${selectedId === issue.id ? 'bg-blue-50' : ''}`}
-                    onClick={() => setSelectedId(issue.id)}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${severityDot(issue.severity)}`} />
-                      <span className="text-sm font-medium text-gray-800 truncate">
-                        #{issue.issue_number} {issue.title}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1 mt-0.5 pl-4">
-                      <span className={`badge ${statusBadge(issue.status)}`}>{statusLabel(issue.status)}</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Detail panel */}
-            <div className="flex-1 card overflow-y-auto p-5">
-              {selectedId ? (
-                <IssueDetail
-                  tenantId={tenantId}
-                  issueId={selectedId}
-                  onClose={() => setSelectedId(null)}
-                />
-              ) : (
-                <div className="flex items-center justify-center h-full text-gray-400">
-                  <p>Select an issue to view details</p>
-                </div>
-              )}
-            </div>
-          </div>
+          <DataTable<AuditIssue>
+            cols={ISSUE_COLS}
+            rows={listFiltered}
+            rowKey={(i) => i.id}
+            emptyMessage="No issues match your filters"
+            emptySubMessage="Try clearing the severity or status filter."
+            searchable
+            searchPlaceholder="Search by title, owner, control ref…"
+            searchFields={(i) => [
+              i.title,
+              i.management_owner ?? '',
+              i.control_reference ?? '',
+              i.finding_type,
+              ...(i.framework_references ?? []),
+            ]}
+            pageSize={20}
+            expandRender={(issue) => (
+              <IssueDetail
+                tenantId={tenantId}
+                issueId={issue.id}
+                onClose={() => {}}
+              />
+            )}
+            exportFilename="issue-register"
+            exportRow={(i) => ({
+              '#': i.issue_number ?? '',
+              title: i.title,
+              severity: i.severity,
+              finding_type: i.finding_type,
+              status: i.status,
+              owner: i.management_owner ?? '',
+              control_ref: i.control_reference ?? '',
+              target_date: i.target_remediation_date ?? '',
+            })}
+          />
         </>
       )}
 

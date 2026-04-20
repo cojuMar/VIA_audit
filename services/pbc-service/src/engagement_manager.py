@@ -23,11 +23,11 @@ class EngagementManager:
             row = await conn.fetchrow(
                 """
                 INSERT INTO audit_engagements (
-                    id, tenant_id, engagement_name, engagement_type,
-                    fiscal_year, period_start, period_end, lead_auditor,
-                    description, status, created_at, updated_at
+                    id, tenant_id, title, audit_type,
+                    planned_start_date, planned_end_date, lead_auditor,
+                    scope, status, created_at, updated_at
                 )
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'planning',
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'planning',
                         NOW(), NOW())
                 RETURNING *
                 """,
@@ -35,7 +35,6 @@ class EngagementManager:
                 tenant_id,
                 data.engagement_name,
                 data.engagement_type,
-                data.fiscal_year,
                 data.period_start,
                 data.period_end,
                 data.lead_auditor,

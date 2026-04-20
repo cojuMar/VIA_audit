@@ -9,6 +9,13 @@
       "cwd": "services/hub-ui"
     },
     {
+      "name": "via-pbc-test",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["vite", "--config", "vite.config.test.ts", "--port", "5191"],
+      "port": 5191,
+      "cwd": "services/pbc-ui"
+    },
+    {
       "name": "framework-ui",
       "runtimeExecutable": "node",
       "runtimeArgs": ["proxy-server.js", "5274", "5174"],

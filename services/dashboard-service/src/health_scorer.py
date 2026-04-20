@@ -54,7 +54,7 @@ class HealthScorer:
 
     async def _compute(self, tenant_id: str, framework: str) -> HealthScore:
         async with self._pool.acquire() as conn:
-            await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
+            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
 
             # 1. Access control: % PAM requests with outcome='approved' in last 30d
             ac_row = await conn.fetchrow("""
@@ -151,7 +151,7 @@ class HealthScorer:
 
     async def _persist(self, tenant_id: str, framework: str, score: HealthScore) -> None:
         async with self._pool.acquire() as conn:
-            await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
+            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
             await conn.execute("""
                 INSERT INTO health_score_snapshots (
                     tenant_id, framework, overall_score,
@@ -169,7 +169,7 @@ class HealthScorer:
     async def get_trend(self, tenant_id: str, framework: str, days: int = 30) -> list:
         """Return time-series health scores for trending chart."""
         async with self._pool.acquire() as conn:
-            await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
+            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
             rows = await conn.fetch("""
                 SELECT snapshot_time, overall_score, access_control, data_integrity,
                        anomaly_rate, evidence_freshness, narrative_quality,

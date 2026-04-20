@@ -820,6 +820,89 @@
     border: 1px solid var(--line);
   }
 
+  /* ── Data Table ─────────────────────────────────────────────────────────── */
+  /*
+   * Canonical VIA table standard — use .via-table on <table> elements.
+   * Uses the 4-theme CSS variable system; no hardcoded colours.
+   */
+  .via-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  /* Sticky header */
+  .via-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--surface-raised);
+    border-bottom: 1px solid var(--line-strong);
+  }
+
+  .via-table th {
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--ink-muted);
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  /* Sortable header */
+  .via-table th.sortable { cursor: pointer; }
+  .via-table th.sortable:hover { color: var(--ink-secondary); }
+  .via-table th.sort-active { color: var(--brand-text); }
+
+  /* Sort indicator icons inside th */
+  .via-table .sort-icon { display: inline-flex; vertical-align: middle; margin-left: 4px; opacity: 0.4; }
+  .via-table th.sort-active .sort-icon { opacity: 1; color: var(--brand-text); }
+
+  /* Cells */
+  .via-table td {
+    padding: 11px 14px;
+    color: var(--ink-primary);
+    border-bottom: 1px solid var(--line);
+    vertical-align: middle;
+  }
+
+  .via-table tbody tr:last-child td { border-bottom: none; }
+
+  /* Row hover */
+  .via-table tbody tr { transition: background 0.08s; }
+  .via-table tbody tr:hover > td { background: var(--surface-overlay); }
+
+  /* Expanded sub-row */
+  .via-table tr.expanded-row > td { background: var(--brand-subtle); border-bottom: none; }
+  .via-table tr.expand-content > td { background: var(--brand-subtle); }
+
+  /* Skeleton rows */
+  .via-table .skeleton-cell {
+    height: 12px;
+    border-radius: 4px;
+    background: var(--line-strong);
+    animation: via-skeleton-pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes via-skeleton-pulse {
+    0%, 100% { opacity: 0.4; }
+    50%       { opacity: 0.9; }
+  }
+
+  /* Pagination bar */
+  .via-table-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--ink-muted);
+    background: var(--surface-raised);
+  }
+
   /* ── Animated Login Orbs ────────────────────────────────────────────────── */
   .orb-1 {
     position: absolute;

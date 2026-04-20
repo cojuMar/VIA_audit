@@ -5,12 +5,12 @@ import {
   Plus,
   Upload,
   Bell,
-  ChevronDown,
-  ChevronRight,
   Check,
   Download,
   X,
+  AlertTriangle,
 } from 'lucide-react';
+import DataTable, { type ColDef } from './DataTable';
 import {
   listPBCLists,
   listPBCRequests,
@@ -300,94 +300,147 @@ function AddRequestModal({ tenantId, listId, onClose, onDone }: AddRequestModalP
   );
 }
 
-// ── Request Row ───────────────────────────────────────────────────────────────
+// ── Expand content for DataTable expandable rows ──────────────────────────────
 
-interface RequestRowProps {
+interface ExpandContentProps {
   req: PBCRequest;
   tenantId: string;
   onFulfill: (req: PBCRequest) => void;
   listId: string;
 }
 
-function RequestRow({ req, tenantId, onFulfill, listId }: RequestRowProps) {
-  const [expanded, setExpanded] = useState(false);
+function ExpandContent({ req, tenantId, onFulfill, listId }: ExpandContentProps) {
   const qc = useQueryClient();
-
   const naMut = useMutation({
     mutationFn: () => updatePBCRequestStatus(tenantId, req.id, 'not_applicable'),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['pbc-requests', listId] }),
   });
 
   return (
-    <>
-      <tr
-        className="hover:bg-gray-50 cursor-pointer"
-        onClick={() => setExpanded((v) => !v)}
-      >
-        <td className="px-3 py-2 text-sm text-gray-500 w-10">{req.request_number}</td>
-        <td className="px-3 py-2 w-10">
-          <span className={`badge ${priorityBadge(req.priority)}`}>{priorityLetter(req.priority)}</span>
-        </td>
-        <td className="px-3 py-2 text-sm font-medium text-gray-800">{req.title}</td>
-        <td className="px-3 py-2 text-xs text-gray-500">{req.category ?? '—'}</td>
-        <td className="px-3 py-2 text-xs text-gray-500">{req.assigned_to ?? '—'}</td>
-        <td className="px-3 py-2 text-xs text-gray-500">{relDate(req.due_date)}</td>
-        <td className="px-3 py-2">
-          <span className={`badge ${statusBadge(req.status)}`}>{req.status.replace('_', ' ')}</span>
-        </td>
-        <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
-          <div className="flex gap-1">
-            {req.status !== 'fulfilled' && req.status !== 'not_applicable' && (
-              <button
-                className="btn-primary text-xs py-0.5"
-                onClick={() => onFulfill(req)}
-              >
-                <Check className="w-3 h-3" />
-                Fulfill
-              </button>
-            )}
-            {req.status !== 'not_applicable' && req.status !== 'fulfilled' && (
-              <button
-                className="btn-secondary text-xs py-0.5"
-                disabled={naMut.isPending}
-                onClick={() => naMut.mutate()}
-              >
-                N/A
-              </button>
-            )}
-          </div>
-        </td>
-        <td className="px-3 py-2 w-6">
-          {expanded ? <ChevronDown className="w-3 h-3 text-gray-400" /> : <ChevronRight className="w-3 h-3 text-gray-400" />}
-        </td>
-      </tr>
-      {expanded && (
-        <tr className="bg-blue-50">
-          <td colSpan={9} className="px-6 py-3 text-sm space-y-2">
-            <p className="text-gray-700">{req.description}</p>
-            {req.framework_control_ref && (
-              <p className="text-xs text-gray-500">Control ref: <span className="font-mono">{req.framework_control_ref}</span></p>
-            )}
-            {req.fulfillments && req.fulfillments.length > 0 && (
-              <div className="space-y-1">
-                <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Fulfillment History</p>
-                {req.fulfillments.map((f) => (
-                  <div key={f.id} className="flex items-start gap-2 text-xs text-gray-600 border-l-2 border-green-300 pl-2">
-                    <span className="font-medium">{f.submitted_by}</span>
-                    <span className="text-gray-400">{new Date(f.submitted_at).toLocaleString()}</span>
-                    {f.response_text && <span>{f.response_text}</span>}
-                    {f.file_name && (
-                      <span className="text-blue-600 underline">{f.file_name}</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </td>
-        </tr>
+    <div className="space-y-3 text-sm">
+      <p className="text-gray-700">{req.description}</p>
+      {req.framework_control_ref && (
+        <p className="text-xs text-gray-500">
+          Control ref: <span className="font-mono">{req.framework_control_ref}</span>
+        </p>
       )}
-    </>
+      {req.fulfillments && req.fulfillments.length > 0 && (
+        <div className="space-y-1">
+          <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Fulfillment History</p>
+          {req.fulfillments.map((f) => (
+            <div key={f.id} className="flex items-start gap-2 text-xs text-gray-600 border-l-2 border-green-300 pl-2">
+              <span className="font-medium">{f.submitted_by}</span>
+              <span className="text-gray-400">{new Date(f.submitted_at).toLocaleString()}</span>
+              {f.response_text && <span>{f.response_text}</span>}
+              {f.file_name && <span className="text-blue-600 underline">{f.file_name}</span>}
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="flex gap-2 pt-1">
+        {req.status !== 'fulfilled' && req.status !== 'not_applicable' && (
+          <button className="btn-primary text-xs" onClick={() => onFulfill(req)}>
+            <Check className="w-3 h-3" />
+            Fulfill
+          </button>
+        )}
+        {req.status !== 'not_applicable' && req.status !== 'fulfilled' && (
+          <button className="btn-secondary text-xs" disabled={naMut.isPending} onClick={() => naMut.mutate()}>
+            Mark N/A
+          </button>
+        )}
+      </div>
+    </div>
   );
+}
+
+// ── PBC request column definitions ───────────────────────────────────────────
+
+function buildCols(
+  tenantId: string,
+  listId: string,
+  onFulfill: (req: PBCRequest) => void,
+): ColDef<PBCRequest>[] {
+  return [
+    {
+      key: 'number',
+      header: '#',
+      width: '48px',
+      render: (r) => <span className="text-gray-500 tabular-nums">{r.request_number}</span>,
+      sortFn: (a, b) => (a.request_number ?? 0) - (b.request_number ?? 0),
+    },
+    {
+      key: 'priority',
+      header: 'Pri',
+      width: '56px',
+      render: (r) => (
+        <span className={`badge ${priorityBadge(r.priority)}`}>
+          {priorityLetter(r.priority)}
+        </span>
+      ),
+      sortFn: (a, b) => {
+        const order = { high: 0, medium: 1, low: 2 };
+        return (order[a.priority] ?? 9) - (order[b.priority] ?? 9);
+      },
+    },
+    {
+      key: 'title',
+      header: 'Title',
+      render: (r) => (
+        <div>
+          <span className="font-medium text-gray-800">{r.title}</span>
+          {r.status === 'overdue' && (
+            <AlertTriangle className="inline ml-1.5 h-3 w-3 text-red-500" />
+          )}
+        </div>
+      ),
+      sortFn: (a, b) => a.title.localeCompare(b.title),
+    },
+    {
+      key: 'category',
+      header: 'Category',
+      width: '120px',
+      render: (r) => <span className="text-xs text-gray-500">{r.category ?? '—'}</span>,
+      sortFn: (a, b) => (a.category ?? '').localeCompare(b.category ?? ''),
+    },
+    {
+      key: 'assigned_to',
+      header: 'Assigned To',
+      width: '140px',
+      render: (r) => <span className="text-xs text-gray-500">{r.assigned_to ?? '—'}</span>,
+      sortFn: (a, b) => (a.assigned_to ?? '').localeCompare(b.assigned_to ?? ''),
+    },
+    {
+      key: 'due_date',
+      header: 'Due',
+      width: '100px',
+      render: (r) => {
+        const text = relDate(r.due_date);
+        const overdue = text.includes('overdue');
+        return (
+          <span className={`text-xs ${overdue ? 'text-red-600 font-semibold' : 'text-gray-500'}`}>
+            {text}
+          </span>
+        );
+      },
+      sortFn: (a, b) => {
+        const da = a.due_date ? new Date(a.due_date).getTime() : Infinity;
+        const db = b.due_date ? new Date(b.due_date).getTime() : Infinity;
+        return da - db;
+      },
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      width: '120px',
+      render: (r) => (
+        <span className={`badge ${statusBadge(r.status)}`}>
+          {r.status.replace(/_/g, ' ')}
+        </span>
+      ),
+      sortFn: (a, b) => a.status.localeCompare(b.status),
+    },
+  ];
 }
 
 // ── New List Modal ────────────────────────────────────────────────────────────
@@ -527,36 +580,39 @@ function ListView({ tenantId, list }: ListViewProps) {
       </div>
 
       {/* Table */}
-      {isLoading ? (
-        <p className="text-gray-500 text-sm">Loading requests…</p>
-      ) : requests.length === 0 ? (
-        <div className="card p-8 text-center text-gray-400">
-          <p>No requests in this list. Add some to get started.</p>
-        </div>
-      ) : (
-        <div className="card overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                {['#', 'Pri', 'Title', 'Category', 'Assigned To', 'Due', 'Status', 'Actions', ''].map((h) => (
-                  <th key={h} className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {requests.map((req) => (
-                <RequestRow
-                  key={req.id}
-                  req={req}
-                  tenantId={tenantId}
-                  onFulfill={setFulfillTarget}
-                  listId={list.id}
-                />
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <DataTable<PBCRequest>
+        cols={buildCols(tenantId, list.id, setFulfillTarget)}
+        rows={requests}
+        rowKey={(r) => r.id}
+        loading={isLoading}
+        skeletonRows={6}
+        emptyMessage="No requests in this list"
+        emptySubMessage="Add requests using the buttons above."
+        searchable
+        searchPlaceholder="Search by title, category, assignee…"
+        searchFields={(r) => [r.title, r.category ?? '', r.assigned_to ?? '', r.description ?? '']}
+        pageSize={25}
+        expandRender={(r) => (
+          <ExpandContent
+            req={r}
+            tenantId={tenantId}
+            listId={list.id}
+            onFulfill={setFulfillTarget}
+          />
+        )}
+        exportFilename={`pbc-${list.list_name}`}
+        exportRow={(r) => ({
+          '#': r.request_number ?? '',
+          title: r.title,
+          description: r.description ?? '',
+          category: r.category ?? '',
+          priority: r.priority,
+          assigned_to: r.assigned_to ?? '',
+          due_date: r.due_date ?? '',
+          status: r.status,
+          framework_ref: r.framework_control_ref ?? '',
+        })}
+      />
 
       {fulfillTarget && (
         <FulfillModal

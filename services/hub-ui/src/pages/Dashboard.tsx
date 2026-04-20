@@ -7,6 +7,7 @@ import {
 import { MODULES, WORKFLOW_STEPS, type Module } from '../data/modules';
 import type { AuthUser } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import HubKPI from '../components/HubKPI';
 
 /** Ping each module root and return per-module online status */
 function useModuleHealth(modules: Module[]) {
@@ -182,6 +183,9 @@ export default function Dashboard({ user, onOpenTutorials }: Props) {
           </div>
         </div>
       </div>
+
+      {/* ── KPI Intelligence ─────────────────────────────────────────────── */}
+      <HubKPI user={user} />
 
       {/* ── AI Insight Strip ─────────────────────────────────────────────── */}
       <div

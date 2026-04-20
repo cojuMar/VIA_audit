@@ -34,6 +34,7 @@ Routes:
 import asyncio
 import json
 import logging
+import time
 from contextlib import asynccontextmanager
 from typing import Optional, Set
 import asyncpg
@@ -178,7 +179,7 @@ async def get_white_label(
     _auth = Depends(_require_bearer),
 ):
     async with db.acquire() as conn:
-        await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
+        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
         row = await conn.fetchrow(
             "SELECT * FROM white_label_configs WHERE tenant_id = $1::uuid", tenant_id
         )
@@ -210,7 +211,7 @@ async def get_dashboard_config(
     _auth = Depends(_require_bearer),
 ):
     async with db.acquire() as conn:
-        await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
+        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
         row = await conn.fetchrow(
             "SELECT * FROM dashboard_configs WHERE tenant_id=$1::uuid AND user_id=$2::uuid",
             tenant_id, user_id
@@ -249,7 +250,7 @@ async def update_dashboard_config(
         idx += 1
 
     async with db.acquire() as conn:
-        await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
+        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
         await conn.execute(f"""
             INSERT INTO dashboard_configs (tenant_id, user_id, {', '.join(fields.keys())})
             VALUES ($1::uuid, $2::uuid, {', '.join(f'${i}' for i in range(3, idx))})
@@ -322,7 +323,7 @@ async def get_risk_heatmap(
     heatmap_rows = []
     for tid in tenant_ids:
         async with db.acquire() as conn:
-            await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tid)
+            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tid)
             rows = await conn.fetch("""
                 SELECT
                     COALESCE(er.canonical_payload->>'entity_type', 'unknown') AS category,
@@ -418,7 +419,7 @@ async def get_evidence_locker(
     where = " AND ".join(conditions)
 
     async with db.acquire() as conn:
-        await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
+        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
         rows = await conn.fetch(f"""
             SELECT
                 evidence_id,
@@ -478,7 +479,7 @@ async def get_audit_hub(
 
     where = " AND ".join(conditions)
     async with db.acquire() as conn:
-        await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
+        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
         rows = await conn.fetch(f"""
             SELECT * FROM audit_hub_items
             WHERE {where}
@@ -496,7 +497,7 @@ async def create_audit_hub_item(
     _auth = Depends(_require_bearer),
 ):
     async with db.acquire() as conn:
-        await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
+        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
         item_id = await conn.fetchval("""
             INSERT INTO audit_hub_items
                 (tenant_id, framework, control_id, title, description, priority, due_date, assigned_to)
@@ -518,7 +519,7 @@ async def update_audit_hub_item(
     _auth = Depends(_require_bearer),
 ):
     async with db.acquire() as conn:
-        await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
+        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
         result = await conn.execute("""
             UPDATE audit_hub_items SET status=$1, updated_at=NOW()
             WHERE item_id=$2::uuid AND tenant_id=$3::uuid
@@ -541,7 +542,7 @@ async def get_health_score(
 ):
     """Current health score for Autonomous Mode gauges."""
     async with db.acquire() as conn:
-        await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
+        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
         row = await conn.fetchrow("""
             SELECT * FROM health_score_snapshots
             WHERE tenant_id = $1::uuid AND framework = $2
@@ -602,7 +603,7 @@ async def get_gauges(
 ):
     """All gauge values for Autonomous Mode dashboard dials."""
     async with db.acquire() as conn:
-        await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
+        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
         hs_row = await conn.fetchrow("""
             SELECT * FROM health_score_snapshots
             WHERE tenant_id = $1::uuid AND framework = $2
@@ -672,7 +673,7 @@ async def get_anomaly_feed(
     limit: int = Query(50, ge=1, le=200),
 ):
     async with db.acquire() as conn:
-        await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
+        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
         rows = await conn.fetch("""
             SELECT
                 ans.anomaly_id, ans.dri_score, ans.risk_level,
@@ -688,6 +689,136 @@ async def get_anomaly_feed(
             LIMIT $2
         """, tenant_id, limit)
     return [dict(r) for r in rows]
+
+
+# ---------------------------------------------------------------------------
+# Hub Summary endpoint — lightweight KPI aggregator for hub-ui
+# ---------------------------------------------------------------------------
+
+# In-memory cache: tenant_id → (expiry_timestamp, payload)
+_hub_summary_cache: dict[str, tuple[float, dict]] = {}
+_HUB_CACHE_TTL = 60.0  # seconds
+
+
+async def _get_tenant_id_opt(x_tenant_id: Optional[str] = Header(None, alias="X-Tenant-ID")) -> str:
+    """Tenant-ID header, no Bearer required (hub internal endpoint)."""
+    if not x_tenant_id:
+        raise HTTPException(400, "X-Tenant-ID header required")
+    return x_tenant_id
+
+
+@app.get("/hub/summary")
+async def hub_summary(
+    tenant_id: str = Depends(_get_tenant_id_opt),
+    db: asyncpg.Pool = Depends(get_db),
+):
+    """
+    Fast KPI summary for the hub-ui dashboard ring gauges.
+    Returns aggregated counts and percentages across core audit tables.
+    Cached per tenant for 60 seconds.
+    """
+    now = time.monotonic()
+    cached = _hub_summary_cache.get(tenant_id)
+    if cached and now < cached[0]:
+        return cached[1]
+
+    async def _q(sql: str, *args):
+        """Run a single scalar query, return 0/None on any error."""
+        try:
+            async with db.acquire() as conn:
+                await conn.execute(
+                    "SELECT set_config('app.tenant_id', $1, false)", tenant_id
+                )
+                return await conn.fetchval(sql, *args)
+        except Exception as exc:
+            logger.warning("hub_summary query failed: %s", exc)
+            return None
+
+    (
+        active_engagements,
+        open_issues,
+        total_issues,
+        open_risks,
+        total_risks,
+        pbc_fulfilled,
+        pbc_total,
+        wp_final,
+        wp_total,
+    ) = await asyncio.gather(
+        # Active engagements (planning + fieldwork + reporting)
+        _q("""SELECT COUNT(*) FROM audit_engagements
+              WHERE tenant_id = $1::uuid
+                AND status IN ('planning','fieldwork','reporting','in_progress')
+                AND deleted = false""", tenant_id),
+        # Open issues (not yet resolved/closed)
+        _q("""SELECT COUNT(*) FROM audit_issues
+              WHERE tenant_id = $1::uuid
+                AND status IN ('open','in_review','draft')
+                AND deleted = false""", tenant_id),
+        # Total non-deleted issues
+        _q("""SELECT COUNT(*) FROM audit_issues
+              WHERE tenant_id = $1::uuid AND deleted = false""", tenant_id),
+        # Open risks
+        _q("""SELECT COUNT(*) FROM risks
+              WHERE tenant_id = $1::uuid
+                AND status NOT IN ('closed','accepted','mitigated','transferred')
+                AND deleted = false""", tenant_id),
+        # Total non-deleted risks
+        _q("""SELECT COUNT(*) FROM risks
+              WHERE tenant_id = $1::uuid AND deleted = false""", tenant_id),
+        # PBC fulfilled requests
+        _q("""SELECT COUNT(*) FROM pbc_requests r
+              JOIN pbc_request_lists l ON l.list_id = r.list_id
+              WHERE l.tenant_id = $1::uuid
+                AND r.status IN ('fulfilled','reviewed','approved')
+                AND r.deleted = false AND l.deleted = false""", tenant_id),
+        # PBC total requests
+        _q("""SELECT COUNT(*) FROM pbc_requests r
+              JOIN pbc_request_lists l ON l.list_id = r.list_id
+              WHERE l.tenant_id = $1::uuid
+                AND r.deleted = false AND l.deleted = false""", tenant_id),
+        # Workpapers in final/completed state
+        _q("""SELECT COUNT(*) FROM workpapers
+              WHERE tenant_id = $1::uuid
+                AND status IN ('final','completed','approved')
+                AND deleted = false""", tenant_id),
+        # Total workpapers
+        _q("""SELECT COUNT(*) FROM workpapers
+              WHERE tenant_id = $1::uuid AND deleted = false""", tenant_id),
+        return_exceptions=True,
+    )
+
+    def _int(v) -> int:
+        if isinstance(v, (int, float)):
+            return int(v)
+        return 0
+
+    def _pct(num, den) -> float:
+        n, d = _int(num), _int(den)
+        if d == 0:
+            return 1.0  # show 100% when no records yet
+        return round(n / d, 4)
+
+    payload = {
+        "active_engagements": _int(active_engagements),
+        "open_issues":        _int(open_issues),
+        "total_issues":       _int(total_issues),
+        "open_risks":         _int(open_risks),
+        "total_risks":        _int(total_risks),
+        "pbc_completion":     _pct(pbc_fulfilled, pbc_total),
+        "pbc_fulfilled":      _int(pbc_fulfilled),
+        "pbc_total":          _int(pbc_total),
+        "wp_progress":        _pct(wp_final, wp_total),
+        "wp_final":           _int(wp_final),
+        "wp_total":           _int(wp_total),
+        "issue_resolution":   _pct(
+            _int(total_issues) - _int(open_issues),
+            total_issues,
+        ),
+    }
+
+    _hub_summary_cache[tenant_id] = (now + _HUB_CACHE_TTL, payload)
+    return payload
 
 
 # ---------------------------------------------------------------------------

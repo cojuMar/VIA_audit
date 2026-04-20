@@ -224,16 +224,47 @@
   .via-label { display: block; font-size: 12.5px; font-weight: 600; color: var(--via-text-2); margin-bottom: 5px; }
 
   /* ── Tables ──────────────────────────────────────────── */
-  .via-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-  .via-table thead { background: #F8FAFC; border-bottom: 1px solid var(--via-border); }
-  .via-table th {
-    padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.07em; color: var(--via-text-3); white-space: nowrap;
+  /* Aligned with VIA hub-ui table standard */
+  .via-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+  .via-table thead {
+    position: sticky; top: 0; z-index: 2;
+    background: var(--via-neutral-bg); border-bottom: 1px solid var(--via-border);
   }
+  .via-table th {
+    padding: 10px 14px; text-align: left; font-size: 10.5px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.07em; color: var(--via-text-3);
+    white-space: nowrap; user-select: none;
+  }
+  .via-table th.sortable { cursor: pointer; }
+  .via-table th.sortable:hover { color: var(--via-text-2); }
+  .via-table th.sort-active { color: var(--via-blue); }
+  .via-table .sort-icon { display: inline-flex; vertical-align: middle; margin-left: 4px; opacity: 0.4; }
+  .via-table th.sort-active .sort-icon { opacity: 1; }
+
   .via-table td { padding: 11px 14px; color: var(--via-text-1); border-bottom: 1px solid var(--via-border); vertical-align: middle; }
   .via-table tbody tr:last-child td { border-bottom: none; }
   .via-table tbody tr { transition: background 0.08s; }
-  .via-table tbody tr:hover { background: rgba(37,99,235,0.025); }
+  .via-table tbody tr:hover > td { background: rgba(37,99,235,0.025); }
+  .via-table tr.expanded-row > td { background: #EFF6FF; border-bottom: none; }
+  .via-table tr.expand-content > td { background: #EFF6FF; }
+
+  /* Skeleton cells */
+  .via-table .skeleton-cell {
+    height: 12px; border-radius: 4px; background: var(--via-border);
+    animation: via-skeleton-pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes via-skeleton-pulse {
+    0%, 100% { opacity: 0.4; }
+    50%       { opacity: 0.9; }
+  }
+
+  /* Pagination bar */
+  .via-table-pagination {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; border-top: 1px solid var(--via-border);
+    font-size: 12px; color: var(--via-text-3); background: var(--via-neutral-bg);
+  }
 
   /* ── Modal ───────────────────────────────────────────── */
   .via-modal-backdrop {
