@@ -211,6 +211,11 @@ class NotificationCreate(BaseModel):
     severity: str = "info"
     tenant_id: Optional[str] = None
 
+class SearchRequest(BaseModel):
+    query: str
+    tenant_id: Optional[str] = None
+    limit: int = 8
+
 
 # ── Auth helper ───────────────────────────────────────────────────────────────
 
@@ -466,3 +471,173 @@ async def create_notification(data: NotificationCreate):
             return _row_to_dict(row)
     except asyncpg.UndefinedTableError:
         raise HTTPException(status_code=503, detail="Notifications table not ready — run migrations.")
+
+
+# ── Global Search helpers ─────────────────────────────────────────────────────
+
+async def _search_entity(pool, tenant_id: str, sql: str, pattern: str, limit: int,
+                          mapper) -> list[dict]:
+    """Run one ILIKE search on a single connection; return [] on any error."""
+    try:
+        async with pool.acquire() as conn:
+            await conn.execute(f"SET app.tenant_id = '{tenant_id}'")
+            rows = await conn.fetch(sql, tenant_id, pattern, limit)
+            return [mapper(r) for r in rows]
+    except Exception:
+        return []
+
+
+def _sid(v) -> str:
+    """Safe UUID→str."""
+    return str(v) if v is not None else ""
+
+
+# ── Global Search endpoint ────────────────────────────────────────────────────
+
+@app.post("/auth/search")
+async def global_search(req: SearchRequest):
+    query = req.query.strip()
+    tenant_id = req.tenant_id or DEMO_TENANT_ID
+    limit = max(1, min(req.limit, 20))
+
+    if len(query) < 2:
+        return {"results": [], "total": 0}
+
+    pattern = f"%{query}%"
+
+    # Six parallel ILIKE searches — each on its own connection from the pool
+    searches = await asyncio.gather(
+        # 1. Audit Engagements
+        _search_entity(pool, tenant_id,
+            """SELECT id, title, lead_auditor, status, engagement_code
+               FROM audit_engagements
+               WHERE tenant_id = $1
+                 AND (title ILIKE $2
+                      OR COALESCE(lead_auditor,'') ILIKE $2
+                      OR COALESCE(engagement_code,'') ILIKE $2
+                      OR COALESCE(scope,'') ILIKE $2)
+               ORDER BY created_at DESC LIMIT $3""",
+            pattern, limit,
+            lambda r: {
+                "type": "engagement",
+                "id": _sid(r["id"]),
+                "title": r["title"] or "",
+                "subtitle": f"Lead: {r['lead_auditor']}" if r["lead_auditor"] else "",
+                "meta": (r["status"] or "").replace("_", " "),
+                "module_port": 5183,
+                "module_id": "audit-planning",
+            }),
+
+        # 2. Audit Issues
+        _search_entity(pool, tenant_id,
+            """SELECT id, title, description, severity, status, management_owner
+               FROM audit_issues
+               WHERE tenant_id = $1
+                 AND (title ILIKE $2
+                      OR COALESCE(description,'') ILIKE $2
+                      OR COALESCE(management_owner,'') ILIKE $2
+                      OR COALESCE(finding_type,'') ILIKE $2)
+               ORDER BY created_at DESC LIMIT $3""",
+            pattern, limit,
+            lambda r: {
+                "type": "issue",
+                "id": _sid(r["id"]),
+                "title": r["title"] or "",
+                "subtitle": f"Owner: {r['management_owner']}" if r["management_owner"] else (r["description"] or "")[:80],
+                "meta": (r["severity"] or ""),
+                "module_port": 5179,
+                "module_id": "pbc",
+            }),
+
+        # 3. Risks
+        _search_entity(pool, tenant_id,
+            """SELECT id, title, description, owner, status, risk_id
+               FROM risks
+               WHERE tenant_id = $1
+                 AND (title ILIKE $2
+                      OR COALESCE(description,'') ILIKE $2
+                      OR COALESCE(owner,'') ILIKE $2
+                      OR COALESCE(risk_id,'') ILIKE $2)
+               ORDER BY created_at DESC LIMIT $3""",
+            pattern, limit,
+            lambda r: {
+                "type": "risk",
+                "id": _sid(r["id"]),
+                "title": r["title"] or "",
+                "subtitle": f"Owner: {r['owner']}" if r["owner"] else f"ID: {r['risk_id'] or ''}",
+                "meta": (r["status"] or "").replace("_", " "),
+                "module_port": 5182,
+                "module_id": "risk",
+            }),
+
+        # 4. Workpapers
+        _search_entity(pool, tenant_id,
+            """SELECT id, title, workpaper_type, status, preparer
+               FROM workpapers
+               WHERE tenant_id = $1
+                 AND (title ILIKE $2
+                      OR COALESCE(workpaper_type,'') ILIKE $2
+                      OR COALESCE(preparer,'') ILIKE $2
+                      OR COALESCE(wp_reference,'') ILIKE $2)
+               ORDER BY created_at DESC LIMIT $3""",
+            pattern, limit,
+            lambda r: {
+                "type": "workpaper",
+                "id": _sid(r["id"]),
+                "title": r["title"] or "",
+                "subtitle": f"Preparer: {r['preparer']}" if r["preparer"] else (r["workpaper_type"] or "").replace("_", " "),
+                "meta": (r["status"] or "").replace("_", " "),
+                "module_port": 5179,
+                "module_id": "pbc",
+            }),
+
+        # 5. PBC Requests
+        _search_entity(pool, tenant_id,
+            """SELECT r.id, r.title, r.description, r.status, r.category, r.assigned_to
+               FROM pbc_requests r
+               JOIN pbc_request_lists l ON r.list_id = l.id
+               WHERE l.tenant_id = $1
+                 AND (r.title ILIKE $2
+                      OR COALESCE(r.description,'') ILIKE $2
+                      OR COALESCE(r.category,'') ILIKE $2
+                      OR COALESCE(r.assigned_to,'') ILIKE $2)
+               ORDER BY r.created_at DESC LIMIT $3""",
+            pattern, limit,
+            lambda r: {
+                "type": "pbc_request",
+                "id": _sid(r["id"]),
+                "title": r["title"] or "",
+                "subtitle": f"Assigned: {r['assigned_to']}" if r["assigned_to"] else (r["category"] or ""),
+                "meta": (r["status"] or "").replace("_", " "),
+                "module_port": 5179,
+                "module_id": "pbc",
+            }),
+
+        # 6. Platform Users
+        _search_entity(pool, tenant_id,
+            """SELECT id, full_name, email, role
+               FROM via_users
+               WHERE tenant_id = $1
+                 AND is_active = true
+                 AND (full_name ILIKE $2 OR email ILIKE $2)
+               ORDER BY full_name ASC LIMIT $3""",
+            pattern, limit,
+            lambda r: {
+                "type": "user",
+                "id": _sid(r["id"]),
+                "title": r["full_name"] or r["email"] or "",
+                "subtitle": r["email"] or "",
+                "meta": (r["role"] or "").replace("_", " "),
+                "module_port": 0,
+                "module_id": "",
+            }),
+
+        return_exceptions=True,
+    )
+
+    results: list[dict] = []
+    for group in searches:
+        if isinstance(group, list):
+            results.extend(group)
+
+    return {"results": results, "total": len(results)}

@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { LogOut, ChevronDown, User } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { LogOut, ChevronDown, User, Search } from 'lucide-react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider, useAuth, type UserRole } from './contexts/AuthContext';
 import ThemeSelector from './components/ThemeSelector';
 import NotificationBell from './components/NotificationBell';
+import GlobalSearch from './components/GlobalSearch';
 import Dashboard from './pages/Dashboard';
 import Tutorials from './pages/Tutorials';
 import Login from './pages/Login';
@@ -23,8 +24,22 @@ const ROLE_COLORS: Record<UserRole, string> = {
 
 function AppInner() {
   const { isAuthenticated, user, logout } = useAuth();
-  const [page, setPage]         = useState<Page>('dashboard');
+  const [page,         setPage]         = useState<Page>('dashboard');
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [searchOpen,   setSearchOpen]   = useState(false);
+
+  // Cmd+K / Ctrl+K → open global search
+  const toggleSearch = useCallback(() => setSearchOpen(v => !v), []);
+  useEffect(() => {
+    function onKey(e: globalThis.KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        toggleSearch();
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [toggleSearch]);
 
   if (!isAuthenticated) return <Login />;
 
@@ -81,6 +96,41 @@ function AppInner() {
 
           {/* Right controls */}
           <div className="flex items-center gap-3 shrink-0">
+            {/* Global search trigger */}
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="hidden md:flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs transition-colors"
+              style={{
+                backgroundColor: 'var(--surface-overlay)',
+                border: '1px solid var(--line-focus)',
+                color: 'var(--ink-muted)',
+                minWidth: '160px',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--brand)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--line-focus)'; }}
+            >
+              <Search className="h-3.5 w-3.5" />
+              <span style={{ color: 'var(--ink-muted)' }}>Search…</span>
+              <kbd
+                className="ml-auto flex items-center gap-0.5 text-[10px] font-medium"
+                style={{ color: 'var(--ink-muted)' }}
+              >
+                ⌘K
+              </kbd>
+            </button>
+            {/* Mobile search icon */}
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="md:hidden flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
+              style={{
+                backgroundColor: 'var(--surface-overlay)',
+                border: '1px solid var(--line-focus)',
+                color: 'var(--ink-secondary)',
+              }}
+              aria-label="Search"
+            >
+              <Search className="h-4 w-4" />
+            </button>
             <ThemeSelector />
             <NotificationBell user={user!} />
 
@@ -180,6 +230,12 @@ function AppInner() {
         )}
         {page === 'tutorials' && <Tutorials role={user!.role} />}
       </main>
+
+      <GlobalSearch
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        user={user!}
+      />
     </div>
   );
 }
