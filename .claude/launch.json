@@ -79,6 +79,12 @@
       "runtimeExecutable": "node",
       "runtimeArgs": ["proxy-server.js", "5285", "5185"],
       "port": 5285
+    },
+    {
+      "name": "reportflow-ui",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["C:/Users/jerma/Documents/Code/Claude_Code/Automate/ui/app.py"],
+      "port": 5000
     }
   ]
 }
