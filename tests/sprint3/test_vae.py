@@ -20,7 +20,7 @@ os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
 
 try:
     import torch
-    import torch.nn as nn
+    import torch.nn as nn  # noqa: F401 — availability probe
     _TORCH_AVAILABLE = True
 except ImportError:  # pragma: no cover
     _TORCH_AVAILABLE = False

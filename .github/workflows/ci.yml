@@ -1,0 +1,116 @@
+# =============================================================================
+# Sprint 24 — minimal end-to-end CI for the VIA / Aegis platform.
+#
+# Builds every service image, brings up an ephemeral Postgres, applies all
+# migrations via the Flyway one-shot service, then runs the full pytest suite.
+# Fails fast on any of: schema drift, port mismatch, broken migration, broken
+# regression test.
+# =============================================================================
+name: ci
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install pytest dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-asyncio asyncpg psycopg2-binary httpx pyjwt \
+                      coverage fastapi starlette ruff
+
+      - name: Sprint 30 — dead-code check (Python F401 + future-annotations)
+        # `--select F401` flags unused imports — the most common dead-code
+        # signal in our services. Scoped to services/ to keep the gate tight.
+        run: ruff check --select F401 services/ tests/
+
+      - name: Sprint 30 — dead-code check (TypeScript ts-prune)
+        # ts-prune walks each UI's tsconfig and reports exports that no other
+        # file imports. Configured in scripts/ts_prune_check.sh so the
+        # allowlist of intentional public exports lives in one place.
+        run: bash scripts/ts_prune_check.sh
+
+      - name: Validate docker-compose config
+        run: docker compose config -q
+
+      - name: Build all service images
+        run: docker compose build --pull
+
+      - name: Bring up infra (postgres, pgbouncer, kafka, redis, vault, minio)
+        env:
+          POSTGRES_PASSWORD: aegis_dev_pw
+          POSTGRES_APP_PASSWORD: aegis_app_dev_pw
+          JWT_SECRET: ci_jwt_secret_for_tests_only_do_not_use_in_prod
+        run: |
+          docker compose up -d postgres pgbouncer kafka zookeeper redis vault minio
+          # Wait for postgres + pgbouncer to be healthy (60s budget)
+          for i in $(seq 1 60); do
+            if docker compose ps --format '{{.Service}} {{.Health}}' \
+               | grep -E '^postgres .*healthy' >/dev/null \
+               && docker compose ps --format '{{.Service}} {{.Health}}' \
+                  | grep -E '^pgbouncer .*healthy' >/dev/null; then
+              break
+            fi
+            sleep 2
+          done
+
+      - name: Apply migrations via Flyway
+        run: docker compose --profile migrate run --rm db-migrate
+
+      - name: Bring up application services
+        env:
+          POSTGRES_PASSWORD: aegis_dev_pw
+          POSTGRES_APP_PASSWORD: aegis_app_dev_pw
+          JWT_SECRET: ci_jwt_secret_for_tests_only_do_not_use_in_prod
+          ENV: ci
+        run: docker compose up -d
+
+      - name: Run schema-drift CI guard
+        run: |
+          python infra/db/schema_drift_check.py \
+            --db "postgresql://aegis_admin:aegis_dev_pw@localhost:5432/aegis" \
+            --only audit_engagements \
+            --only risks \
+            --only risk_assessments \
+            --only risk_score_history
+
+      - name: Run pytest suite
+        run: |
+          python -m pytest tests/sprint21 tests/sprint22 tests/sprint23 tests/sprint24 \
+                            tests/sprint25 tests/sprint26 tests/sprint27 tests/sprint28 \
+                            tests/sprint29 -v
+
+      - name: Sprint 29 — coverage gate on security-critical services
+        # Fails the build if any security-critical service drops below 60%
+        # statement coverage on its in-tree tests. New services added under
+        # the SECURITY_CRITICAL list inherit the gate automatically.
+        env:
+          PYTHONPATH: services/_shared:.
+          JWT_SECRET: ci_jwt_secret_for_tests_only_do_not_use_in_prod
+        run: |
+          bash scripts/coverage_gate.sh
+
+      - name: Dump compose state on failure
+        if: failure()
+        run: |
+          docker compose ps
+          docker compose logs --tail=200
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v --remove-orphans

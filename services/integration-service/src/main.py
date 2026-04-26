@@ -4,9 +4,7 @@ from contextlib import asynccontextmanager
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
-from fastapi.responses import JSONResponse
 from minio import Minio
-from minio.error import S3Error
 
 from src.config import settings
 from src.connector_registry import ConnectorRegistry
@@ -19,7 +17,6 @@ from src.models import (
     IntegrationUpdate,
     OAuthTokenCreate,
     SyncRequest,
-    WebhookPayload,
 )
 from src.scheduler import IntegrationScheduler
 from src.sync_engine import SyncEngine

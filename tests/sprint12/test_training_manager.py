@@ -9,7 +9,7 @@ sys.path.insert(
 
 import pytest
 from datetime import date, timedelta
-from unittest.mock import AsyncMock, MagicMock, call
+from unittest.mock import AsyncMock, MagicMock
 
 from src.training_manager import TrainingManager
 from src.models import TrainingAssignmentCreate, TrainingCompletion, TrainingCourseCreate

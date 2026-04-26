@@ -20,12 +20,11 @@ Design notes:
 """
 
 import asyncio
-import hashlib
 import json
 import logging
 import re
 from dataclasses import dataclass, field
-from typing import List, Optional, Tuple
+from typing import List, Optional
 import anthropic
 from .config import settings
 from .retriever import RetrievedChunk

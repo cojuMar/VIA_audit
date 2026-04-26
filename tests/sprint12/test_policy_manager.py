@@ -9,7 +9,7 @@ sys.path.insert(
 
 import pytest
 from datetime import datetime, timezone, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 from src.policy_manager import PolicyManager
 from src.models import AcknowledgmentRecord, PolicyCreate

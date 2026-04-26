@@ -236,8 +236,8 @@ async def list_vendors(
     db: asyncpg.Pool = Depends(get_db),
 ):
     """List all vendors with optional filtering."""
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
 
         conditions = ["tenant_id = $1"]
         params: List[Any] = [tenant_id]
@@ -307,8 +307,8 @@ async def get_expiring_reviews(
     db: asyncpg.Pool = Depends(get_db),
 ):
     """List vendors whose next_review_at is within 30 days."""
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
         rows = await conn.fetch("""
             SELECT id, name, vendor_type, risk_tier, inherent_risk_score,
                    next_review_at,
@@ -330,8 +330,8 @@ async def get_vendor(
     db: asyncpg.Pool = Depends(get_db),
 ):
     """Get full vendor detail."""
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
         row = await conn.fetchrow("""
             SELECT * FROM vendors WHERE id = $1 AND tenant_id = $2
         """, vendor_id, tenant_id)
@@ -363,8 +363,8 @@ async def patch_vendor(
     set_clauses.append(f"updated_at = NOW()")
     params.extend([vendor_id, tenant_id])
 
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
         result = await conn.execute(f"""
             UPDATE vendors SET {', '.join(set_clauses)}
             WHERE id = ${idx} AND tenant_id = ${idx + 1}
@@ -382,8 +382,8 @@ async def get_vendor_risk_score(
     db: asyncpg.Pool = Depends(get_db),
 ):
     """Get the latest risk score snapshot for a vendor."""
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
         row = await conn.fetchrow("""
             SELECT vrs.*, v.name as vendor_name, v.risk_tier
             FROM vendor_risk_scores vrs
@@ -452,8 +452,8 @@ async def list_vendor_questionnaires(
     db: asyncpg.Pool = Depends(get_db),
 ):
     """List all questionnaires for a vendor."""
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
         rows = await conn.fetch("""
             SELECT id, template_slug, template_version, status, sent_at,
                    due_date, completed_at, ai_score, ai_summary
@@ -487,8 +487,8 @@ async def get_questionnaire(
     db: asyncpg.Pool = Depends(get_db),
 ):
     """Get questionnaire detail including responses and AI score."""
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
         row = await conn.fetchrow("""
             SELECT vq.*, v.name as vendor_name
             FROM vendor_questionnaires vq
@@ -541,8 +541,8 @@ async def list_vendor_documents(
     db: asyncpg.Pool = Depends(get_db),
 ):
     """List all documents for a vendor."""
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
         rows = await conn.fetch("""
             SELECT id, document_type, filename, file_size_bytes,
                    analysis_status, expiry_date, created_at
@@ -560,8 +560,8 @@ async def trigger_document_analysis(
     db: asyncpg.Pool = Depends(get_db),
 ):
     """Trigger AI analysis of a previously uploaded document."""
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
         row = await conn.fetchrow("""
             SELECT minio_path, filename FROM vendor_documents
             WHERE id = $1 AND tenant_id = $2
@@ -599,8 +599,8 @@ async def get_document_analysis(
     db: asyncpg.Pool = Depends(get_db),
 ):
     """Get analysis results for a document."""
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
         row = await conn.fetchrow("""
             SELECT id, document_type, filename, analysis_status,
                    ai_analysis, expiry_date, created_at
@@ -624,8 +624,8 @@ async def get_vendor_monitoring_events(
     db: asyncpg.Pool = Depends(get_db),
 ):
     """Get recent monitoring events for a vendor."""
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
         rows = await conn.fetch("""
             SELECT id, event_source, event_type, severity, title,
                    description, source_url, created_at
@@ -644,8 +644,8 @@ async def run_vendor_monitoring(
     db: asyncpg.Pool = Depends(get_db),
 ):
     """Trigger an immediate monitoring cycle for a single vendor."""
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
         vendor = await conn.fetchrow("""
             SELECT id, name, website FROM vendors
             WHERE id = $1 AND tenant_id = $2 AND status = 'active'
@@ -669,8 +669,8 @@ async def get_monitoring_alerts(
     db: asyncpg.Pool = Depends(get_db),
 ):
     """Get all critical/high severity events for tenant in the last 7 days."""
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
         rows = await conn.fetch("""
             SELECT vme.id, vme.vendor_id, v.name as vendor_name,
                    vme.event_source, vme.event_type, vme.severity,

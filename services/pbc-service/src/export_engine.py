@@ -20,7 +20,7 @@ class ExportEngine:
         async with tenant_conn(pool, tenant_id) as conn:
             list_row = await conn.fetchrow(
                 """
-                SELECT l.*, e.engagement_name
+                SELECT l.*, e.title AS engagement_name
                 FROM pbc_request_lists l
                 JOIN audit_engagements e
                     ON e.id = l.engagement_id
@@ -121,8 +121,11 @@ class ExportEngine:
         async with tenant_conn(pool, tenant_id) as conn:
             eng_row = await conn.fetchrow(
                 """
-                SELECT engagement_name, engagement_type,
-                       period_start, period_end, lead_auditor
+                SELECT title           AS engagement_name,
+                       audit_type      AS engagement_type,
+                       planned_start_date AS period_start,
+                       planned_end_date   AS period_end,
+                       lead_auditor
                 FROM audit_engagements
                 WHERE id = $1 AND tenant_id = $2
                 """,

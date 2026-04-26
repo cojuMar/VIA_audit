@@ -419,7 +419,14 @@ export default function ESGDashboard({ tenantId: _tenantId }: Props) {
                 {scorecard?.disclosed_metrics ?? 0} / {scorecard?.total_metrics ?? 0} metrics ({Math.round(scorecard?.overall_coverage_pct ?? 0)}%)
               </span>
             </div>
-            <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+            <div
+              role="progressbar"
+              aria-label="Overall ESG disclosure coverage"
+              aria-valuenow={Math.round(scorecard?.overall_coverage_pct ?? 0)}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              className="h-3 bg-gray-100 rounded-full overflow-hidden"
+            >
               <div
                 className="h-full bg-indigo-600 rounded-full transition-all"
                 style={{ width: `${scorecard?.overall_coverage_pct ?? 0}%` }}

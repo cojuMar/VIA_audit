@@ -22,13 +22,12 @@ The full pipeline for one tenant:
 import asyncpg
 import numpy as np
 import structlog
-from datetime import datetime, timezone, timedelta
 from uuid import UUID
 
 from .config import settings
-from .features import extract_features, build_feature_context_from_canonical, FeatureContext
-from .vae import AegisVAE, VAETrainer, VAEConfig
-from .isolation_forest import train_isolation_forest, IsolationForestModel
+from .features import extract_features, build_feature_context_from_canonical
+from .vae import VAETrainer, VAEConfig
+from .isolation_forest import train_isolation_forest
 from .ensemble import DRIEnsemble, DRIWeights, EnsembleInput
 from .model_store import ModelStore
 from .benford import BenfordEngine
@@ -247,7 +246,6 @@ class TenantTrainingPipeline:
                 fv = row['feature_vector']
                 if isinstance(fv, str):
                     fv = json.loads(fv)
-                from .benford import benford_risk_score
                 inp = EnsembleInput(
                     vae_score=float(row['vae_score'] or 0.5),
                     isolation_score=float(row['isolation_score'] or 0.5),
@@ -265,7 +263,6 @@ class TenantTrainingPipeline:
 
     async def _update_model_registry(self, tenant_id: str, framework: str, results: dict) -> None:
         """Update ml_model_registry: mark new models active, retire old ones."""
-        from datetime import datetime, timezone
         async with self.pool.acquire() as conn:
             await conn.execute(f"SET LOCAL app.tenant_id = '{tenant_id}'")
             for model_type, data in results.items():

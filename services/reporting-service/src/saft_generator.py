@@ -17,9 +17,8 @@ Amounts use 2 decimal places, always in the entity's default currency.
 
 import logging
 from datetime import date, datetime, timezone
-from typing import List
 from lxml import etree
-from .models import FinancialFact, JournalEntry, ReportEntity, ReportRequest
+from .models import ReportRequest
 
 logger = logging.getLogger(__name__)
 

@@ -19,10 +19,9 @@ Port: 3004 (configurable via settings.server_port)
 """
 
 import json
-import logging
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
-from typing import Annotated, Any
+from datetime import datetime
+from typing import Any
 from uuid import UUID
 
 import asyncpg
@@ -34,7 +33,7 @@ from jose import JWTError, jwt
 from pydantic import BaseModel
 
 from .config import settings
-from .connectors.registry import get_connector_class, list_connector_types
+from .connectors.registry import get_connector_class
 from .kafka_publisher import KafkaPublisher
 from .scheduler import PollScheduler
 from .vault_credentials import ConnectorVaultLoader

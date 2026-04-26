@@ -27,8 +27,8 @@ class CalendarBuilder:
         Generate (or refresh) all calendar events for a tenant's active frameworks.
         Clears existing unresolved events and regenerates them.
         """
-        async with self._pool.acquire() as conn:
-            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+        async with self._pool.acquire() as conn, conn.transaction():
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
 
             active = await conn.fetch("""
                 SELECT tf.framework_id, tf.activated_at, tf.target_cert_date,

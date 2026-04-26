@@ -15,7 +15,6 @@ preserving per-tenant ordering and enabling efficient consumer fan-out.
 """
 
 import json
-import logging
 
 import structlog
 from aiokafka import AIOKafkaProducer

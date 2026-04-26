@@ -61,7 +61,12 @@ class VaultClient:
             health = self._client.sys.read_health_status(method="GET")
             # Vault returns 200 when initialized, unsealed, and active
             return health.get("initialized", False) and not health.get("sealed", True)
-        except Exception:
+        except Exception as exc:
+            # Health probe — never propagate, but always log the cause so
+            # an operator can distinguish "vault unreachable" from "vault sealed".
+            logger.warning(
+                "vault_health_probe_failed", error=str(exc), exc_info=True
+            )
             return False
 
     # ------------------------------------------------------------------

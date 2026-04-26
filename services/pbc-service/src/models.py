@@ -6,13 +6,46 @@ from pydantic import BaseModel
 
 
 class EngagementCreate(BaseModel):
-    engagement_name: str
-    engagement_type: str
-    fiscal_year: int | None = None
-    period_start: date | None = None
-    period_end: date | None = None
+    """
+    Canonical shape matches audit_engagements (V021 + V028).
+    Legacy field names (engagement_name / engagement_type / period_start /
+    period_end / description) are accepted as aliases for backward compat
+    with older callers; internally we normalise to the canonical names.
+    """
+
+    title: str
+    audit_type: str
+    planned_start_date: date | None = None
+    planned_end_date: date | None = None
     lead_auditor: str | None = None
-    description: str | None = None
+    scope: str | None = None
+    engagement_code: str | None = None
+    objectives: str | None = None
+    budget_hours: float | None = None
+    engagement_manager: str | None = None
+
+    # Legacy aliases — accepted on input, mapped into canonical fields by the
+    # validator below. Not exposed on output.
+    class Config:
+        populate_by_name = True
+
+    @classmethod
+    def model_validate(cls, value, *args, **kwargs):  # type: ignore[override]
+        if isinstance(value, dict):
+            value = dict(value)
+            _remap = {
+                "engagement_name": "title",
+                "engagement_type": "audit_type",
+                "period_start": "planned_start_date",
+                "period_end": "planned_end_date",
+                "description": "scope",
+            }
+            for legacy, canonical in _remap.items():
+                if legacy in value and canonical not in value:
+                    value[canonical] = value.pop(legacy)
+                elif legacy in value:
+                    value.pop(legacy)  # canonical wins, drop alias
+        return super().model_validate(value, *args, **kwargs)
 
 
 class PBCListCreate(BaseModel):

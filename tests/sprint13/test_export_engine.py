@@ -8,7 +8,7 @@ sys.path.insert(
 )
 
 import pytest
-from datetime import date, datetime, timezone, timedelta
+from datetime import date, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from src.export_engine import ExportEngine

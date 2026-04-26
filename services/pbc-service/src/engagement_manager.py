@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
 
 import asyncpg
 
@@ -25,20 +24,26 @@ class EngagementManager:
                 INSERT INTO audit_engagements (
                     id, tenant_id, title, audit_type,
                     planned_start_date, planned_end_date, lead_auditor,
-                    scope, status, created_at, updated_at
+                    scope, engagement_code, objectives, budget_hours,
+                    engagement_manager,
+                    status, created_at, updated_at
                 )
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'planning',
-                        NOW(), NOW())
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,
+                        'planning', NOW(), NOW())
                 RETURNING *
                 """,
                 engagement_id,
                 tenant_id,
-                data.engagement_name,
-                data.engagement_type,
-                data.period_start,
-                data.period_end,
+                data.title,
+                data.audit_type,
+                data.planned_start_date,
+                data.planned_end_date,
                 data.lead_auditor,
-                data.description,
+                data.scope,
+                data.engagement_code,
+                data.objectives,
+                data.budget_hours,
+                data.engagement_manager,
             )
         return dict(row)
 

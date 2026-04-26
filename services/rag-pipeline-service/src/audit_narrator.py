@@ -1,5 +1,4 @@
 import hashlib
-import json
 import logging
 from dataclasses import dataclass
 from typing import List, Optional
@@ -171,15 +170,14 @@ class AuditNarrator:
         gen_result,
     ) -> str:
         """Persist narrative, citations, and guardrail scores to PostgreSQL."""
-        import json
 
         prompt_hash = hashlib.sha256(
             f"{framework}:{control_id}:{period_start}:{period_end}:{tenant_id}".encode()
         ).digest()
 
-        async with self._pool.acquire() as conn:
+        async with self._pool.acquire() as conn, conn.transaction():
             async with conn.transaction():
-                await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
+                await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
 
                 narrative_id = await conn.fetchval("""
                     INSERT INTO audit_narratives (

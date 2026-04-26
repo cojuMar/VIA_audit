@@ -9,7 +9,6 @@ Run: pytest tests/sprint2/test_hash_chain.py -v
 
 import hashlib
 import json
-import pytest
 
 
 # ---------------------------------------------------------------------------

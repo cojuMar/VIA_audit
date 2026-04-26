@@ -14,7 +14,7 @@ AI scoring of responses:
 import json
 import logging
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 from uuid import UUID
 from datetime import datetime, timezone, timedelta
 import anthropic
@@ -71,8 +71,8 @@ class QuestionnaireEngine:
 
         due_date = datetime.now(timezone.utc) + timedelta(days=due_days)
 
-        async with self._pool.acquire() as conn:
-            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+        async with self._pool.acquire() as conn, conn.transaction():
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
             qid = await conn.fetchval("""
                 INSERT INTO vendor_questionnaires
                     (tenant_id, vendor_id, template_slug, template_version, status, sent_at, due_date)
@@ -88,8 +88,8 @@ class QuestionnaireEngine:
         Record vendor responses and trigger AI scoring.
         Returns AI scoring result.
         """
-        async with self._pool.acquire() as conn:
-            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+        async with self._pool.acquire() as conn, conn.transaction():
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
 
             row = await conn.fetchrow("""
                 SELECT template_slug FROM vendor_questionnaires

@@ -2,7 +2,6 @@ import logging
 from dataclasses import dataclass
 from typing import List, Optional
 import asyncpg
-import numpy as np
 from .config import settings
 
 logger = logging.getLogger(__name__)
@@ -58,9 +57,9 @@ class EvidenceRetriever:
         # Format embedding as pgvector literal
         vec_str = '[' + ','.join(str(x) for x in query_embedding) + ']'
 
-        async with self._pool.acquire() as conn:
+        async with self._pool.acquire() as conn, conn.transaction():
             # Set tenant context for RLS
-            await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
 
             # Build dynamic WHERE clause
             conditions = ['ee.tenant_id = $1::uuid']

@@ -12,7 +12,7 @@ import hashlib
 
 # Check if liboqs is available
 try:
-    import oqs
+    import oqs  # noqa: F401 — availability probe; ruff doesn't see the try/except idiom
     OQS_AVAILABLE = True
 except ImportError:
     OQS_AVAILABLE = False

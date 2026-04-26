@@ -16,7 +16,7 @@ import logging
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 from minio import Minio
-from minio.commonconfig import COMPLIANCE, Tags
+from minio.commonconfig import COMPLIANCE
 from minio.retention import Retention
 from .config import settings
 

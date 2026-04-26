@@ -6,11 +6,10 @@ YAML structure expected:
   slug, name, version, category, issuing_body, description, metadata{}, domains[], controls[]
   Each control: id, domain, title, description, guidance?, evidence_types[], testing_frequency, is_key_control
 """
-import os
 import yaml
 import logging
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import Dict, Any
 
 logger = logging.getLogger(__name__)
 

@@ -10,7 +10,7 @@ Run: pytest tests/sprint2/test_connector_sdk.py -v
 import pytest
 import sys
 import os
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 from datetime import datetime, timezone
 from uuid import uuid4
 

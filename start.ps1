@@ -140,14 +140,21 @@ docker run --rm `
     --network $internalNetwork `
     -v "${migrationPath}:/migrations:ro" `
     postgres:16-alpine `
-    sh -c 'for f in $(ls /migrations/V*.sql | sort); do
+    sh -c 'set -e
+    for f in $(ls /migrations/V*.sql | sort); do
         echo "  Applying $(basename $f)..."
         psql "postgresql://aegis_admin:aegis_dev_pw@postgres:5432/aegis" \
-            --set ON_ERROR_STOP=1 --single-transaction -f "$f" -q 2>&1 || true
+            --set ON_ERROR_STOP=1 --single-transaction -f "$f" -q
     done
     echo "  Migrations done."'
 
-Write-OK "Database migrations complete (already-applied migrations are skipped automatically)."
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "  ERROR: One or more migrations failed (exit $LASTEXITCODE)." -ForegroundColor Red
+    Write-Host "  Stack will not be started until migrations apply cleanly." -ForegroundColor Red
+    exit $LASTEXITCODE
+}
+
+Write-OK "Database migrations complete."
 
 # -----------------------------------------------------------------------
 # DONE - Print URLs

@@ -95,11 +95,8 @@ class PAdESSigner:
         import io
         from datetime import datetime, timezone
         from pyhanko.sign import signers, timestamps
-        from pyhanko.sign.fields import SigFieldSpec
         from pyhanko.pdf_utils.reader import PdfFileReader
         from pyhanko.pdf_utils.incremental_writer import IncrementalPdfFileWriter
-        from pyhanko.sign.signers.pdf_signer import PdfSignatureMetadata
-        from pyhanko_certvalidator import CertificateValidator
         from cryptography import x509
         from cryptography.hazmat.primitives import serialization
 

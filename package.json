@@ -7,7 +7,8 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:a11y": "playwright test --config=playwright.config.ts"
   },
   "repository": {
     "type": "git",
@@ -17,11 +18,18 @@
   "author": "",
   "license": "ISC",
   "type": "commonjs",
+  "workspaces": [
+    "packages/*"
+  ],
   "bugs": {
     "url": "https://github.com/cojuMar/VIA_audit/issues"
   },
   "homepage": "https://github.com/cojuMar/VIA_audit#readme",
   "dependencies": {
     "playwright": "^1.59.1"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.0",
+    "@playwright/test": "^1.59.1"
   }
 }

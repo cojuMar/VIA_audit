@@ -124,7 +124,6 @@ class TestDocumentAnalysis:
     async def test_upload_document_graceful_without_minio(self):
         """upload_document() returns a UUID-like value even when MinIO is unavailable."""
         from uuid import uuid4
-        from unittest.mock import patch
 
         # Patch the conn.fetchval to return a UUID (simulating DB insert returning id)
         doc_id = uuid4()

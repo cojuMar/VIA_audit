@@ -15,7 +15,6 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../services/reporting-service'))
 
 import hashlib
-import pytest
 from datetime import date
 
 from src.models import FinancialFact, ReportEntity, ReportRequest

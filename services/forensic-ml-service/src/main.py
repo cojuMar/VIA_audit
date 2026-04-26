@@ -21,18 +21,17 @@ import json
 import structlog
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone, date
-from typing import Annotated, Optional
+from typing import Optional
 from uuid import UUID
 
 import asyncpg
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from fastapi import Depends, FastAPI, HTTPException, Query, Security, status
+from fastapi import Depends, FastAPI, HTTPException, Query, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
 
 from .config import settings
 from .db import create_pool, close_pool
-from .ensemble import DRIResult, DRIWeights
 from .kafka_consumer import MLKafkaConsumer
 from .model_store import ModelStore
 from .scorer import AnomalyScorer, _model_cache

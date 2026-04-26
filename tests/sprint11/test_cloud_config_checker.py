@@ -3,7 +3,6 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../services/monitoring-service"))
 
-import pytest
 
 from src.cloud_config_checker import CloudConfigChecker
 from src.models import CloudResourceConfig

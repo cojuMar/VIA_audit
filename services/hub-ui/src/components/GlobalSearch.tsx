@@ -6,6 +6,7 @@ import {
   ClipboardList, Users, ArrowUpRight, Loader2, Command,
 } from 'lucide-react';
 import type { AuthUser } from '../contexts/AuthContext';
+import { moduleUrl } from '../data/moduleUrl';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -283,7 +284,11 @@ export default function GlobalSearch({ open, onClose, user }: Props) {
           setResults(data.results ?? []);
           setFocused(-1);
         }
-      } catch { /* backend not available — fail silently */ }
+      } catch (err) {
+        // Surface — never swallow. Toast wiring lands once @via/ui-kit's
+        // ToasterProvider is mounted at the hub-ui root (Sprint 27).
+        console.warn('[GlobalSearch] search failed:', err);
+      }
       finally { setLoading(false); }
     }, 300);
 
@@ -293,7 +298,11 @@ export default function GlobalSearch({ open, onClose, user }: Props) {
   // Navigate to result
   const openResult = useCallback((result: SearchResult) => {
     if (result.module_port > 0) {
-      window.open(`http://localhost:${result.module_port}/`, '_blank', 'noopener');
+      window.open(
+        moduleUrl({ id: result.module_id, port: result.module_port }),
+        '_blank',
+        'noopener',
+      );
     }
     onClose();
   }, [onClose]);

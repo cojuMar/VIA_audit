@@ -2,11 +2,10 @@ from __future__ import annotations
 
 import json
 from contextlib import asynccontextmanager
-from typing import Annotated, Any
+from typing import Annotated
 
 import asyncpg
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile, status
-from fastapi.responses import JSONResponse
 
 from .config import settings
 from .db import close_pool, create_pool
@@ -51,7 +50,7 @@ async def lifespan(app: FastAPI):
 
     # Ensure MinIO bucket exists
     try:
-        from minio import Minio, S3Error
+        from minio import Minio
 
         client = Minio(
             settings.minio_endpoint,

@@ -16,7 +16,7 @@ from googleapiclient.discovery import build
 from google.oauth2 import service_account
 
 from ..canonical_schema import CanonicalEvidenceRecord
-from ..connector_base import ConnectorBase, ConnectorCredentials, FetchResult
+from ..connector_base import ConnectorBase, FetchResult
 
 logger = logging.getLogger(__name__)
 

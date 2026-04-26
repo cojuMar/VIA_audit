@@ -1,8 +1,6 @@
-import asyncio
 import json
 import structlog
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
-from uuid import UUID
 from .config import settings
 from .scorer import AnomalyScorer
 

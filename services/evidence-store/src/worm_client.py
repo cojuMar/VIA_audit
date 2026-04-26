@@ -6,7 +6,6 @@ import json
 import uuid
 from datetime import datetime, timezone
 from functools import partial
-from typing import Any
 from urllib.parse import urlparse
 
 import minio

@@ -23,7 +23,7 @@ from uuid import UUID
 import httpx
 
 from ..canonical_schema import CanonicalEvidenceRecord
-from ..connector_base import ConnectorBase, ConnectorCredentials, FetchResult
+from ..connector_base import ConnectorBase, FetchResult
 
 logger = logging.getLogger(__name__)
 

@@ -12,10 +12,8 @@ Triggers alerts for critical/high severity events.
 Graceful degradation: if no API keys, uses public RSS feeds only.
 """
 import logging
-import asyncio
-from typing import List, Optional
+from typing import List
 from uuid import UUID
-from datetime import datetime, timezone
 import httpx
 import feedparser
 
@@ -40,8 +38,8 @@ class VendorMonitor:
         Run one monitoring cycle for all active vendors of a tenant.
         Returns number of events recorded.
         """
-        async with self._pool.acquire() as conn:
-            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+        async with self._pool.acquire() as conn, conn.transaction():
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
             vendors = await conn.fetch("""
                 SELECT id, name, website FROM vendors
                 WHERE tenant_id = $1 AND status = 'active'
@@ -135,8 +133,8 @@ class VendorMonitor:
     async def _persist_events(self, tenant_id: UUID, vendor_id: UUID, events: List[dict]) -> None:
         """Persist monitoring events to DB."""
         import json
-        async with self._pool.acquire() as conn:
-            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+        async with self._pool.acquire() as conn, conn.transaction():
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
             for event in events:
                 await conn.execute("""
                     INSERT INTO vendor_monitoring_events

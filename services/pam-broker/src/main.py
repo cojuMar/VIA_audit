@@ -4,12 +4,12 @@ import time
 import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
-from typing import Annotated, Optional
+from typing import Optional
 
 import asyncpg
 import httpx
 import structlog
-from fastapi import Depends, FastAPI, HTTPException, Query, Request, Security, status
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 
@@ -475,8 +475,10 @@ async def health():
         async with _state.db_pool.acquire() as conn:
             await conn.fetchval("SELECT 1")
         db_ok = True
-    except Exception:
-        pass
+    except Exception as exc:
+        # Health endpoint must not propagate — but we still log so the
+        # operator can see *why* the probe is reporting "degraded".
+        logger.warning("health_db_probe_failed", error=str(exc), exc_info=True)
 
     overall = "healthy" if vault_ok and db_ok else "degraded"
     return {

@@ -5,6 +5,7 @@ import {
   Lock, Database, Zap, HardDrive, CheckCircle2, AlertCircle, Sparkles,
 } from 'lucide-react';
 import { MODULES, WORKFLOW_STEPS, type Module } from '../data/modules';
+import { moduleUrl, moduleUrlById } from '../data/moduleUrl';
 import type { AuthUser } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import HubKPI from '../components/HubKPI';
@@ -21,7 +22,7 @@ function useModuleHealth(modules: Module[]) {
         try {
           const ctrl  = new AbortController();
           const timer = setTimeout(() => ctrl.abort(), 2000);
-          const res   = await fetch(`http://localhost:${m.port}/`, {
+          const res   = await fetch(moduleUrl(m), {
             signal: ctrl.signal,
             method: 'GET',
             mode:   'no-cors',
@@ -133,7 +134,7 @@ export default function Dashboard({ user, onOpenTutorials }: Props) {
               <div className="mt-5 flex flex-wrap gap-3">
                 {visibleModules.some(m => m.id === 'risk') && (
                   <a
-                    href={`http://localhost:5182?tenantId=${tenantId}`}
+                    href={moduleUrlById(MODULES, 'risk', `tenantId=${tenantId}`) ?? '#'}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn-primary"
@@ -283,9 +284,9 @@ export default function Dashboard({ user, onOpenTutorials }: Props) {
         <section className="mt-10">
           <p className="section-label">Infrastructure</p>
           <div className="flex flex-wrap gap-3">
-            <InfraChip icon={<Database  className="h-3.5 w-3.5" />} label="PostgreSQL" detail="localhost:5432" href={null}               status="healthy" />
-            <InfraChip icon={<Zap       className="h-3.5 w-3.5" />} label="Redis"      detail="localhost:6379" href={null}               status="healthy" />
-            <InfraChip icon={<HardDrive className="h-3.5 w-3.5" />} label="MinIO"      detail="localhost:9001" href="http://localhost:9001" status="healthy" />
+            <InfraChip icon={<Database  className="h-3.5 w-3.5" />} label="PostgreSQL" detail="postgres:5432"  href={null} status="healthy" />
+            <InfraChip icon={<Zap       className="h-3.5 w-3.5" />} label="Redis"      detail="redis:6379"     href={null} status="healthy" />
+            <InfraChip icon={<HardDrive className="h-3.5 w-3.5" />} label="MinIO"      detail="minio:9001"     href={null} status="healthy" />
           </div>
         </section>
       )}
@@ -349,7 +350,7 @@ interface ModuleCardProps {
 }
 
 function ModuleCard({ mod, tenantId, isOnline }: ModuleCardProps) {
-  const url = `http://localhost:${mod.port}?tenantId=${tenantId}`;
+  const url = moduleUrl(mod, `tenantId=${tenantId}`);
 
   return (
     <a

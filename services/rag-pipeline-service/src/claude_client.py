@@ -1,8 +1,6 @@
-import asyncio
 import logging
 import time
 from dataclasses import dataclass
-from typing import Optional
 import anthropic
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 from .config import settings

@@ -478,7 +478,6 @@ class SyncEngine:
         headers: dict,
         source_event_id: str | None = None,
     ) -> dict:
-        import json as _json
 
         event_id = str(uuid.uuid4())
         now = datetime.now(timezone.utc)

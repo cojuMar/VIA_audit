@@ -13,7 +13,7 @@ Routes:
 import logging
 import asyncpg
 from contextlib import asynccontextmanager
-from typing import Optional, List
+from typing import Optional
 from fastapi import FastAPI, HTTPException, Depends, Header, Query
 from pydantic import BaseModel, Field
 from .audit_narrator import AuditNarrator
@@ -191,8 +191,8 @@ async def list_narratives(
     params.extend([limit, offset])
 
     where = " AND ".join(conditions)
-    async with db.acquire() as conn:
-        await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
         rows = await conn.fetch(f"""
             SELECT narrative_id, framework, control_id, period_start, period_end,
                    combined_score, hitl_required, hitl_reviewed, created_at
@@ -211,8 +211,8 @@ async def get_narrative(
     _auth = Depends(_require_role("auditor")),
 ):
     """Get a narrative with its citations."""
-    async with db.acquire() as conn:
-        await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
         row = await conn.fetchrow(
             "SELECT * FROM audit_narratives WHERE narrative_id = $1::uuid AND tenant_id = $2::uuid",
             narrative_id, tenant_id
@@ -235,8 +235,8 @@ async def get_hitl_queue(
     limit: int = Query(20, ge=1, le=100),
 ):
     """List pending HITL review items."""
-    async with db.acquire() as conn:
-        await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
         rows = await conn.fetch("""
             SELECT q.queue_id, q.narrative_id, q.escalation_reason,
                    q.flagged_claims, q.priority, q.status, q.created_at,
@@ -259,9 +259,9 @@ async def submit_hitl_review(
     _auth = Depends(_require_role("auditor")),
 ):
     """Submit a HITL review decision for a flagged narrative."""
-    async with db.acquire() as conn:
+    async with db.acquire() as conn, conn.transaction():
         async with conn.transaction():
-            await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
 
             queue_row = await conn.fetchrow(
                 "SELECT * FROM hitl_narrative_queue WHERE queue_id = $1::uuid AND tenant_id = $2::uuid",

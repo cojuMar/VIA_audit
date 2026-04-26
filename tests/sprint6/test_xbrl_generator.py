@@ -8,13 +8,11 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../services/reporting-service'))
 
-import hashlib
-import pytest
 from datetime import date
 from lxml import etree
 
-from src.models import FinancialFact, JournalEntry, ReportEntity, ReportRequest
-from src.xbrl_generator import XBRLGenerator, IXBRLGenerator, _context_id, _unit_id
+from src.models import FinancialFact, ReportEntity, ReportRequest
+from src.xbrl_generator import XBRLGenerator, IXBRLGenerator, _context_id
 
 # ---------------------------------------------------------------------------
 # Namespace constants (mirror what the generator uses)

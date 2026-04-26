@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import uuid
-from datetime import date, datetime, timezone
+from datetime import date, datetime
 
 import asyncpg
 
@@ -57,35 +57,37 @@ class RiskManager:
             category_name = cat_row["name"]
 
             risk_uuid = str(uuid.uuid4())
+            # inherent/residual/target_score are GENERATED ALWAYS in the risks
+            # table (V028) — do NOT include them in the INSERT. We still compute
+            # inherent_score / residual_score here because the immutable
+            # risk_score_history table below stores point-in-time values and
+            # its score columns are regular (not generated).
             inherent_score = _scorer.score(data.inherent_likelihood, data.inherent_impact)
             residual_score: float | None = None
             if data.residual_likelihood is not None and data.residual_impact is not None:
                 residual_score = _scorer.score(
                     data.residual_likelihood, data.residual_impact
                 )
-            target_score: float | None = None
-            if data.target_likelihood is not None and data.target_impact is not None:
-                target_score = _scorer.score(data.target_likelihood, data.target_impact)
 
-            # 2. INSERT risk record
+            # 2. INSERT risk record (omit generated score columns)
             await conn.execute(
                 """
                 INSERT INTO risks (
                     id, tenant_id, risk_id, title, description,
                     category_id, owner, department,
-                    inherent_likelihood, inherent_impact, inherent_score,
-                    residual_likelihood, residual_impact, residual_score,
-                    target_likelihood, target_impact, target_score,
+                    inherent_likelihood, inherent_impact,
+                    residual_likelihood, residual_impact,
+                    target_likelihood, target_impact,
                     framework_control_refs, source, auto_source_id,
                     identified_date, review_date, status, created_at, updated_at
                 ) VALUES (
                     $1,$2,$3,$4,$5,
                     $6,$7,$8,
-                    $9,$10,$11,
-                    $12,$13,$14,
+                    $9,$10,
+                    $11,$12,
+                    $13,$14,
                     $15,$16,$17,
-                    $18,$19,$20,
-                    $21,$22,'open',NOW(),NOW()
+                    $18,$19,'open',NOW(),NOW()
                 )
                 """,
                 risk_uuid,
@@ -98,13 +100,10 @@ class RiskManager:
                 data.department,
                 data.inherent_likelihood,
                 data.inherent_impact,
-                inherent_score,
                 data.residual_likelihood,
                 data.residual_impact,
-                residual_score,
                 data.target_likelihood,
                 data.target_impact,
-                target_score,
                 data.framework_control_refs,
                 data.source,
                 auto_source_id,
@@ -190,27 +189,17 @@ class RiskManager:
                     params.append(val)
                     idx += 1
 
-            # Recompute derived scores if residual or target changed
+            # residual_score / target_score are GENERATED ALWAYS in the risks
+            # table (V028) — Postgres updates them automatically when
+            # likelihood or impact changes. We only need to decide here
+            # whether the history table needs a new row.
             new_residual_l = data.residual_likelihood or existing["residual_likelihood"]
             new_residual_i = data.residual_impact or existing["residual_impact"]
-            new_target_l = data.target_likelihood or existing["target_likelihood"]
-            new_target_i = data.target_impact or existing["target_impact"]
 
-            score_changed = False
-            if data.residual_likelihood is not None or data.residual_impact is not None:
-                if new_residual_l is not None and new_residual_i is not None:
-                    new_residual_score = _scorer.score(new_residual_l, new_residual_i)
-                    sets.append(f"residual_score = ${idx}")
-                    params.append(new_residual_score)
-                    idx += 1
-                    score_changed = True
-
-            if data.target_likelihood is not None or data.target_impact is not None:
-                if new_target_l is not None and new_target_i is not None:
-                    new_target_score = _scorer.score(new_target_l, new_target_i)
-                    sets.append(f"target_score = ${idx}")
-                    params.append(new_target_score)
-                    idx += 1
+            score_changed = (
+                data.residual_likelihood is not None
+                or data.residual_impact is not None
+            )
 
             if sets:
                 sets.append(f"updated_at = NOW()")
@@ -470,18 +459,21 @@ class RiskManager:
                 )
 
             assessment_id = str(uuid.uuid4())
+            # risk_assessments table intentionally stores only raw likelihood
+            # /impact; derived scores live on risks (GENERATED) and the
+            # risk_score_history audit trail.
             await conn.execute(
                 """
                 INSERT INTO risk_assessments (
                     id, tenant_id, risk_id,
-                    assessed_by, inherent_likelihood, inherent_impact, inherent_score,
-                    residual_likelihood, residual_impact, residual_score,
+                    assessed_by, inherent_likelihood, inherent_impact,
+                    residual_likelihood, residual_impact,
                     assessment_notes, controls_evaluated, assessed_at
                 ) VALUES (
                     $1,$2,$3,
-                    $4,$5,$6,$7,
-                    $8,$9,$10,
-                    $11,$12,NOW()
+                    $4,$5,$6,
+                    $7,$8,
+                    $9,$10,NOW()
                 )
                 """,
                 assessment_id,
@@ -490,10 +482,8 @@ class RiskManager:
                 data.assessed_by,
                 data.inherent_likelihood,
                 data.inherent_impact,
-                inherent_score,
                 data.residual_likelihood,
                 data.residual_impact,
-                residual_score,
                 data.assessment_notes,
                 data.controls_evaluated,
             )

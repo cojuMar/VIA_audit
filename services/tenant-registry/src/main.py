@@ -238,8 +238,10 @@ async def health():
         async with _state.db_pool.acquire() as conn:
             await conn.fetchval("SELECT 1")
         db_ok = True
-    except Exception:
-        pass
+    except Exception as exc:
+        # Health endpoint — never propagate, but log so operators can see
+        # *why* the probe is reporting "degraded" rather than just the symptom.
+        logger.warning("health_db_probe_failed", error=str(exc), exc_info=True)
 
     return {
         "status": "healthy" if db_ok else "degraded",

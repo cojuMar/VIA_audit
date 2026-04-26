@@ -13,8 +13,6 @@ Run: pytest tests/sprint4/test_hallucination_guardrail.py -v
 
 import asyncio
 import pytest
-from dataclasses import dataclass
-from typing import List, Optional
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import sys
@@ -278,7 +276,6 @@ class TestGuardrailCheck:
     @pytest.mark.asyncio
     async def test_hitl_threshold_boundary_exactly_045(self, guardrail, good_chunks):
         """combined_score exactly at threshold (0.45) triggers HITL (< not <=)."""
-        from src.hallucination_guardrail import _harmonic_mean
         # 1/3 supported, 2/3 unsupported → faithfulness=0.333, groundedness=0.667
         # H(0.333, 0.667) = 2*0.333*0.667/(0.333+0.667) ≈ 0.444 < 0.45 → hitl
         claims_response = _make_haiku_response(

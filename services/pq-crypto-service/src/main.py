@@ -108,9 +108,9 @@ async def _store_public_key(
     fingerprint: bytes,
 ) -> str:
     """Persist a public key to pq_public_keys; return the generated key_id."""
-    async with pool.acquire() as conn:
+    async with pool.acquire() as conn, conn.transaction():
         async with conn.transaction():
-            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
             key_id = await conn.fetchval(
                 """
                 INSERT INTO pq_public_keys (
@@ -379,9 +379,9 @@ async def list_keys(
         raise HTTPException(403, "tenant_id in path does not match X-Tenant-ID header")
 
     pool = _get_db()
-    async with pool.acquire() as conn:
+    async with pool.acquire() as conn, conn.transaction():
         async with conn.transaction():
-            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
             rows = await conn.fetch(
                 """
                 SELECT

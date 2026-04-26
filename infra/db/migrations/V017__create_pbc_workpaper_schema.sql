@@ -5,28 +5,30 @@
 
 -- -----------------------------------------------------------------------------
 -- 1. audit_engagements (tenant, RLS+FORCE, SELECT/INSERT/UPDATE)
+--
+-- CANONICAL shape for this table lives in V021 (audit_planning_schema); we keep
+-- a minimal idempotent guard here only so downstream V017 tables that FK into
+-- audit_engagements can be created cleanly on a fresh DB if for some reason the
+-- migration runner reorders. Column additions/renames are applied in V028.
 -- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS audit_engagements (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    tenant_id UUID NOT NULL,
-    engagement_name TEXT NOT NULL,
-    engagement_type TEXT NOT NULL CHECK (engagement_type IN ('internal_audit','external_audit','soc2_readiness','iso27001','pen_test','regulatory','sox','other')),
-    fiscal_year INT,
-    period_start DATE,
-    period_end DATE,
-    lead_auditor TEXT,
-    status TEXT NOT NULL DEFAULT 'planning' CHECK (status IN ('planning','fieldwork','review','complete','cancelled')),
-    description TEXT,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id          UUID NOT NULL,
+    title              TEXT NOT NULL,
+    audit_type         TEXT NOT NULL DEFAULT 'internal',
+    status             TEXT NOT NULL DEFAULT 'planning'
+                           CHECK (status IN ('planning','fieldwork','reporting','review','closed','cancelled')),
+    planned_start_date DATE,
+    planned_end_date   DATE,
+    lead_auditor       TEXT,
+    created_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_audit_engagements_tenant_id
     ON audit_engagements (tenant_id);
 CREATE INDEX IF NOT EXISTS idx_audit_engagements_tenant_status
     ON audit_engagements (tenant_id, status);
-CREATE INDEX IF NOT EXISTS idx_audit_engagements_tenant_type
-    ON audit_engagements (tenant_id, engagement_type);
 
 ALTER TABLE audit_engagements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_engagements FORCE ROW LEVEL SECURITY;

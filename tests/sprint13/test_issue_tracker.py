@@ -9,7 +9,7 @@ sys.path.insert(
 
 import pytest
 from datetime import date, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 from src.issue_tracker import IssueTracker
 

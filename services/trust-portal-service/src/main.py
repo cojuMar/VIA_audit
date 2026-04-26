@@ -25,7 +25,6 @@ from fastapi import (
     Request,
     UploadFile,
 )
-from fastapi.responses import JSONResponse
 
 from .access_logger import AccessLogger
 from .chatbot import PortalChatbot
@@ -504,7 +503,6 @@ async def admin_list_deflections(
 def _serialize(obj: dict) -> dict:
     """Convert asyncpg Record values (UUID, date, datetime) to JSON-safe types."""
     import datetime
-    import json
 
     result: dict = {}
     for k, v in obj.items():

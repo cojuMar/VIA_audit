@@ -10,7 +10,7 @@ sys.path.insert(
 )
 
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch, call
+from unittest.mock import AsyncMock, MagicMock, patch
 
 
 # ---------------------------------------------------------------------------
@@ -386,7 +386,6 @@ class TestPlanManager:
         assert plan_a.plan_year == plan_b.plan_year
 
         # Simulate DB raising UniqueViolationError on second insert
-        from unittest.mock import AsyncMock as AM
         import asyncpg
 
         row = {"id": "plan-1", "plan_year": 2026}

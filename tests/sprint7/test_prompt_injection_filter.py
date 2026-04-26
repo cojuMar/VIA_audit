@@ -11,7 +11,7 @@ import pytest
 import hashlib
 from unittest.mock import AsyncMock, MagicMock, patch
 from src.prompt_injection_filter import (
-    PromptInjectionFilter, InjectionCheckResult, InjectionBlockedError
+    PromptInjectionFilter, InjectionBlockedError
 )
 
 

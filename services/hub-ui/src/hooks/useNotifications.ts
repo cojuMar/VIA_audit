@@ -42,8 +42,10 @@ export function useNotifications(user: AuthUser | null): UseNotificationsResult 
         const data: Notification[] = await res.json();
         setNotifications(data);
       }
-    } catch {
-      // Network error or backend not available — fail silently
+    } catch (err) {
+      // Surface — never swallow. Wiring to @via/ui-kit's <ToasterProvider>
+      // lands when the hub-ui root adopts it (Sprint 27).
+      console.warn('[useNotifications] fetch failed:', err);
     } finally {
       setIsLoading(false);
     }
@@ -70,7 +72,9 @@ export function useNotifications(user: AuthUser | null): UseNotificationsResult 
         `/auth/notifications/${id}/read?tenant_id=${encodeURIComponent(user.tenant_id)}`,
         { method: 'PATCH' }
       );
-    } catch { /* fail silently */ }
+    } catch (err) {
+      console.warn('[useNotifications] mark failed:', err);
+    }
   }, [user]);
 
   const markAllRead = useCallback(async () => {
@@ -82,7 +86,9 @@ export function useNotifications(user: AuthUser | null): UseNotificationsResult 
         `/auth/notifications/read-all?${buildParams(user)}`,
         { method: 'PATCH' }
       );
-    } catch { /* fail silently */ }
+    } catch (err) {
+      console.warn('[useNotifications] mark failed:', err);
+    }
   }, [user]);
 
   const unreadCount = notifications.filter(n => !n.read).length;

@@ -185,29 +185,34 @@ GRANT SELECT, INSERT, UPDATE ON audit_plan_items TO aegis_app;
 
 -- -----------------------------------------------------------------------------
 -- 5. audit_engagements  (tenant, RLS+FORCE, SELECT/INSERT/UPDATE)
+--
+-- V017 creates a minimal audit_engagements. This block extends it to the full
+-- planning-schema shape via idempotent ADD COLUMN IF NOT EXISTS so we don't
+-- redefine-and-shadow with a second CREATE TABLE (which previously silently
+-- no-op'd on IF NOT EXISTS and left the older minimal shape in place).
 -- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS audit_engagements (
     id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id          UUID NOT NULL,
-    plan_item_id       UUID REFERENCES audit_plan_items(id),
     title              TEXT NOT NULL,
-    engagement_code    TEXT,
     audit_type         TEXT NOT NULL DEFAULT 'internal',
-    status             TEXT NOT NULL DEFAULT 'planning'
-                           CHECK (status IN ('planning','fieldwork','reporting','review','closed','cancelled')),
-    scope              TEXT,
-    objectives         TEXT,
-    planned_start_date DATE,
-    planned_end_date   DATE,
-    actual_start_date  DATE,
-    actual_end_date    DATE,
-    budget_hours       NUMERIC(8,2) DEFAULT 0,
-    lead_auditor       TEXT,
-    team_members       TEXT[],
-    engagement_manager TEXT,
+    status             TEXT NOT NULL DEFAULT 'planning',
     created_at         TIMESTAMPTZ DEFAULT NOW(),
     updated_at         TIMESTAMPTZ DEFAULT NOW()
 );
+
+ALTER TABLE audit_engagements ADD COLUMN IF NOT EXISTS plan_item_id       UUID REFERENCES audit_plan_items(id);
+ALTER TABLE audit_engagements ADD COLUMN IF NOT EXISTS engagement_code    TEXT;
+ALTER TABLE audit_engagements ADD COLUMN IF NOT EXISTS scope              TEXT;
+ALTER TABLE audit_engagements ADD COLUMN IF NOT EXISTS objectives         TEXT;
+ALTER TABLE audit_engagements ADD COLUMN IF NOT EXISTS planned_start_date DATE;
+ALTER TABLE audit_engagements ADD COLUMN IF NOT EXISTS planned_end_date   DATE;
+ALTER TABLE audit_engagements ADD COLUMN IF NOT EXISTS actual_start_date  DATE;
+ALTER TABLE audit_engagements ADD COLUMN IF NOT EXISTS actual_end_date    DATE;
+ALTER TABLE audit_engagements ADD COLUMN IF NOT EXISTS budget_hours       NUMERIC(8,2) DEFAULT 0;
+ALTER TABLE audit_engagements ADD COLUMN IF NOT EXISTS lead_auditor       TEXT;
+ALTER TABLE audit_engagements ADD COLUMN IF NOT EXISTS team_members       TEXT[];
+ALTER TABLE audit_engagements ADD COLUMN IF NOT EXISTS engagement_manager TEXT;
 
 CREATE INDEX IF NOT EXISTS idx_audit_engagements_tenant_id
     ON audit_engagements (tenant_id);

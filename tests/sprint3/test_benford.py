@@ -9,7 +9,6 @@ import math
 import random
 import sys
 import os
-import pytest
 
 # ---------------------------------------------------------------------------
 # Path setup — allow running from repo root or tests/sprint3 directly

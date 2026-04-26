@@ -36,7 +36,7 @@ async def close_pool(pool: asyncpg.Pool) -> None:
 
 async def _set_tenant_context(conn: asyncpg.Connection, tenant_id: str) -> None:
     """Sets the app.tenant_id session variable consumed by PostgreSQL RLS policies."""
-    await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
+    await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
 
 
 # ---------------------------------------------------------------------------

@@ -24,17 +24,16 @@ Routes:
   POST /controls/{control_id}/evidence
 """
 
-import asyncio
 import logging
 from contextlib import asynccontextmanager
 from dataclasses import asdict
-from typing import Optional, List
+from typing import Optional
 from uuid import UUID
 
 import asyncpg
 import uvicorn
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from fastapi import FastAPI, HTTPException, Depends, Header, Query
+from fastapi import FastAPI, HTTPException, Depends, Header
 from pydantic import BaseModel
 
 from .calendar_builder import CalendarBuilder
@@ -205,8 +204,8 @@ async def list_tenant_frameworks(
 ):
     if tenant_id != x_tenant_id:
         raise HTTPException(403, "Tenant ID mismatch")
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
         rows = await conn.fetch("""
             SELECT tf.framework_id, tf.is_active, tf.activated_at, tf.target_cert_date,
                    cf.slug, cf.name, cf.version, cf.category
@@ -229,8 +228,8 @@ async def activate_framework(
     if tenant_id != x_tenant_id:
         raise HTTPException(403, "Tenant ID mismatch")
 
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
 
         framework_id = await conn.fetchval(
             "SELECT id FROM compliance_frameworks WHERE slug = $1", slug
@@ -268,8 +267,8 @@ async def deactivate_framework(
     if tenant_id != x_tenant_id:
         raise HTTPException(403, "Tenant ID mismatch")
 
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
 
         framework_id = await conn.fetchval(
             "SELECT id FROM compliance_frameworks WHERE slug = $1", slug
@@ -331,8 +330,8 @@ async def get_all_gaps(
     if tenant_id != x_tenant_id:
         raise HTTPException(403, "Tenant ID mismatch")
 
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
         active_fws = await conn.fetch("""
             SELECT tf.framework_id, cf.slug
             FROM tenant_frameworks tf
@@ -362,8 +361,8 @@ async def get_framework_gaps(
     if tenant_id != x_tenant_id:
         raise HTTPException(403, "Tenant ID mismatch")
 
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
         row = await conn.fetchrow("""
             SELECT tf.framework_id
             FROM tenant_frameworks tf
@@ -392,8 +391,8 @@ async def get_calendar(
     if tenant_id != x_tenant_id:
         raise HTTPException(403, "Tenant ID mismatch")
 
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
         rows = await conn.fetch("""
             SELECT cce.id, cce.framework_id, cf.name as framework_name, cce.event_type,
                    cce.title, cce.due_date, cce.description, cce.is_completed,
@@ -457,8 +456,8 @@ async def link_evidence(
     except ValueError as e:
         raise HTTPException(400, f"Invalid UUID: {e}")
 
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
 
         # Verify control exists
         ctrl = await conn.fetchrow(

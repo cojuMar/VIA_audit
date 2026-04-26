@@ -1,5 +1,4 @@
 import logging
-from uuid import UUID
 import asyncpg
 from .hallucination_guardrail import GuardrailResult
 
@@ -51,8 +50,8 @@ class HITLEscalationService:
         if guardrail_result.error:
             reason += f"; error={guardrail_result.error}"
 
-        async with self._pool.acquire() as conn:
-            await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
+        async with self._pool.acquire() as conn, conn.transaction():
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
             queue_id = await conn.fetchval("""
                 INSERT INTO hitl_narrative_queue
                     (narrative_id, tenant_id, escalation_reason, flagged_claims, priority)

@@ -139,9 +139,9 @@ class EscalationEngine:
         total_inserted = 0
 
         for tenant_id in tenants:
-            async with pool.acquire() as conn:
+            async with pool.acquire() as conn, conn.transaction():
                 # Set tenant context for querying (for RLS if enabled)
-                await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
+                await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
                 overdue_rows = await conn.fetch(
                     """
                     SELECT ta.id, ta.employee_id, tc.title
@@ -181,8 +181,8 @@ class EscalationEngine:
         total_inserted = 0
 
         for tenant_id in tenants:
-            async with pool.acquire() as conn:
-                await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
+            async with pool.acquire() as conn, conn.transaction():
+                await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
                 overdue_rows = await conn.fetch(
                     """
                     SELECT
@@ -240,8 +240,8 @@ class EscalationEngine:
         warning_days = self.settings.background_check_expiry_warning_days
 
         for tenant_id in tenants:
-            async with pool.acquire() as conn:
-                await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
+            async with pool.acquire() as conn, conn.transaction():
+                await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
                 expiry_rows = await conn.fetch(
                     """
                     SELECT bc.id, bc.employee_id, bc.check_type, bc.expiry_date

@@ -3,7 +3,6 @@ from uuid import UUID
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from .db import tenant_conn
 from .models import ChatRequest
 
 logger = logging.getLogger(__name__)

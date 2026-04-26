@@ -9,7 +9,6 @@ Routes:
   GET  /health
 """
 
-import asyncio
 import hashlib
 import logging
 from contextlib import asynccontextmanager
@@ -20,7 +19,6 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends, Header, Qu
 from pydantic import BaseModel, Field
 from .config import settings
 from .db import create_db_pool
-from .models import ReportRequest
 from .report_builder import ReportBuilder
 from .xbrl_generator import XBRLGenerator, IXBRLGenerator
 from .saft_generator import SAFTGenerator
@@ -90,8 +88,8 @@ async def generate_report(
     period_start = date.fromisoformat(body.period_start)
     period_end = date.fromisoformat(body.period_end)
 
-    async with db.acquire() as conn:
-        await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
         export_id = await conn.fetchval("""
             INSERT INTO report_exports (tenant_id, format, framework, period_start, period_end, status)
             VALUES ($1::uuid, $2, $3, $4::date, $5::date, 'pending')
@@ -123,8 +121,8 @@ async def _generate_report_async(
         return
 
     try:
-        async with db.acquire() as conn:
-            await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
+        async with db.acquire() as conn, conn.transaction():
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
             await conn.execute(
                 "UPDATE report_exports SET status='generating' WHERE export_id=$1::uuid",
                 export_id
@@ -186,8 +184,8 @@ async def _generate_report_async(
 
                 # Persist signature record
                 if sig_result.is_signed:
-                    async with db.acquire() as conn:
-                        await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
+                    async with db.acquire() as conn, conn.transaction():
+                        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
                         await conn.execute("""
                             INSERT INTO digital_signatures
                                 (export_id, tenant_id, signer_cert_sha256, signer_dn,
@@ -216,8 +214,8 @@ async def _generate_report_async(
         )
 
         # Mark complete in DB
-        async with db.acquire() as conn:
-            await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
+        async with db.acquire() as conn, conn.transaction():
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
             await conn.execute("""
                 UPDATE report_exports
                 SET status='completed', storage_path=$1, file_size_bytes=$2,
@@ -233,8 +231,8 @@ async def _generate_report_async(
     except Exception as e:
         logger.error("Report generation failed for %s: %s", export_id, e, exc_info=True)
         try:
-            async with db.acquire() as conn:
-                await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
+            async with db.acquire() as conn, conn.transaction():
+                await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
                 await conn.execute("""
                     UPDATE report_exports SET status='failed', generation_log=$1 WHERE export_id=$2::uuid
                 """, str(e), export_id)
@@ -249,8 +247,8 @@ async def get_report(
     db: asyncpg.Pool = Depends(get_db),
     _auth = Depends(_require_bearer),
 ):
-    async with db.acquire() as conn:
-        await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
         row = await conn.fetchrow(
             "SELECT * FROM report_exports WHERE export_id=$1::uuid AND tenant_id=$2::uuid",
             export_id, tenant_id
@@ -268,8 +266,8 @@ async def download_report(
     _auth = Depends(_require_bearer),
 ):
     """Get a presigned download URL for a completed report."""
-    async with db.acquire() as conn:
-        await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
         row = await conn.fetchrow(
             "SELECT status, storage_path, format FROM report_exports WHERE export_id=$1::uuid AND tenant_id=$2::uuid",
             export_id, tenant_id
@@ -308,8 +306,8 @@ async def list_reports(
     params.extend([limit, offset])
 
     where = " AND ".join(conditions)
-    async with db.acquire() as conn:
-        await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
         rows = await conn.fetch(f"""
             SELECT export_id, format, framework, period_start, period_end,
                    status, file_size_bytes, created_at, completed_at

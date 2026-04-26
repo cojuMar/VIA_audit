@@ -14,7 +14,6 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../services/reporting-service'))
 
-import pytest
 from datetime import date
 from lxml import etree
 

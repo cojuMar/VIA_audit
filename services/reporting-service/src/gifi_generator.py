@@ -12,7 +12,7 @@ Output: XML document with GIFI-tagged amounts, suitable for CRA T2 electronic fi
 import logging
 from datetime import datetime, timezone
 from lxml import etree
-from .models import FinancialFact, ReportEntity, ReportRequest
+from .models import ReportRequest
 
 logger = logging.getLogger(__name__)
 

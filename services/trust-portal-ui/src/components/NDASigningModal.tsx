@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { signNDA } from '../api';
 
@@ -18,6 +18,42 @@ export default function NDASigningModal({ slug, nda_version, onSuccess, onClose 
   const [error, setError] = useState<string | null>(null);
 
   const canSubmit = name.trim() !== '' && email.trim() !== '' && agreed && !loading;
+  const titleId = useId();
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  // Sprint 27 a11y: Escape closes, focus restores to opener, Tab is trapped
+  // inside the dialog. Mirrors the @via/ui-kit/Modal behaviour for portal
+  // visitors (this UI ships independently of the rest of the workspace).
+  useEffect(() => {
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    dialogRef.current?.focus();
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        onClose();
+        return;
+      }
+      if (e.key !== 'Tab' || !dialogRef.current) return;
+      const focusables = dialogRef.current.querySelectorAll<HTMLElement>(
+        'a[href],input:not([disabled]),button:not([disabled]),textarea:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])',
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+    document.addEventListener('keydown', onKey, true);
+    return () => {
+      document.removeEventListener('keydown', onKey, true);
+      previouslyFocused?.focus();
+    };
+  }, [onClose]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,11 +79,22 @@ export default function NDASigningModal({ slug, nda_version, onSuccess, onClose 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-lg">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+      onClick={onClose}
+    >
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        onClick={(e) => e.stopPropagation()}
+        className="relative bg-white rounded-xl shadow-2xl w-full max-w-lg"
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b">
-          <h2 className="text-lg font-semibold text-gray-900">Non-Disclosure Agreement</h2>
+          <h2 id={titleId} className="text-lg font-semibold text-gray-900">Non-Disclosure Agreement</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"

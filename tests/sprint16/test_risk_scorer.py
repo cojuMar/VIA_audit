@@ -7,8 +7,7 @@ sys.path.insert(
     os.path.join(os.path.dirname(__file__), "../../services/risk-service"),
 )
 
-import pytest
-from src.risk_scorer import RiskScorer, score, label, color, risk_reduction
+from src.risk_scorer import score, label, color, risk_reduction
 
 
 class TestRiskScorer:

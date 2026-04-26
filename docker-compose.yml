@@ -44,6 +44,38 @@ services:
       - aegis-internal
 
   # ---------------------------------------------------------------------------
+  # Flyway – one-shot SQL migration runner
+  #
+  # Replaces the bespoke `infra/db/migrate.sh` for clean / CI deployments.
+  # Tracks applied migrations in `flyway_schema_history` and refuses to
+  # re-apply a migration whose checksum changed (catches "edited V017
+  # behind your back" foot-guns).
+  #
+  # Usage:
+  #   docker compose run --rm db-migrate
+  # ---------------------------------------------------------------------------
+  db-migrate:
+    image: flyway/flyway:10-alpine
+    restart: "no"
+    profiles: ["migrate"]   # opt-in: only runs when explicitly invoked
+    volumes:
+      - ./infra/db/migrations:/flyway/sql:ro
+    command: >
+      -url=jdbc:postgresql://postgres:5432/aegis
+      -user=aegis_admin
+      -password=${POSTGRES_PASSWORD:-aegis_dev_pw}
+      -table=flyway_schema_history
+      -baselineOnMigrate=true
+      -baselineVersion=0
+      -connectRetries=30
+      migrate
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - aegis-internal
+
+  # ---------------------------------------------------------------------------
   # TimescaleDB – time-series / metrics store
   # ---------------------------------------------------------------------------
   timescaledb:
@@ -60,6 +92,12 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aegis_admin -d aegis_timeseries"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     networks:
       - aegis-internal
 
@@ -74,9 +112,25 @@ services:
     volumes:
       - ./infra/pgbouncer/pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini:ro
       - ./infra/pgbouncer/userlist.txt:/etc/pgbouncer/userlist.txt:ro
+    # The pgbouncer/pgbouncer upstream image ships an entrypoint that
+    # REQUIRES DATABASES_HOST / DATABASES env vars and builds its own config,
+    # ignoring our mounted pgbouncer.ini. Override to run the binary directly
+    # against the static config we already ship and manage in git.
+    entrypoint: ["/opt/pgbouncer/pgbouncer", "/etc/pgbouncer/pgbouncer.ini"]
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      # The pgbouncer/pgbouncer image is alpine-based and ships nc + pgrep.
+      # We test that (a) the pooler process is alive and (b) port 6432 is
+      # accepting TCP connections; that combination is enough to know the
+      # pooler is up and reachable. Doing a real SQL probe would require psql
+      # in the image, which it doesn't include.
+      test: ["CMD-SHELL", "pgrep pgbouncer >/dev/null && nc -z 127.0.0.1 6432"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
     networks:
       - aegis-internal
 
@@ -154,7 +208,7 @@ services:
     ports:
       - "3002:3002"
     environment:
-      DATABASE_URL: "postgresql://aegis_admin:aegis_dev_pw@pgbouncer:6432/aegis"
+      DATABASE_URL: "postgresql://aegis_app:${POSTGRES_APP_PASSWORD:-aegis_app_dev_pw}@pgbouncer:6432/aegis"
       VAULT_ADDR: "http://vault:8200"
       VAULT_TOKEN: aegis-dev-root-token
       AUTH_SERVICE_JWKS_URL: "http://auth-service:3001/.well-known/jwks.json"
@@ -176,7 +230,7 @@ services:
     ports:
       - "3003:3003"
     environment:
-      DATABASE_URL: "postgresql://aegis_admin:aegis_dev_pw@pgbouncer:6432/aegis"
+      DATABASE_URL: "postgresql://aegis_app:${POSTGRES_APP_PASSWORD:-aegis_app_dev_pw}@pgbouncer:6432/aegis"
       AUTH_SERVICE_JWKS_URL: "http://auth-service:3001/.well-known/jwks.json"
     depends_on:
       postgres:
@@ -239,6 +293,13 @@ services:
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+    healthcheck:
+      # Confluent's `cub zk-ready` is bundled and waits for ZK to report ready.
+      test: ["CMD", "cub", "zk-ready", "localhost:2181", "10"]
+      interval: 10s
+      timeout: 12s
+      retries: 5
+      start_period: 20s
     networks:
       - aegis-internal
 
@@ -252,7 +313,8 @@ services:
       - "9092:9092"
       - "29092:29092"
     depends_on:
-      - zookeeper
+      zookeeper:
+        condition: service_healthy
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
@@ -295,7 +357,7 @@ services:
     ports:
       - "3004:3004"
     environment:
-      DATABASE_URL: "postgresql://aegis_admin:aegis_dev_pw@pgbouncer:6432/aegis"
+      DATABASE_URL: "postgresql://aegis_app:${POSTGRES_APP_PASSWORD:-aegis_app_dev_pw}@pgbouncer:6432/aegis"
       KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
       VAULT_ADDR: "http://vault:8200"
       VAULT_TOKEN: aegis-dev-root-token
@@ -324,7 +386,7 @@ services:
     ports:
       - "3005:3005"
     environment:
-      DATABASE_URL: "postgresql://aegis_admin:aegis_dev_pw@pgbouncer:6432/aegis"
+      DATABASE_URL: "postgresql://aegis_app:${POSTGRES_APP_PASSWORD:-aegis_app_dev_pw}@pgbouncer:6432/aegis"
       MINIO_ENDPOINT: "http://minio:9000"
       MINIO_ACCESS_KEY: aegis_minio
       MINIO_SECRET_KEY: aegis_minio_dev_pw
@@ -349,7 +411,7 @@ services:
     ports:
       - "3006:3006"
     environment:
-      DATABASE_URL: "postgresql://aegis_admin:aegis_dev_pw@pgbouncer:6432/aegis"
+      DATABASE_URL: "postgresql://aegis_app:${POSTGRES_APP_PASSWORD:-aegis_app_dev_pw}@pgbouncer:6432/aegis"
       KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
       MINIO_ENDPOINT: "http://minio:9000"
       MINIO_ACCESS_KEY: aegis_minio
@@ -415,7 +477,7 @@ services:
     ports:
       - "3007:3007"
     environment:
-      DATABASE_URL: "postgresql://aegis_admin:aegis_dev_pw@pgbouncer:6432/aegis"
+      DATABASE_URL: "postgresql://aegis_app:${POSTGRES_APP_PASSWORD:-aegis_app_dev_pw}@pgbouncer:6432/aegis"
       KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
       MLFLOW_TRACKING_URI: "http://mlflow:5000"
       MLFLOW_S3_ENDPOINT_URL: "http://minio:9000"
@@ -457,7 +519,7 @@ services:
     ports:
       - "3008:3008"
     environment:
-      DATABASE_URL: postgresql://aegis_app:aegis_app_pw@pgbouncer:5432/aegis
+      DATABASE_URL: "postgresql://aegis_app:${POSTGRES_APP_PASSWORD:-aegis_app_dev_pw}@pgbouncer:6432/aegis"
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       REDIS_URL: redis://redis:6379/3
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
@@ -498,7 +560,7 @@ services:
     ports:
       - "3009:3009"
     environment:
-      DATABASE_URL: postgresql://aegis_app:aegis_app_pw@pgbouncer:5432/aegis
+      DATABASE_URL: "postgresql://aegis_app:${POSTGRES_APP_PASSWORD:-aegis_app_dev_pw}@pgbouncer:6432/aegis"
       REDIS_URL: redis://redis:6379/4
       FORENSIC_ML_URL: http://forensic-ml-service:3007
       RAG_PIPELINE_URL: http://rag-pipeline-service:3008
@@ -510,8 +572,12 @@ services:
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
-      forensic-ml-service: { condition: service_healthy }
-      rag-pipeline-service: { condition: service_healthy }
+      # forensic-ml and rag-pipeline are reached over Kafka, not synchronously.
+      # Waiting for service_healthy on them creates a deadlock when those
+      # services are slow to warm (model loading, vector index hydration), and
+      # blocks the entire dashboard from coming up. service_started is enough.
+      forensic-ml-service: { condition: service_started }
+      rag-pipeline-service: { condition: service_started }
     deploy:
       resources:
         limits:
@@ -563,7 +629,7 @@ services:
     ports:
       - "3011:3011"
     environment:
-      DATABASE_URL: postgresql://aegis_app:aegis_app_pw@pgbouncer:5432/aegis
+      DATABASE_URL: "postgresql://aegis_app:${POSTGRES_APP_PASSWORD:-aegis_app_dev_pw}@pgbouncer:6432/aegis"
       MINIO_ENDPOINT: http://minio:9000
       MINIO_ACCESS_KEY: aegis_minio
       MINIO_SECRET_KEY: aegis_minio_dev_pw
@@ -603,7 +669,7 @@ services:
     ports:
       - "3012:3012"
     environment:
-      DATABASE_URL: postgresql://aegis_admin:aegis_dev_pw@postgres:5432/aegis
+      DATABASE_URL: postgresql://aegis_app:${POSTGRES_APP_PASSWORD:-aegis_app_dev_pw}@postgres:5432/aegis
       PQ_SERVICE_PORT: "3012"
       VAULT_ADDR: http://vault:8200
       VAULT_TOKEN: aegis-dev-root-token
@@ -633,7 +699,7 @@ services:
     ports:
       - "3013:3013"
     environment:
-      DATABASE_URL: postgresql://aegis_admin:aegis_dev_pw@postgres:5432/aegis
+      DATABASE_URL: postgresql://aegis_app:${POSTGRES_APP_PASSWORD:-aegis_app_dev_pw}@postgres:5432/aegis
       FRAMEWORK_SERVICE_PORT: "3013"
       FRAMEWORKS_DIR: /app/frameworks
       VAULT_ADDR: http://vault:8200
@@ -668,7 +734,7 @@ services:
     ports:
       - "3014:3014"
     environment:
-      DATABASE_URL: postgresql://aegis_admin:aegis_dev_pw@postgres:5432/aegis
+      DATABASE_URL: postgresql://aegis_app:${POSTGRES_APP_PASSWORD:-aegis_app_dev_pw}@postgres:5432/aegis
       TPRM_SERVICE_PORT: "3014"
       TEMPLATES_DIR: /app/questionnaire-templates
       MINIO_ENDPOINT: http://minio:9000
@@ -716,9 +782,9 @@ services:
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-aegis_minio_dev_pw}
       MINIO_BUCKET_PORTAL: aegis-portal-docs
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
-      RAG_PIPELINE_URL: http://rag-pipeline-service:3010
-      FRAMEWORK_SERVICE_URL: http://framework-service:3012
-      JWT_SECRET: ${JWT_SECRET:-aegis_dev_jwt_secret_change_in_prod}
+      RAG_PIPELINE_URL: http://rag-pipeline-service:3008
+      FRAMEWORK_SERVICE_URL: http://framework-service:3013
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set — see .env.example}
     depends_on:
       postgres:
         condition: service_healthy
@@ -767,7 +833,7 @@ services:
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-aegis_minio_dev_pw}
       MINIO_BUCKET_MONITORING: aegis-monitoring
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
-      FRAMEWORK_SERVICE_URL: http://framework-service:3012
+      FRAMEWORK_SERVICE_URL: http://framework-service:3013
       MONITORING_SCHEDULE_ENABLED: "true"
     depends_on:
       postgres:
@@ -978,12 +1044,12 @@ services:
       DATABASE_URL: postgresql://aegis_app:${POSTGRES_APP_PASSWORD:-aegis_app_dev_pw}@postgres:5432/aegis
       REDIS_URL: redis://redis:6379/11
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
-      FRAMEWORK_SERVICE_URL: http://framework-service:3012
+      FRAMEWORK_SERVICE_URL: http://framework-service:3013
       TPRM_SERVICE_URL: http://tprm-service:3014
       MONITORING_SERVICE_URL: http://monitoring-service:3016
       PEOPLE_SERVICE_URL: http://people-service:3017
       PBC_SERVICE_URL: http://pbc-service:3018
-      RAG_PIPELINE_URL: http://rag-pipeline-service:3010
+      RAG_PIPELINE_URL: http://rag-pipeline-service:3008
       MAX_CONVERSATION_TOKENS: "100000"
       AGENT_MODEL: "claude-opus-4-5"
     depends_on:
@@ -1030,7 +1096,7 @@ services:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       MONITORING_SERVICE_URL: http://monitoring-service:3016
       TPRM_SERVICE_URL: http://tprm-service:3014
-      FRAMEWORK_SERVICE_URL: http://framework-service:3012
+      FRAMEWORK_SERVICE_URL: http://framework-service:3013
     depends_on:
       postgres:
         condition: service_healthy
@@ -1070,7 +1136,7 @@ services:
     ports:
       - "3022:3022"
     environment:
-      DATABASE_URL: postgresql://aegis_admin:aegis_dev_pw@postgres:5432/aegis
+      DATABASE_URL: postgresql://aegis_app:${POSTGRES_APP_PASSWORD:-aegis_app_dev_pw}@postgres:5432/aegis
       AUDIT_PLANNING_SERVICE_PORT: "3022"
       REDIS_URL: redis://redis:6379/13
       RISK_SERVICE_URL: http://risk-service:3021
@@ -1126,7 +1192,7 @@ services:
     ports:
       - "3023:3023"
     environment:
-      DATABASE_URL: postgresql://aegis_admin:aegis_dev_pw@postgres:5432/aegis
+      DATABASE_URL: postgresql://aegis_app:${POSTGRES_APP_PASSWORD:-aegis_app_dev_pw}@postgres:5432/aegis
       ESG_BOARD_SERVICE_PORT: "3023"
       REDIS_URL: redis://redis:6379/14
       RISK_SERVICE_URL: http://risk-service:3021
@@ -1186,7 +1252,7 @@ services:
     ports:
       - "3024:3024"
     environment:
-      DATABASE_URL: postgresql://aegis_admin:aegis_dev_pw@postgres:5432/aegis
+      DATABASE_URL: postgresql://aegis_app:${POSTGRES_APP_PASSWORD:-aegis_app_dev_pw}@postgres:5432/aegis
       MOBILE_SYNC_SERVICE_PORT: "3024"
       REDIS_URL: redis://redis:6379/15
       MINIO_ENDPOINT: http://minio:9000
@@ -1244,7 +1310,11 @@ services:
       - "3010:3010"
     environment:
       DATABASE_URL: postgresql://aegis_app:${POSTGRES_APP_PASSWORD:-aegis_app_dev_pw}@postgres:5432/aegis
-      JWT_SECRET: ${JWT_SECRET:-aegis_dev_jwt_secret_change_in_prod}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set — see .env.example}
+      ENV: ${ENV:-dev}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      SELF_REGISTRATION_TENANT: ${SELF_REGISTRATION_TENANT:-}
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}
     depends_on:
       postgres:
         condition: service_healthy
@@ -1269,8 +1339,10 @@ services:
     ports:
       - "5173:80"
     depends_on:
-      - auth-service
-      - dashboard-service
+      auth-service:
+        condition: service_healthy
+      dashboard-service:
+        condition: service_healthy
     networks:
       - aegis-internal
       - aegis-external

@@ -23,8 +23,8 @@ class ComplianceScorer:
 
     async def compute_score(self, tenant_id: UUID, framework_id: UUID) -> ComplianceScore:
         """Compute and persist a score snapshot for one tenant+framework."""
-        async with self._pool.acquire() as conn:
-            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+        async with self._pool.acquire() as conn, conn.transaction():
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
 
             # Get framework name
             framework_name = await conn.fetchval(
@@ -83,8 +83,8 @@ class ComplianceScorer:
 
     async def compute_all_tenant_scores(self, tenant_id: UUID) -> List[ComplianceScore]:
         """Compute scores for all active frameworks for a tenant."""
-        async with self._pool.acquire() as conn:
-            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+        async with self._pool.acquire() as conn, conn.transaction():
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
             frameworks = await conn.fetch("""
                 SELECT framework_id FROM tenant_frameworks
                 WHERE tenant_id = $1 AND is_active = TRUE
@@ -98,8 +98,8 @@ class ComplianceScorer:
 
     async def get_latest_scores(self, tenant_id: UUID) -> List[Dict]:
         """Get the most recent score snapshot per framework for a tenant."""
-        async with self._pool.acquire() as conn:
-            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+        async with self._pool.acquire() as conn, conn.transaction():
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
             rows = await conn.fetch("""
                 SELECT DISTINCT ON (cs.framework_id)
                     cs.framework_id, cs.score_pct,

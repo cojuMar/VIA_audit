@@ -1,6 +1,6 @@
 import io
 import logging
-from datetime import datetime, timezone, timedelta
+from datetime import timedelta
 from uuid import uuid4
 
 import asyncpg

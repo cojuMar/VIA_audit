@@ -12,7 +12,7 @@ import logging
 from datetime import date
 from typing import List, Optional
 import asyncpg
-from .models import FinancialFact, JournalEntry, ReportEntity, ReportRequest
+from .models import FinancialFact, ReportEntity, ReportRequest
 
 logger = logging.getLogger(__name__)
 
@@ -42,8 +42,8 @@ class ReportBuilder:
         Returns:
             ReportRequest ready for any generator.
         """
-        async with self._pool.acquire() as conn:
-            await conn.execute('SELECT set_config('app.tenant_id', $1, false)', tenant_id)
+        async with self._pool.acquire() as conn, conn.transaction():
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
 
             # Get entity info from tenants table
             tenant_row = await conn.fetchrow(

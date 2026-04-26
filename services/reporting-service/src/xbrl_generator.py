@@ -18,9 +18,9 @@ Design decisions:
 import hashlib
 import logging
 from datetime import date
-from typing import Dict, List, Optional
+from typing import Dict
 from lxml import etree
-from .models import FinancialFact, ReportEntity, ReportRequest
+from .models import ReportEntity, ReportRequest
 
 logger = logging.getLogger(__name__)
 

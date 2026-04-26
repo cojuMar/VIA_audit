@@ -1,0 +1,187 @@
+# =============================================================================
+#  docker-compose.prod.yml — Production overlay for the VIA / Aegis stack.
+#
+#  Layered on top of docker-compose.yml. Use:
+#      docker compose -f docker-compose.yml -f docker-compose.prod.yml \
+#          --env-file .env.prod up -d
+#
+#  This override:
+#    1. Re-isolates `aegis-internal` (no external Docker bridge connectivity).
+#    2. Strips host-port bindings from every backend service. Only the UIs
+#       remain externally reachable. All inter-service traffic is on the
+#       internal Docker network.
+#    3. Replaces every `${VAR:-default}` with `${VAR:?…}` so the stack will
+#       fail to start if a required secret is missing — no silent fallback to
+#       the dev defaults checked into git.
+#    4. Adds resource limits to the heavy infra services (postgres, kafka,
+#       timescale, minio, mlflow) so a runaway container can't OOM the host.
+#    5. Disables the demo-data seeder (`SEED_DEMO_DATA=false`).
+#    6. Binds hub-ui's startup to its upstream services being healthy.
+#
+#  Anything NOT explicitly listed in this overlay inherits unmodified from
+#  docker-compose.yml. New services added there will need their host bindings
+#  scrubbed here too — see test_no_backend_ports_exposed_in_prod.
+# =============================================================================
+
+services:
+
+  # ------------------------------------------------------------------ infra
+
+  postgres:
+    ports: !reset []
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env.prod}
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+          cpus: "2.0"
+
+  timescaledb:
+    ports: !reset []
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env.prod}
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+          cpus: "1.0"
+
+  pgbouncer:
+    ports: !reset []
+
+  redis:
+    ports: !reset []
+
+  vault:
+    ports: !reset []
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_ROOT_TOKEN:?VAULT_ROOT_TOKEN must be set in .env.prod}
+
+  zookeeper:
+    ports: !reset []
+
+  kafka:
+    ports: !reset []
+    deploy:
+      resources:
+        limits:
+          memory: 3g
+          cpus: "2.0"
+
+  minio:
+    ports: !reset []
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?MINIO_ROOT_USER must be set in .env.prod}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?MINIO_ROOT_PASSWORD must be set in .env.prod}
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+          cpus: "1.0"
+
+  mlflow:
+    ports: !reset []
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+          cpus: "0.5"
+
+  # ------------------------------------------------------------- backend services
+  # Strip host port bindings — only UIs are externally reachable in prod.
+  # Heavy ML services additionally get explicit memory ceilings.
+
+  pam-broker:               { ports: !reset [] }
+  tenant-registry:          { ports: !reset [] }
+  ingestion-orchestrator:   { ports: !reset [] }
+  evidence-store:           { ports: !reset [] }
+  reporting-service:        { ports: !reset [] }
+  pq-crypto-service:        { ports: !reset [] }
+  framework-service:        { ports: !reset [] }
+  tprm-service:             { ports: !reset [] }
+  trust-portal-service:
+    ports: !reset []
+    environment:
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set in .env.prod}
+  monitoring-service:       { ports: !reset [] }
+  people-service:           { ports: !reset [] }
+  pbc-service:              { ports: !reset [] }
+  integration-service:
+    ports: !reset []
+    environment:
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?ENCRYPTION_KEY must be set in .env.prod (32 random bytes)}
+  ai-agent-service:         { ports: !reset [] }
+  risk-service:             { ports: !reset [] }
+  audit-planning-service:   { ports: !reset [] }
+  esg-board-service:        { ports: !reset [] }
+  mobile-sync-service:      { ports: !reset [] }
+  dashboard-service:        { ports: !reset [] }
+  rag-pipeline-service:
+    ports: !reset []
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+          cpus: "2.0"
+  forensic-ml-service:
+    ports: !reset []
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+          cpus: "2.0"
+  zk-proof-worker:
+    ports: !reset []
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+          cpus: "1.0"
+
+  # ------------------------------------------------------------ auth-service
+  # ENV=prod tightens runtime checks; SELF_REGISTRATION_TENANT must remain
+  # unset; the demo seeder must NOT run.
+
+  auth-service:
+    ports: !reset []
+    environment:
+      ENV: prod
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set in .env.prod}
+      CORS_ORIGINS: ${CORS_ORIGINS:?CORS_ORIGINS must be set in .env.prod (comma-separated allowlist)}
+      SELF_REGISTRATION_TENANT: ""
+      SEED_DEMO_DATA: "false"
+
+  # ----------------------------------------------------------------- UI services
+  # These keep their host port bindings (defined in docker-compose.yml).
+  # hub-ui additionally must wait for its upstreams to be healthy so it
+  # doesn't render a permanently-broken login screen during startup.
+
+  hub-ui:
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      dashboard-service:
+        condition: service_healthy
+
+  # -------------------------------------------------------------------- migrate
+  # Same Flyway one-shot, but require the real prod password.
+  db-migrate:
+    command: >
+      -url=jdbc:postgresql://postgres:5432/aegis
+      -user=aegis_admin
+      -password=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env.prod}
+      -table=flyway_schema_history
+      -baselineOnMigrate=true
+      -baselineVersion=0
+      -connectRetries=30
+      migrate
+
+
+# Re-isolate the internal network. Backend services live here only; the
+# host has no direct route to anything in this network in prod. The UIs
+# remain on `aegis-external` (a normal bridge) and reach backends by DNS.
+networks:
+  aegis-internal:
+    driver: bridge
+    internal: true

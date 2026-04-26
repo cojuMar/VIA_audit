@@ -1,3 +1,32 @@
+/**
+ * Tutorial-string templating.
+ *
+ * Sprint 30 stripped the literal `http://localhost:<port>` strings from
+ * tutorial copy so the prod bundle doesn't ship dev URLs. The two helpers
+ * below interpolate from `VITE_HUB_URL`, `VITE_DB_URL`, and `VITE_API_HOST`
+ * so the same tutorial reads correctly in dev (localhost defaults) and
+ * prod (real hostnames). Override the env vars at build time per-environment.
+ */
+const HUB_URL = (import.meta as ImportMeta & {
+  env?: { VITE_HUB_URL?: string };
+}).env?.VITE_HUB_URL ?? 'http://localhost:5173';
+
+const DB_URL = (import.meta as ImportMeta & {
+  env?: { VITE_DB_URL?: string };
+}).env?.VITE_DB_URL ?? 'postgresql://aegis_admin:<password>@postgres:5432/aegis';
+
+const API_HOST = (import.meta as ImportMeta & {
+  env?: { VITE_API_HOST?: string };
+}).env?.VITE_API_HOST ?? 'http://localhost';
+
+/** Replaces `{HUB}`, `{DB}`, `{API}:<port>` in tutorial copy. */
+function fmt(s: string): string {
+  return s
+    .replaceAll('{HUB}', HUB_URL)
+    .replaceAll('{DB}', DB_URL)
+    .replaceAll('{API}', API_HOST);
+}
+
 export type Role = 'super_admin' | 'admin' | 'end_user';
 
 export interface TutorialStep {
@@ -40,7 +69,7 @@ export const TUTORIALS: Tutorial[] = [
       {
         title: 'The Hub is Your Home Page',
         content:
-          'This hub (port 5173) is your starting point. From here you can launch any of the 12 modules, learn the recommended workflow, and access tutorials tailored to your role. Bookmark http://localhost:5173 as your entry point.',
+          fmt('This hub is your starting point. From here you can launch any of the 12 modules, learn the recommended workflow, and access tutorials tailored to your role. Bookmark {HUB} as your entry point.'),
       },
       {
         title: 'Tenant Scoping',
@@ -73,7 +102,7 @@ export const TUTORIALS: Tutorial[] = [
       {
         title: 'Switching Between Modules',
         content:
-          'Return to this hub at any time using the "Hub" link in the top-right of any module, or simply navigate to http://localhost:5173. You can have multiple modules open in different browser tabs simultaneously.',
+          fmt('Return to this hub at any time using the "Hub" link in the top-right of any module, or simply navigate to {HUB}. You can have multiple modules open in different browser tabs simultaneously.'),
       },
       {
         title: 'Filters and Search',
@@ -586,7 +615,7 @@ export const TUTORIALS: Tutorial[] = [
       {
         title: 'Connecting Directly',
         content:
-          'Connect to PostgreSQL with: psql postgresql://aegis_admin:aegis_dev_pw@localhost:5432/aegis. The aegis_admin role has full DDL access. The aegis_app role (used by services) has DML access only. Never use aegis_admin credentials in application code.',
+          fmt('Connect to PostgreSQL with: psql {DB}. The aegis_admin role has full DDL access. The aegis_app role (used by services) has DML access only. Never use aegis_admin credentials in application code.'),
       },
       {
         title: 'Backup & Restore',
@@ -694,7 +723,7 @@ export const TUTORIALS: Tutorial[] = [
       {
         title: 'Service Health Endpoints',
         content:
-          'Every API service exposes a /health endpoint (e.g., http://localhost:3021/health). Use these for load balancer health checks in production. The endpoint returns {"status": "ok", "db": "connected"} when healthy.',
+          fmt('Every API service exposes a /health endpoint (e.g., {API}:3021/health). Use these for load balancer health checks in production. The endpoint returns {"status": "ok", "db": "connected"} when healthy.'),
       },
     ],
     tags: ['api', 'integrations', 'webhooks', 'anthropic', 'connectors'],

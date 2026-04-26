@@ -5,7 +5,6 @@ Verifies the 12-dimensional feature vector produced by extract_features(),
 cyclical time encodings, amount log-normalisation, and batch assembly.
 """
 
-import math
 import sys
 import os
 from datetime import datetime, timezone

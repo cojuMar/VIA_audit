@@ -21,7 +21,7 @@ from plaid.api import plaid_api
 from plaid.model.transactions_sync_request import TransactionsSyncRequest
 
 from ..canonical_schema import CanonicalEvidenceRecord
-from ..connector_base import ConnectorBase, ConnectorCredentials, FetchResult
+from ..connector_base import ConnectorBase, FetchResult
 
 logger = logging.getLogger(__name__)
 

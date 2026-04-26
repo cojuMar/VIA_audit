@@ -21,8 +21,6 @@ import logging
 import hashlib
 import io
 from uuid import UUID
-from datetime import datetime, timezone
-from typing import Optional
 import anthropic
 from minio import Minio
 from minio.error import S3Error
@@ -71,8 +69,8 @@ class VendorDocAnalyzer:
         else:
             minio_path = None
 
-        async with self._pool.acquire() as conn:
-            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+        async with self._pool.acquire() as conn, conn.transaction():
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
             doc_id = await conn.fetchval("""
                 INSERT INTO vendor_documents
                     (tenant_id, vendor_id, document_type, filename, minio_path,
@@ -100,8 +98,8 @@ class VendorDocAnalyzer:
             result = await self._analyze_with_claude(content)
 
         import json
-        async with self._pool.acquire() as conn:
-            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+        async with self._pool.acquire() as conn, conn.transaction():
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
             await conn.execute("""
                 UPDATE vendor_documents SET
                     ai_analysis = $1::jsonb,

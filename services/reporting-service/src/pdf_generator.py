@@ -24,7 +24,7 @@ import io
 import logging
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import Optional
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
@@ -34,8 +34,6 @@ from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
     HRFlowable, PageBreak
 )
-from reportlab.platypus.flowables import Flowable
-from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
 
 from .models import ReportRequest
 

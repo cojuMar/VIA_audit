@@ -31,8 +31,8 @@ class GapAnalyzer:
         Full gap analysis for one tenant+framework combination.
         Returns list of GapItems sorted by severity (critical first).
         """
-        async with self._pool.acquire() as conn:
-            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+        async with self._pool.acquire() as conn, conn.transaction():
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
 
             rows = await conn.fetch("""
                 SELECT

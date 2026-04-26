@@ -8,7 +8,7 @@ sys.path.insert(
 )
 
 import pytest
-from unittest.mock import AsyncMock, MagicMock, call
+from unittest.mock import AsyncMock, MagicMock
 
 from src.employee_manager import EmployeeManager
 from src.models import EmployeeCreate

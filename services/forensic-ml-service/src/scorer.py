@@ -9,9 +9,6 @@ import numpy as np
 import asyncpg
 import structlog
 from uuid import UUID
-from datetime import datetime, timezone
-from .vae import AegisVAE
-from .isolation_forest import IsolationForestModel
 from .ensemble import DRIEnsemble, EnsembleInput, DRIResult
 from .features import extract_features, build_feature_context_from_canonical
 from .benford import benford_risk_score, BenfordResult
@@ -59,7 +56,7 @@ class AnomalyScorer:
 
         if models is None:
             # No trained models — return neutral DRI
-            from .ensemble import DRIResult, DRIWeights
+            from .ensemble import DRIResult
             neutral_dri = 0.3
             return DRIResult(
                 dynamic_risk_index=neutral_dri,

@@ -8,7 +8,7 @@ import logging
 import json
 from uuid import UUID
 from datetime import date, timedelta
-from typing import List, Dict
+from typing import List
 
 logger = logging.getLogger(__name__)
 
@@ -19,8 +19,8 @@ class ContractTracker:
 
     async def add_contract(self, tenant_id: UUID, vendor_id: UUID, contract_data: dict) -> UUID:
         """Insert a new vendor contract record."""
-        async with self._pool.acquire() as conn:
-            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+        async with self._pool.acquire() as conn, conn.transaction():
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
             contract_id = await conn.fetchval("""
                 INSERT INTO vendor_contracts
                     (tenant_id, vendor_id, contract_type, title, effective_date, expiry_date,
@@ -43,8 +43,8 @@ class ContractTracker:
         Includes SLA commitments and auto-renewal status.
         """
         threshold = date.today() + timedelta(days=days_ahead)
-        async with self._pool.acquire() as conn:
-            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+        async with self._pool.acquire() as conn, conn.transaction():
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
             rows = await conn.fetch("""
                 SELECT vc.*, v.name as vendor_name
                 FROM vendor_contracts vc
@@ -59,8 +59,8 @@ class ContractTracker:
 
     async def get_vendor_contracts(self, tenant_id: UUID, vendor_id: UUID) -> List[dict]:
         """Get all contracts for a specific vendor."""
-        async with self._pool.acquire() as conn:
-            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+        async with self._pool.acquire() as conn, conn.transaction():
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
             rows = await conn.fetch("""
                 SELECT * FROM vendor_contracts
                 WHERE tenant_id = $1 AND vendor_id = $2

@@ -8,9 +8,8 @@ sys.path.insert(
 )
 
 import pytest
-import pytest_asyncio
-from unittest.mock import AsyncMock, MagicMock, patch, call
-from datetime import date, datetime, timezone
+from unittest.mock import AsyncMock, MagicMock
+from datetime import date
 
 
 # ---------------------------------------------------------------------------

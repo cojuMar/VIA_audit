@@ -10,7 +10,6 @@ Run: pytest tests/sprint5/test_health_scorer.py -v
 import pytest
 import sys
 import os
-from unittest.mock import AsyncMock, MagicMock, patch
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../services/dashboard-service'))
 

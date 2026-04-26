@@ -13,7 +13,7 @@ Returns: for each tenant_control_evidence entry, the list of ALL
 framework controls it satisfies (across all active frameworks).
 """
 import logging
-from typing import List, Dict, Tuple
+from typing import List, Dict
 from uuid import UUID
 
 logger = logging.getLogger(__name__)
@@ -53,8 +53,8 @@ class CrosswalkEngine:
         (i.e. evidence from one framework satisfies another).
         Returns coverage stats per framework pair.
         """
-        async with self._pool.acquire() as conn:
-            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+        async with self._pool.acquire() as conn, conn.transaction():
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
 
             # Get tenant's active frameworks
             active_frameworks = await conn.fetch("""
@@ -98,8 +98,8 @@ class CrosswalkEngine:
             return 0
 
         credited = 0
-        async with self._pool.acquire() as conn:
-            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+        async with self._pool.acquire() as conn, conn.transaction():
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
             for eq in equivalents:
                 if eq['equivalence_type'] == 'full':
                     # Full equivalence: auto-credit passing status

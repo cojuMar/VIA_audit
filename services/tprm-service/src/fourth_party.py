@@ -27,8 +27,8 @@ class FourthPartyAnalyzer:
         Sync sub_processors from vendor record into fourth_party_relationships.
         Returns count of new relationships added.
         """
-        async with self._pool.acquire() as conn:
-            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+        async with self._pool.acquire() as conn, conn.transaction():
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
             vendor = await conn.fetchrow(
                 "SELECT sub_processors FROM vendors WHERE id = $1 AND tenant_id = $2",
                 vendor_id, tenant_id
@@ -53,8 +53,8 @@ class FourthPartyAnalyzer:
         Return the full vendor → sub-processor graph for a tenant.
         Format: {vendor_name: [sub_processor_names]}
         """
-        async with self._pool.acquire() as conn:
-            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+        async with self._pool.acquire() as conn, conn.transaction():
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
             rows = await conn.fetch("""
                 SELECT v.name as vendor_name, fpr.sub_processor_name,
                        fpr.risk_tier, fpr.is_verified
@@ -80,8 +80,8 @@ class FourthPartyAnalyzer:
                                 sub_processor_name: str, risk_tier: str = 'unrated',
                                 data_types: List[str] = None) -> UUID:
         """Manually add a fourth-party relationship."""
-        async with self._pool.acquire() as conn:
-            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", str(tenant_id))
+        async with self._pool.acquire() as conn, conn.transaction():
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant_id))
             rel_id = await conn.fetchval("""
                 INSERT INTO fourth_party_relationships
                     (tenant_id, parent_vendor_id, sub_processor_name, risk_tier, data_types_shared)

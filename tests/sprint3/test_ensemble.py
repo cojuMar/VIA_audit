@@ -8,7 +8,6 @@ thresholds, and — critically — cross-tenant model isolation.
 
 import sys
 import os
-import copy
 
 import numpy as np
 import pytest

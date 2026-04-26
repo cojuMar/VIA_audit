@@ -40,7 +40,6 @@ Routes:
 import logging
 import uuid
 from contextlib import asynccontextmanager
-from typing import Any
 
 import asyncpg
 from fastapi import Depends, FastAPI, Header, HTTPException, Query

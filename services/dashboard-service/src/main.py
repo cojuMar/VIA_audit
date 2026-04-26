@@ -178,8 +178,8 @@ async def get_white_label(
     db: asyncpg.Pool = Depends(get_db),
     _auth = Depends(_require_bearer),
 ):
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
         row = await conn.fetchrow(
             "SELECT * FROM white_label_configs WHERE tenant_id = $1::uuid", tenant_id
         )
@@ -210,8 +210,8 @@ async def get_dashboard_config(
     db: asyncpg.Pool = Depends(get_db),
     _auth = Depends(_require_bearer),
 ):
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
         row = await conn.fetchrow(
             "SELECT * FROM dashboard_configs WHERE tenant_id=$1::uuid AND user_id=$2::uuid",
             tenant_id, user_id
@@ -249,8 +249,8 @@ async def update_dashboard_config(
             params.append(value)
         idx += 1
 
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
         await conn.execute(f"""
             INSERT INTO dashboard_configs (tenant_id, user_id, {', '.join(fields.keys())})
             VALUES ($1::uuid, $2::uuid, {', '.join(f'${i}' for i in range(3, idx))})
@@ -322,8 +322,8 @@ async def get_risk_heatmap(
 
     heatmap_rows = []
     for tid in tenant_ids:
-        async with db.acquire() as conn:
-            await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tid)
+        async with db.acquire() as conn, conn.transaction():
+            await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tid)
             rows = await conn.fetch("""
                 SELECT
                     COALESCE(er.canonical_payload->>'entity_type', 'unknown') AS category,
@@ -418,8 +418,8 @@ async def get_evidence_locker(
     params.extend([limit, offset])
     where = " AND ".join(conditions)
 
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
         rows = await conn.fetch(f"""
             SELECT
                 evidence_id,
@@ -478,8 +478,8 @@ async def get_audit_hub(
     params.append(limit)
 
     where = " AND ".join(conditions)
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
         rows = await conn.fetch(f"""
             SELECT * FROM audit_hub_items
             WHERE {where}
@@ -496,8 +496,8 @@ async def create_audit_hub_item(
     db: asyncpg.Pool = Depends(get_db),
     _auth = Depends(_require_bearer),
 ):
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
         item_id = await conn.fetchval("""
             INSERT INTO audit_hub_items
                 (tenant_id, framework, control_id, title, description, priority, due_date, assigned_to)
@@ -518,8 +518,8 @@ async def update_audit_hub_item(
     db: asyncpg.Pool = Depends(get_db),
     _auth = Depends(_require_bearer),
 ):
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
         result = await conn.execute("""
             UPDATE audit_hub_items SET status=$1, updated_at=NOW()
             WHERE item_id=$2::uuid AND tenant_id=$3::uuid
@@ -541,8 +541,8 @@ async def get_health_score(
     framework: str = Query("soc2"),
 ):
     """Current health score for Autonomous Mode gauges."""
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
         row = await conn.fetchrow("""
             SELECT * FROM health_score_snapshots
             WHERE tenant_id = $1::uuid AND framework = $2
@@ -602,8 +602,8 @@ async def get_gauges(
     framework: str = Query("soc2"),
 ):
     """All gauge values for Autonomous Mode dashboard dials."""
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
         hs_row = await conn.fetchrow("""
             SELECT * FROM health_score_snapshots
             WHERE tenant_id = $1::uuid AND framework = $2
@@ -672,8 +672,8 @@ async def get_anomaly_feed(
     _auth = Depends(_require_bearer),
     limit: int = Query(50, ge=1, le=200),
 ):
-    async with db.acquire() as conn:
-        await conn.execute("SELECT set_config('app.tenant_id', $1, false)", tenant_id)
+    async with db.acquire() as conn, conn.transaction():
+        await conn.execute("SELECT set_config('app.tenant_id', $1, true)", tenant_id)
         rows = await conn.fetch("""
             SELECT
                 ans.anomaly_id, ans.dri_score, ans.risk_level,
@@ -725,9 +725,9 @@ async def hub_summary(
     async def _q(sql: str, *args):
         """Run a single scalar query, return 0/None on any error."""
         try:
-            async with db.acquire() as conn:
+            async with db.acquire() as conn, conn.transaction():
                 await conn.execute(
-                    "SELECT set_config('app.tenant_id', $1, false)", tenant_id
+                    "SELECT set_config('app.tenant_id', $1, true)", tenant_id
                 )
                 return await conn.fetchval(sql, *args)
         except Exception as exc:

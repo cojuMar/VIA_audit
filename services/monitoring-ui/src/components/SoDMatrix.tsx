@@ -341,6 +341,8 @@ export default function SoDMatrix({ tenantId }: Props) {
                               <td key={rule.id} className="px-2 py-1.5 text-center">
                                 {sev ? (
                                   <div
+                                    role="img"
+                                    aria-label={`${sev} severity violation`}
                                     className={`w-8 h-6 rounded mx-auto flex items-center justify-center text-xs font-bold ${severityBg(sev)}`}
                                     title={sev}
                                     style={{ color: severityColor(sev) }}
@@ -348,7 +350,10 @@ export default function SoDMatrix({ tenantId }: Props) {
                                     {sev.charAt(0).toUpperCase()}
                                   </div>
                                 ) : (
-                                  <div className="w-8 h-6 rounded mx-auto bg-gray-700/30" />
+                                  <div
+                                    aria-label="no violation"
+                                    className="w-8 h-6 rounded mx-auto bg-gray-700/30"
+                                  />
                                 )}
                               </td>
                             );
